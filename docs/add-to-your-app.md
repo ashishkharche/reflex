@@ -154,7 +154,7 @@ An adapter is a small type that implements ReflexKit’s `Node`. It exposes a na
 Tiny counter example (JSON integers only):
 
 ```swift
-// Core — no ReflexKit import
+// Core: no ReflexKit import
 public final class CounterViewModel {
     public struct State { public var count: Int }
     public enum Action { case increment, set(Int) }
@@ -181,7 +181,7 @@ public struct CounterNode: Node {
 ```
 
 ```kotlin
-// Core — no ReflexKit import
+// Core: no ReflexKit import
 class CounterViewModel {
     data class State(val count: Int)
     sealed interface Action {
