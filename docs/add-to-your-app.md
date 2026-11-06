@@ -331,3 +331,10 @@ Try it: python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform b
 | SIP drops the guard on `/usr/bin/java` | Prefer `{java}` from `JAVA_HOME` in the manifest. The runner resolves a real binary. |
 
 More protocol detail: [protocol/v1.md](protocol/v1.md). Kit API table: [kit/README.md](../kit/README.md).
+
+## Updating Reflex
+
+1. Pull the latest kit: `git -C ../reflex pull`. If you use a submodule, run `git submodule update --remote reflex` instead.
+2. Read [CHANGELOG.md](../CHANGELOG.md) for protocol or kit API changes since your version and apply them to your adapters, CLIs and `reflex.json`.
+3. Rebuild both CLIs: the Swift executable and Gradle `:cli:installDist`.
+4. Rerun the runner: `python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both`.

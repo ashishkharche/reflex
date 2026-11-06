@@ -66,6 +66,19 @@ When you finish, reply with only this report, short and in plain words:
 
 Reflex stays a separate folder next to your app. Your app only points at it by a relative path. Your phone targets never link it.
 
+## Update Reflex later
+
+Already set up? Paste this into your coding assistant to pull the latest Reflex and check your app still passes:
+
+```text
+Update Reflex in this app to the latest https://github.com/ashishkharche/reflex.
+Pull the latest main in my Reflex clone next to this repo (or update the submodule if I use one).
+Read CHANGELOG.md in Reflex for anything that changed since my version and apply it to my adapters, CLIs and reflex.json.
+Rebuild the Swift and Kotlin CLIs and run the runner with --platform both.
+If a step fails, fix it and rerun.
+When you finish, reply with the same five-part report: Result, Needs your decision, What I changed, Where it is, Try it.
+```
+
 ## More
 
 Full docs index: [docs/README.md](docs/README.md).
