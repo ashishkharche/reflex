@@ -72,11 +72,13 @@ Put `tests/reflex.json` and `tests/journeys/` in either repo or in a small third
 
 ## 0. Prerequisites
 
-- macOS (the network guard needs `DYLD_INSERT_LIBRARIES`)
-- Xcode with Swift 6.0 or newer
+- macOS when you use the Swift (iOS) side or the network guard (`DYLD_INSERT_LIBRARIES`)
+- Xcode with Swift 6.0 or newer (Swift / iOS only)
 - JDK 17 or newer
 - Python 3
 - Git
+
+Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin`. The network guard is skipped there. Windows works through WSL 2. Details: [faq.md](faq.md).
 
 ## 1. Get the kit
 
