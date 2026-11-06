@@ -1,0 +1,23 @@
+{
+ "name": "precondition",
+ "note": "The precondition is false, so the runner must stop before sending Enqueue and print the last state.",
+ "steps": [
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   },
+   "before": {
+    "node": {
+     "state": {
+      "online": false
+     }
+    }
+   }
+  },
+  {
+   "ls": true
+  }
+ ]
+}

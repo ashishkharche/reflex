@@ -56,8 +56,16 @@ The CLI speaks Reflex protocol v1 ([docs/protocol/v1.md](../../docs/protocol/v1.
 {"op":"network","input":{"script":["lost","500","ok"]}}
 ```
 
+The CLIs add one more host op for asynchronous tests:
+
+```json
+{"op":"advanceLater","input":{"ms":1000,"afterMs":150}}
+```
+
+It replies at once, then a background thread waits `afterMs` real milliseconds (0 to 5000) and advances the fake clock by `ms`. One lock serialises that thread with request handling, so a reply never shows half a change.
+
 `ms` is an Int64 from 0 to 86400000. Unknown outcomes are rejected with `field.value` at their array path. Every response carries `server` with `requests`, `stored` and `scripted` so journeys can prove a key was stored once.
 
 ## Journeys
 
-`journeys/` covers delivery, backoff timing, the 30 second cap and giving up, lost replies, 409 conflicts, client and server dedup, offline holds, 422 rejection and Retry, queue order, SyncNow, business validation, wire rejects, Int64 time, the network tripwire and a stable action set across states. `warm.json` is the repeatable warm-timing journey.
+`journeys/` covers delivery, backoff timing, the 30 second cap and giving up, lost replies, 409 conflicts, client and server dedup, offline holds, 422 rejection and Retry, queue order, SyncNow, business validation, wire rejects, Int64 time, the network tripwire, a stable action set across states and waiting for a background change with `eventually` (`17-eventually.json`). `warm.json` is the repeatable warm-timing journey.

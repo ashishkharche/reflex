@@ -8,6 +8,7 @@ No protocol change and no kit API change.
 
 - Outbox sample: the adapter always lists Enqueue, PurgeSent, Retry, SetOnline and SyncNow. `update` decides validity and is the only state writer, including attempt counts. New journey `16-stable-actions.json`.
 - AI report: Result is PASS only when every adapter wraps the real Core and no platform difference is hidden. Otherwise it is FAIL, BLOCKED or INCOMPLETE with the reasons under Needs your decision. New example.
+- Runner: `eventually` steps poll `ls` up to a deadline without re-sending the action and print the last state on failure. `before` checks a precondition before a step is sent. The outbox CLIs add an `advanceLater` host op that changes state on a background thread, with journey `17-eventually.json` and two new red paths. No wire change.
 
 - Shorter README with a plain-language intro, banner and AI setup prompt.
 - One AI prompt covers first setup and later updates and ends with a five-part report.
