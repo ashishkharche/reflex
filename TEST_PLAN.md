@@ -21,7 +21,7 @@ Architecture sample at `ashishkharche/reflex`. This plan defines the go/no-go ba
 
 ## Milestones
 
-### Milestone 1 (this go/no-go) — target A confirmed
+### Milestone 1 (this go/no-go): target A confirmed
 
 Thin inventory sample only:
 
@@ -67,12 +67,12 @@ No mocking frameworks inside journey tests. Real reducers real services real nav
 
 Shared journey files: `tests/inventory/journeys/`. `runner/reflex_runner.py` selects the native host. Cases:
 
-1. **Happy path** — `ls` on list → `do` open detail → `ls` shows detail state → `do` set quantity → state shows new quantity.
-2. **Decrement at zero** — detail at quantity 0 → `do` Decrement → state stays 0 (or documented clamp); no crash; action still listed.
-3. **Save failure fixture** — save path fed a failing fixture → state exposes the error the UI would show; no network.
-4. **Navigation / back** — list → detail → lent `goBack` (or equivalent) → focused node is list again.
-5. **Malformed action rejected** — `do` with bad JSON or unknown action → CLI rejects before ViewModel mutation; lists available actions.
-6. **Network-guard tripwire** — deliberate path that would HTTP without a fixture → suite fails because a request was attempted.
+1. **Happy path:** `ls` on list → `do` open detail → `ls` shows detail state → `do` set quantity → state shows new quantity.
+2. **Decrement at zero:** detail at quantity 0 → `do` Decrement → state stays 0 (or documented clamp); no crash; action still listed.
+3. **Save failure fixture:** save path fed a failing fixture → state exposes the error the UI would show; no network.
+4. **Navigation / back:** list → detail → lent `goBack` (or equivalent) → focused node is list again.
+5. **Malformed action rejected:** `do` with bad JSON or unknown action → CLI rejects before ViewModel mutation; lists available actions.
+6. **Network-guard tripwire:** deliberate path that would HTTP without a fixture → suite fails because a request was attempted.
 
 Journeys fold steps into one test per fixture setup. Separate tests only when fixtures differ.
 
