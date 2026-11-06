@@ -43,8 +43,6 @@ You should see `RESULT PASS`.
 2. Add a small adapter that lists its state and actions. See the [Swift and Kotlin example](kit/README.md).
 3. Write the steps you want checked in a JSON file and run them on both apps.
 
-This is how it found a rest timer crash in Workout Director.
-
 ## More
 
 [How you use it](docs/how-you-use-it.md) · [Setup](docs/setup.md) · [How it works](docs/architecture.md) · [Writing tests](docs/testing.md)
