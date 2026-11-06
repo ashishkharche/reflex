@@ -1,0 +1,18 @@
+{
+  "name": "reflex",
+  "displayName": "Reflex",
+  "description": "Skills to set up Reflex in an iOS and Android app, add screens and run its journeys.",
+  "author": {
+    "name": "Ashish Kharche"
+  },
+  "homepage": "https://github.com/ashishkharche/reflex",
+  "repository": "https://github.com/ashishkharche/reflex",
+  "license": "MIT",
+  "keywords": [
+    "ios",
+    "android",
+    "testing",
+    "viewmodel",
+    "agents"
+  ]
+}
