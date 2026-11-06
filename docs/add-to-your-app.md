@@ -75,13 +75,14 @@ Put `tests/reflex.json` and `tests/journeys/` in either repo or in a small third
 
 ## 0. Prerequisites
 
-- macOS when you use the Swift (iOS) side or the network guard (`DYLD_INSERT_LIBRARIES`)
+- macOS when you use the Swift (iOS) side
+- A C compiler (`clang` on macOS, `cc` on Linux) for the network guard
 - Xcode with Swift 6.0 or newer (Swift / iOS only)
 - JDK 17 or newer
 - Python 3
 - Git
 
-Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin`. The network guard is skipped there. Windows works through WSL 2. Details: [faq.md](faq.md).
+Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin`. The network guard runs there through `LD_PRELOAD` when a C compiler is installed. Windows works through WSL 2. Details: [faq.md](faq.md).
 
 ## 1. Get the kit
 
@@ -364,7 +365,7 @@ Use the first word that applies.
 | --- | --- |
 | FAIL | The runner printed `RESULT FAIL` or stopped with an error. |
 | BLOCKED | You can’t finish without the user. For example a screen needs a refactor before an adapter can wrap its real Core. |
-| INCOMPLETE | The runner passed but something is not covered. An adapter wraps a copy of the rules, a platform the app has was not run, a step is marked `parity` or `xfail` or the guard was skipped. |
+| INCOMPLETE | The runner passed but something is not covered. An adapter wraps a copy of the rules, a platform the app has was not run, a step is marked `parity` or `xfail` or the runner printed `PASS-UNGUARDED`. |
 | PASS | The runner printed `RESULT PASS`, every adapter wraps the real Core and no platform difference is marked or hidden. |
 
 A green runner line is not enough for PASS. A test that passes because an adapter copies the rules or because both CLIs use one platform’s value proves nothing about the app.
@@ -401,7 +402,7 @@ python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
 | `json.malformed` on the first line | Send `{"op":"hello","protocol":1}` before `ls` or `do`. Human `ls` / `do` lines are not the wire format; use JSON objects. |
 | Kotlin and Swift disagree on keys | Both kits compare keys by exact UTF-16 code units. Use the same spellings. |
 | Warm timing fails after a green suite | The warm run reuses one process. Omit `warm` until the journey resets state. Another option is a reset action. |
-| `guard=skipped-not-macos` | Expected off macOS. Journeys still run; network isolation is not exercised. |
+| `RESULT PASS-UNGUARDED`, exit 3 | The guard did not run, so network isolation is not proved. Install a C compiler on Linux. Pass `--allow-unguarded` only when you accept that. |
 | SIP drops the guard on `/usr/bin/java` | Prefer `{java}` from `JAVA_HOME` in the manifest. The runner resolves a real binary. |
 
 More protocol detail: [protocol/v1.md](protocol/v1.md). Kit API table: [kit/README.md](../kit/README.md).

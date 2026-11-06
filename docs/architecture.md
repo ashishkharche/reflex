@@ -64,9 +64,9 @@ flowchart LR
 
 ## Network guard
 
-On macOS the runner loads `scripts/network_guard.c` through `DYLD_INSERT_LIBRARIES` before a behavior session. It denies Internet `connect`, `connectx` and `sendto` and records attempts. The runner fails a session that skips the ready marker or that attempts a request.
+The runner loads `scripts/network_guard.c` before a behavior session: through `DYLD_INSERT_LIBRARIES` on macOS and `LD_PRELOAD` on Linux. It denies Internet `connect` and `sendto` (and `connectx` on macOS) and records attempts. A canary must be denied first. The runner fails a session that skips the ready marker or that attempts a request.
 
-This is a deterministic test aid. It is not a security boundary against malicious native code. It is macOS only. Off macOS the runner prints `guard=skipped-not-macos` and network isolation is not exercised. Mobile release builds do not include it.
+This is a deterministic test aid. It is not a security boundary against malicious native code. It only sees calls that go through the C library, so a static binary or a raw system call gets past it. When it can’t run, the runner prints `RESULT PASS-UNGUARDED` instead of `PASS` and exits 3 unless you pass `--allow-unguarded`. Mobile release builds do not include it.
 
 ## The samples
 

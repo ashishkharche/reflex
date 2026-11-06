@@ -17,6 +17,7 @@ python3 runner/reflex_runner.py samples/outbox/reflex.json --strict --evidence /
 | `--timings N` | Runs the manifest’s warm journey once unmeasured and then N measured times in one process. Prints the p50. `0` skips it. |
 | `--strict` | Ignores `xfail` annotations so every finding fails. |
 | `--no-guard` | Runs without the network guard and says so in the `GUARD` line. |
+| `--allow-unguarded` | Exits 0 instead of 3 on `RESULT PASS-UNGUARDED`. |
 | `--evidence DIR` | Writes raw NDJSON transcripts of repeat 1 per platform. |
 
 Positional journey paths replace the manifest’s journey list.
@@ -24,12 +25,12 @@ Positional journey paths replace the manifest’s journey list.
 ## What a run checks
 
 1. `MATCHER`: the runner’s matcher agrees with the kit’s on the shared F-13 cases in `kit/conformance/strict-decoder.json`.
-2. `GUARD`: builds `scripts/network_guard.c` when needed, then proves it with a canary. A Homebrew Python under `DYLD_INSERT_LIBRARIES` must be denied a connect to 192.0.2.1. A failed canary stops the run with exit 2. Off macOS the line reads `GUARD SKIP` and network isolation is not exercised. An unguarded run prints `NETWORK UNCHECKED` for each journey that expects `denied`.
+2. `GUARD`: builds `scripts/network_guard.c` when needed, then proves it with a canary. A non-SIP Python under the guard (`DYLD_INSERT_LIBRARIES` on macOS, `LD_PRELOAD` on Linux) must be denied a connect to 192.0.2.1. A failed canary stops the run with exit 2. With no guard for the OS, no C compiler on Linux or `--no-guard` the line reads `GUARD SKIP` and network isolation is not exercised. An unguarded run prints `NETWORK UNCHECKED` for each journey that expects `denied`.
 3. Each journey runs in a fresh host process under the guard. Any reply line left over after the last step fails the journey. The runner sends `hello` first and expects the manifest’s protocol and sample. Each step’s response must match `expect` with the type-strict partial matcher and the manifest’s `everyResponse`. At the end the exit code and the guard audit must match the journey’s `exit` and `network`.
 4. `SUITE`: one line per platform per repeat with journeys, steps and wall time.
 5. `PARITY`: compares every reply across platforms as raw bytes and as parsed JSON with strict types, then the exit code and the network status. A reply whose values match but whose bytes differ prints `PARITY BYTES` with the first differing byte and counts in `byte_diffs`. Both fail the run.
 6. `P50` and `COLD`: warm milliseconds per journey with startup excluded, then cold milliseconds per journey with process start included.
-7. `RESULT`: `PASS` only with zero unexpected failures. Exit 0 on pass and 1 on failure. A missing host binary stops the run with exit 2 before any journey. `guard=canary-pass` means the guard ran. `guard=skipped-not-macos` or `guard=skipped-no-guard` adds `network_isolation=NOT-exercised` and the count of unchecked network expectations.
+7. `RESULT`: `PASS` only with zero unexpected failures and a guard whose canary passed. A clean run without the guard prints `PASS-UNGUARDED` and exits 3. With `--allow-unguarded` it exits 0. Exit 1 on failure. A missing host binary stops the run with exit 2 before any journey. `guard=canary-pass` means the guard ran. `guard=skipped-unavailable` or `guard=skipped-no-guard` adds `network_isolation=NOT-exercised` and the count of unchecked network expectations.
 
 Failure lines name the platform, journey, step, action, the line sent, the first mismatching path with expected and actual values and kinds, then the response with `node.inputs` elided. Parity diffs list every differing path with each platform’s value.
 

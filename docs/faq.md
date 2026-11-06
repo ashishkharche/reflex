@@ -7,11 +7,11 @@ Short answers for environments, tech stacks, workflows and safety. For setup ste
 | Stack or OS | Works? | What you need |
 | --- | --- | --- |
 | macOS + SwiftUI/UIKit + Compose/Views | Yes | Xcode, JDK 17+, Python 3. Full path including the network guard. |
-| Linux (desktop, server or CI) | With limits | Python 3 and a JVM host work. The network guard is skipped (`guard=skipped-not-macos`). The Swift kit’s `Package.swift` declares macOS and iOS only, so a Swift host on Linux is untested. `scripts/build.sh` builds a `.dylib` and expects macOS. |
+| Linux (desktop, server or CI) | With limits | Python 3 and a JVM host work. The network guard runs through `LD_PRELOAD` when `cc` is installed. Tested on one Debian 13 x86_64 host only. The Swift kit’s `Package.swift` declares macOS and iOS only, so a Swift host on Linux is untested. `scripts/build.sh` builds a `.dylib` and expects macOS. |
 | Windows native | No | The runner uses `select` on process pipes (`runner/reflex_runner.py`), which Python on Windows does not support for pipes. Use WSL 2 instead. |
-| WSL 2 | With limits | Same as Linux. Use Linux paths in the manifest. No network guard. |
-| Docker | With limits | Same as Linux inside the container. Mount the repo, install JDK and Python, run the Kotlin (or other) host. No network guard. |
-| GitHub Actions / CI | Yes on macOS | This repo’s workflow runs on `macos-latest` (`.github/workflows/behavior.yml`). On Linux runners the suite can run with `--no-guard` or by accepting `guard=skipped-not-macos`. |
+| WSL 2 | With limits | Same as Linux. Use Linux paths in the manifest. Not tested yet. |
+| Docker | With limits | Same as Linux inside the container. Mount the repo, install JDK, Python and `cc`, run the Kotlin (or other) host. Not tested yet. |
+| GitHub Actions / CI | Yes on macOS | This repo’s workflow runs on `macos-latest` (`.github/workflows/behavior.yml`). Linux runners need `cc` for the guard. Not tested on a Linux runner yet. |
 | iOS-only or Android-only | Yes | Put one platform in the manifest. Run `--platform swift` or `--platform kotlin` (or that platform’s name). Parity across platforms is skipped when only one runs. |
 | Kotlin Multiplatform (shared Kotlin logic) | With limits | One Kotlin/JVM CLI can cover the shared ViewModel. Run `--platform kotlin`. A second host is optional when there is no separate Swift Core. |
 | Compose Multiplatform | With limits | Same as KMP when logic lives in Kotlin. |
@@ -26,7 +26,7 @@ Short answers for environments, tech stacks, workflows and safety. For setup ste
 
 **Does it work on a Linux server or in CI without a Mac?**
 
-The runner is plain Python 3 and starts whatever command the manifest lists (`runner/reflex_runner.py`). On non-macOS it prints `GUARD SKIP` and does not exercise network isolation (`build_guard` returns early when `sys.platform != "darwin"`). Kotlin/JVM CLIs run on Linux with JDK 17+. A full Swift + Kotlin sample build via `scripts/build.sh` expects macOS (it compiles `network_guard.c` into a `.dylib`).
+The runner is plain Python 3 and starts whatever command the manifest lists (`runner/reflex_runner.py`). On Linux it builds the network guard with `cc` and loads it through `LD_PRELOAD`. Without a compiler it prints `GUARD SKIP` and ends with `RESULT PASS-UNGUARDED` (exit 3) instead of `PASS`. Kotlin/JVM CLIs run on Linux with JDK 17+. A full Swift + Kotlin sample build via `scripts/build.sh` expects macOS (it compiles `network_guard.c` into a `.dylib`).
 
 **Does it work on Windows?**
 
@@ -34,7 +34,11 @@ Not natively. The runner’s `Host._read_line` calls `select.select` on the chil
 
 **Does the network guard work off macOS?**
 
-No. `scripts/network_guard.c` uses macOS `DYLD_INSERT_LIBRARIES` interpose. Off macOS the runner continues without it. Use `--no-guard` only when you mean to skip isolation on purpose.
+On Linux, yes. The same `scripts/network_guard.c` builds as a shared library and loads through `LD_PRELOAD`. It denies Internet `connect` and `sendto`. The runner proves that with a canary before any journey. It only sees calls through the C library, so a static binary or a raw system call gets past it.
+
+What was tested on 6 Nov 2026: one Debian 13 x86_64 host with glibc 2.41, Python 3.13 and a Temurin 21 JRE, running the inventory and outbox Kotlin hosts with `--platform kotlin --repeat 3`. Both passed with the guard and both tripwire journeys reported `network=denied`. A guard that never denies failed the canary with exit 2. The Kotlin jars were built on macOS. Swift on Linux, ARM Linux, Alpine (musl), Docker, WSL 2 and Linux CI runners are not tested. Logs: `evidence/linux-guard-2026-11-06/`.
+
+Windows has no guard. Any run without the guard, including `--no-guard`, ends `RESULT PASS-UNGUARDED` and exits 3. Pass `--allow-unguarded` to exit 0 when you accept that.
 
 **Can I run only one platform?**
 

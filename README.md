@@ -11,7 +11,7 @@ Reflex lets a test or an AI agent talk to your app in plain text. `ls` asks what
 
 ## Try it
 
-macOS is needed for the Swift (iOS) side and for the network guard. Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin` (the guard is skipped). Windows works through WSL 2. Details: [docs/faq.md](docs/faq.md).
+macOS is needed for the Swift (iOS) side. Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin`. The network guard runs there through `LD_PRELOAD` when a C compiler is installed. Windows works through WSL 2. Details: [docs/faq.md](docs/faq.md).
 
 For the full sample below you also need Xcode, JDK 17 and Python 3.
 

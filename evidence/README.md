@@ -10,6 +10,7 @@ Commit SHAs named in this directory belong to the private development history an
 | `kit-outbox-2026-11-06/` | Kit extraction and the outbox sample: unit tests, runner output, conformance and deliberate red runs |
 | `kit-wire-2026-11-06/` | Kit 1.0.1 wire parity for G-1 to G-3: conformance, the raw byte probe and runner output |
 | `linux-2026-11-06/` | The runner on Linux: Kotlin journeys pass and the guard lines say network isolation is not exercised |
+| `linux-guard-2026-11-06/` | The `LD_PRELOAD` guard on Linux: Kotlin journeys pass guarded, tripwires are denied, unguarded runs end `PASS-UNGUARDED` and a guard that never denies fails the canary |
 
 The 2026-11-06 logs predate the rename of the adoption example and fixture fields. They show `upNext` and `midSet` where the current fixture uses `label` and `fanOn`.
 

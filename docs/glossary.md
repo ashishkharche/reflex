@@ -14,5 +14,5 @@ One-line definitions for terms used across the Reflex docs.
 | Manifest | A `reflex.json` that names platforms, commands, journeys and optional guard paths. |
 | Runner | `runner/reflex_runner.py`. Runs journeys, checks parity and prints `RESULT`. |
 | Conformance | Shared kit fixture (`kit/conformance/strict-decoder.json`) that both platforms must answer the same way. |
-| Network guard | macOS `DYLD_INSERT_LIBRARIES` interposer that denies Internet sockets during behavior sessions. |
+| Network guard | A C library loaded with `DYLD_INSERT_LIBRARIES` on macOS or `LD_PRELOAD` on Linux that denies Internet sockets during behavior sessions. |
 | Introspection | Describing a screen as name + state JSON + actions so a host can drive it without UI. |
