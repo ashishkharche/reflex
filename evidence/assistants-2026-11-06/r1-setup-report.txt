@@ -1,0 +1,21 @@
+```text
+Result
+PASS on swift and kotlin
+
+Needs your decision
+1. Notes and Settings are not in this first setup. Use reflex-add-screens.
+   Settings keeps its state in the view. Say yes before a refactor.
+
+What I added
+- tests/reflex.json and tests/journeys/count.json
+- CounterNode and counter-cli (Swift and Kotlin)
+- Registered targets in ios/Package.swift and android/settings.gradle.kts
+
+Where it is
+Branch: main
+Commit: 30c2fac, changes not committed
+Pushed: no
+
+Try it
+python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
+```

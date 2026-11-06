@@ -1,0 +1,14 @@
+HOST macOS-26.5.1-arm64-arm-64bit-Mach-O python=3.15.0 runner=reflex_runner protocol=1 sample=counter platforms=swift,kotlin journeys=2 files=2
+MATCHER PASS cases=19 source=../reflex/kit/conformance/strict-decoder.json
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='READY | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=swift protocol=1 sample=counter kit=1.0.1
+JOURNEY PASS platform=swift journey=tests/journeys/count.json#count steps=4 exit=0 network=clean
+JOURNEY PASS platform=swift journey=tests/journeys/notes.json#notes steps=9 exit=0 network=clean
+SUITE platform=swift repeat=1/1 journeys=2 steps=13 wall_s=0.03
+HANDSHAKE platform=kotlin protocol=1 sample=counter kit=1.0.1
+JOURNEY PASS platform=kotlin journey=tests/journeys/count.json#count steps=4 exit=0 network=clean
+JOURNEY PASS platform=kotlin journey=tests/journeys/notes.json#notes steps=9 exit=0 network=clean
+SUITE platform=kotlin repeat=1/1 journeys=2 steps=13 wall_s=0.32
+PARITY KNOWN journey=tests/journeys/notes.json#notes step=8 action=Add finding=notes-newline $.node.state.notes[1] swift="\nhello\n" kotlin="hello"
+PARITY PASS platforms=swift,kotlin steps=13 unexpected_diffs=0 byte_diffs=0 known_diffs=1 (raw reply bytes and full parsed JSON, strict types)
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=swift,kotlin repeat=1 sample=counter guard=canary-pass

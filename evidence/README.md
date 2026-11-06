@@ -12,6 +12,7 @@ Commit SHAs named in this directory belong to the private development history an
 | `linux-2026-11-06/` | The runner on Linux: Kotlin journeys pass and the guard lines say network isolation is not exercised |
 | `linux-guard-2026-11-06/` | The `LD_PRELOAD` guard on Linux: Kotlin journeys pass guarded, tripwires are denied, unguarded runs end `PASS-UNGUARDED` and a guard that never denies fails the canary |
 | `live-ui-2026-11-06/` | The debug socket in the inventory apps on an iOS simulator and an Android emulator: live UI checks, live runner journeys, release exclusion and red cases |
+| `assistants-2026-11-06/` | The 3 Reflex skills run end to end by Grok Build in a toy app, an update from a local upstream and the Claude Code and Codex install checks |
 
 The 2026-11-06 logs predate the rename of the adoption example and fixture fields. They show `upNext` and `midSet` where the current fixture uses `label` and `fanOn`.
 

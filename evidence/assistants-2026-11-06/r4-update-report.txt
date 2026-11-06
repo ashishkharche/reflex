@@ -1,0 +1,21 @@
+```text
+Result
+INCOMPLETE on swift and kotlin
+
+Needs your decision
+1. Adding a note of "\nhello\n" keeps the newlines on iOS and stores "hello" on Android.
+   The notes journey marks this known. Pick one trim rule.
+2. Settings keeps dark mode in the view, so it has no journey yet.
+   Say yes to move Settings onto a shared Core.
+
+What I changed
+- tests/journeys/count.json
+- tests/journeys/notes.json
+
+Where it is
+Branch: main
+Commit: bee3ac4, about edits not committed, not pushed
+
+Try it
+python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
+```

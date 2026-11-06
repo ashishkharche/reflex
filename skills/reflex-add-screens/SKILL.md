@@ -26,6 +26,7 @@ The how-to lives in the Reflex clone next to the app, usually `../reflex`. Read 
 
 - Same rules as `reflex-setup`: add new files, ask before editing other existing files or refactoring, wrap the real Core, never copy rules and never hide a platform difference.
 - Never report PASS for a screen the runner did not run on every platform the app has.
+- A step marked `parity` or `xfail` makes the Result INCOMPLETE. Put the difference under Needs your decision.
 
 ## Report
 
