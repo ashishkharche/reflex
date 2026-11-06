@@ -40,11 +40,25 @@ You should see `RESULT PASS`.
 ## Use it in your app
 
 1. Keep your ViewModel as it is.
-2. Add a small adapter that lists its state and actions. See the [Swift and Kotlin example](kit/README.md).
-3. Write the steps you want checked in a JSON file and run them on both apps.
+2. Add a small adapter that lists its state and actions.
+3. Follow [the full setup guide](docs/add-to-your-app.md).
+
+## Set it up with your AI assistant
+
+Open your app’s repo in Cursor, Claude Code, Codex or any coding assistant and paste this:
+
+```text
+Add Reflex to this app using https://github.com/ashishkharche/reflex.
+Follow docs/add-to-your-app.md in that repo step by step.
+Keep my app’s code and behaviour unchanged. Only add new files and targets.
+Start with my main screen’s ViewModel: add one adapter that lists its state and actions, plus a small Swift and Kotlin CLI.
+Write a reflex.json manifest and one journey for that screen.
+Run the runner with --platform both and show me the RESULT line.
+If a step fails, fix it and tell me what you changed.
+```
 
 ## More
 
-[How you use it](docs/how-you-use-it.md) · [Setup](docs/setup.md) · [How it works](docs/architecture.md) · [Writing tests](docs/testing.md)
+[How you use it](docs/how-you-use-it.md) · [Add to your app](docs/add-to-your-app.md) · [Setup](docs/setup.md) · [How it works](docs/architecture.md) · [Writing tests](docs/testing.md)
 
 MIT licence. Copyright (c) 2026 Ashish Kharche.
