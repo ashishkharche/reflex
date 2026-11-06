@@ -1,0 +1,5 @@
+flowchart TB
+  U([Your UI<br/>Unchanged]) --> V([ViewModel / Core<br/>No UI or ReflexKit imports])
+  V <--> A([Adapter node<br/>Name · state · actions])
+  A <--> C([Small CLI<br/>One per platform])
+  C <--> R([Test runner or AI agent])

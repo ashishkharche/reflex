@@ -1,0 +1,9 @@
+sequenceDiagram
+  participant A as Agent
+  participant C as CLI
+  A->>C: {"op":"hello",<br/>"protocol":1}
+  C-->>A: ok: true<br/>protocol: 1
+  A->>C: {"op":"ls"}
+  C-->>A: node.name: "Counter"<br/>node.state: {"count":0}<br/>node.actions:<br/>["Increment","Set"]
+  A->>C: {"op":"do",<br/>"action":"Increment"}
+  C-->>A: ok: true<br/>node.state: {"count":1}

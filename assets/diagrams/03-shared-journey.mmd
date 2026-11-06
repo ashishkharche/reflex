@@ -1,0 +1,9 @@
+flowchart TB
+  J([One journey JSON<br/>name: count]) --> M([tests/reflex.json<br/>Finds the CLIs and journeys])
+  M --> R([reflex_runner.py<br/>--platform both])
+  R --> S([Swift CLI])
+  R --> K([Kotlin CLI])
+  S --> P{Same answers?}
+  K --> P
+  P -->|Yes| OK([RESULT PASS])
+  P -->|No| NO([RESULT FAIL])

@@ -6,6 +6,11 @@ Architecture overview for people who want to see how a Core, adapter, CLI and ru
 
 Reflex keeps business logic in a UI-free [Core](glossary.md). A thin [adapter node](glossary.md) describes each screen. A [CLI](glossary.md) speaks [protocol v1](protocol/v1.md). The [runner](glossary.md) drives the same [journey](glossary.md) on Swift and Kotlin and fails when the answers differ.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/diagrams/01-in-your-app-dark.svg">
+  <img src="../assets/diagrams/01-in-your-app-light.svg" alt="Your UI and the adapter both use the same ViewModel" width="100%">
+</picture>
+
 ```mermaid
 flowchart LR
   J[Journey file] --> R[Runner]
@@ -32,11 +37,21 @@ flowchart LR
 
 ## What happens on `ls` and `do`
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/diagrams/02-one-exchange-dark.svg">
+  <img src="../assets/diagrams/02-one-exchange-light.svg" alt="The same hello, ls and do requests get the same state from the Swift and Kotlin CLIs" width="100%">
+</picture>
+
 1. The runner (or you) sends `{"op":"hello","protocol":1}` once per process.
 2. `ls` asks the focused [adapter node](glossary.md) for its name, state and actions.
 3. `do` names an action and optional JSON input. ReflexKit decodes the input with the action’s schema.
 4. The adapter calls `send` on the ViewModel. The Core updates state.
 5. The reply includes `ok` and the new `node` snapshot. Both platforms must match on a shared journey.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/diagrams/03-shared-journey-dark.svg">
+  <img src="../assets/diagrams/03-shared-journey-light.svg" alt="One journey runs on both CLIs and the runner prints RESULT" width="100%">
+</picture>
 
 ## Rules the Core follows
 

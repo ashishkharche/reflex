@@ -2,6 +2,11 @@
 
 Step-by-step guide for adding Reflex to an existing iOS and Android app so a test or an AI agent can drive both without a screen.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/diagrams/04-assistant-setup-dark.svg">
+  <img src="../assets/diagrams/04-assistant-setup-light.svg" alt="Paste the README prompt into an assistant and it sets Reflex up step by step" width="100%">
+</picture>
+
 Layout used below: your app and a clone of this repo sit next to each other.
 
 ```text
@@ -9,6 +14,11 @@ your-workspace/
   reflex/          # git clone https://github.com/ashishkharche/reflex.git
   your-app/        # your project
 ```
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/diagrams/01-in-your-app-dark.svg">
+  <img src="../assets/diagrams/01-in-your-app-light.svg" alt="Your UI and the adapter both use the same ViewModel" width="100%">
+</picture>
 
 ### If iOS and Android are separate repos
 
