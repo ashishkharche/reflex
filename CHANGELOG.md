@@ -7,11 +7,11 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 Docs only. No protocol change and no kit API change.
 
 - Shorter README with a plain-language intro, banner and AI setup prompt.
-- The AI prompt says to clone Reflex next to your repo and ends with a five-part report.
+- One AI prompt covers first setup and later updates and ends with a five-part report.
 - New guide for adding Reflex to your app, including separate iOS and Android repos.
 - Docs reorganised into an index, a glossary and `docs/project/`.
 - How-it-works diagrams in `assets/diagrams/`.
-- Update prompt in the README and an Updating Reflex section in the guide.
+- FAQ for environments, tech stacks, workflows and safety (`docs/faq.md`).
 
 ## 1.0.0 (6 Nov 2026)
 

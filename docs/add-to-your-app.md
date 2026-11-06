@@ -305,7 +305,7 @@ If you used the AI prompt from the README, the assistant ends with a five-part r
 
 1. **Result:** the RESULT line.
 2. **Needs your decision:** anything you must choose, such as a refactor or a difference between iOS and Android. “None” if empty.
-3. **What I added:** files and where they live, one line each.
+3. **What I added or changed:** files and where they live, one line each.
 4. **Where it is:** branch, commit and whether it is pushed.
 5. **Try it:** the one command to rerun the tests.
 
@@ -314,7 +314,7 @@ Example:
 ```text
 Result: RESULT PASS platforms=swift,kotlin
 Needs your decision: Android starts on a different default item than iOS. I used the iOS value in both CLIs.
-What I added: tests/reflex.json, tests/journeys/home.json, HomeNode (Swift, Kotlin), home-cli (Swift, Kotlin)
+What I added or changed: tests/reflex.json, tests/journeys/home.json, HomeNode (Swift, Kotlin), home-cli (Swift, Kotlin)
 Where it is: branch reflex/home, commit abc1234, not pushed
 Try it: python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
 ```
@@ -334,7 +334,11 @@ More protocol detail: [protocol/v1.md](protocol/v1.md). Kit API table: [kit/READ
 
 ## Updating Reflex
 
+Paste the same README AI prompt again; it pulls the latest clone (or updates the submodule), reads [CHANGELOG.md](../CHANGELOG.md) and reruns the suite. By hand:
+
 1. Pull the latest kit: `git -C ../reflex pull`. If you use a submodule, run `git submodule update --remote reflex` instead.
 2. Read [CHANGELOG.md](../CHANGELOG.md) for protocol or kit API changes since your version and apply them to your adapters, CLIs and `reflex.json`.
 3. Rebuild both CLIs: the Swift executable and Gradle `:cli:installDist`.
 4. Rerun the runner: `python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both`.
+
+Environments, other stacks and CI notes: [faq.md](faq.md).
