@@ -20,7 +20,7 @@ class SocketHost(
     port: Int = 0,
     private val perform: (() -> JsonValue) -> JsonValue = serial(),
 ) : Closeable {
-    private val server = ServerSocket(port, 1, InetAddress.getLoopbackAddress())
+    private val server = ServerSocket(port, 1, InetAddress.getByAddress(byteArrayOf(127, 0, 0, 1)))
     val port: Int get() = server.localPort
 
     /** Accepts clients one after another until [close]. Blocks the calling thread. */

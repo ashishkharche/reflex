@@ -13,6 +13,9 @@ android {
 kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
 dependencies {
     implementation(project(":core"))
+    // Debug socket host only. Release variants never see these (scripts/check_release_exclusion.sh).
+    debugImplementation(project(":introspection"))
+    debugImplementation(project(":reflex-socket"))
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.compose.material3:material3:1.4.0")
 }

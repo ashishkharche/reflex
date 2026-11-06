@@ -1,0 +1,189 @@
+{
+ "name": "live-stock",
+ "note": "Runs against a running debug app, so it leaves stock as it found it: shirt 3, mug 0.",
+ "steps": [
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList",
+     "state": {
+      "products": [
+       {
+        "id": "shirt",
+        "quantity": 3,
+        "title": "Cotton shirt"
+       },
+       {
+        "id": "mug",
+        "quantity": 0,
+        "title": "Ceramic mug"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "state": {
+      "product": {
+       "id": "shirt",
+       "quantity": 3,
+       "title": "Cotton shirt"
+      },
+      "saved": false
+     }
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 7
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "state": {
+      "product": {
+       "id": "shirt",
+       "quantity": 7,
+       "title": "Cotton shirt"
+      },
+      "saved": false
+     }
+    }
+   }
+  },
+  {
+   "do": "Save",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "state": {
+      "product": {
+       "id": "shirt",
+       "quantity": 7,
+       "title": "Cotton shirt"
+      },
+      "saved": true
+     }
+    }
+   }
+  },
+  {
+   "do": "goBack",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList",
+     "state": {
+      "products": [
+       {
+        "id": "shirt",
+        "quantity": 7,
+        "title": "Cotton shirt"
+       },
+       {
+        "id": "mug",
+        "quantity": 0,
+        "title": "Ceramic mug"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "state": {
+      "product": {
+       "id": "shirt",
+       "quantity": 7,
+       "title": "Cotton shirt"
+      },
+      "saved": false
+     }
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 3
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "state": {
+      "product": {
+       "id": "shirt",
+       "quantity": 3,
+       "title": "Cotton shirt"
+      },
+      "saved": false
+     }
+    }
+   }
+  },
+  {
+   "do": "Save",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "state": {
+      "product": {
+       "id": "shirt",
+       "quantity": 3,
+       "title": "Cotton shirt"
+      },
+      "saved": true
+     }
+    }
+   }
+  },
+  {
+   "do": "goBack",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList",
+     "state": {
+      "products": [
+       {
+        "id": "shirt",
+        "quantity": 3,
+        "title": "Cotton shirt"
+       },
+       {
+        "id": "mug",
+        "quantity": 0,
+        "title": "Ceramic mug"
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+HOST macOS-26.5.1-arm64-arm-64bit-Mach-O python=3.15.0 runner=reflex_runner protocol=1 sample=inventory platforms=ios-simulator journeys=1 files=1
+MATCHER PASS cases=19 source=kit/conformance/strict-decoder.json
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='READY | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+SOCKET platform=ios-simulator address=127.0.0.1:47814 live session: state carries across journeys, exit codes and network isolation are NOT checked
+HANDSHAKE platform=ios-simulator protocol=1 sample=inventory kit=1.0.1
+JOURNEY PASS platform=ios-simulator journey=tests/inventory/live/01-live-stock.json#live-stock steps=10 exit=live network=live
+SUITE platform=ios-simulator repeat=1/2 journeys=1 steps=10 wall_s=1.01
+JOURNEY PASS platform=ios-simulator journey=tests/inventory/live/01-live-stock.json#live-stock steps=10 exit=live network=live
+SUITE platform=ios-simulator repeat=2/2 journeys=1 steps=10 wall_s=0.03
+RESULT PASS-UNGUARDED mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=ios-simulator repeat=2 sample=inventory guard=live-socket network_isolation=NOT-exercised network_unchecked=0
+exit=0

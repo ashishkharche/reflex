@@ -11,6 +11,7 @@ Commit SHAs named in this directory belong to the private development history an
 | `kit-wire-2026-11-06/` | Kit 1.0.1 wire parity for G-1 to G-3: conformance, the raw byte probe and runner output |
 | `linux-2026-11-06/` | The runner on Linux: Kotlin journeys pass and the guard lines say network isolation is not exercised |
 | `linux-guard-2026-11-06/` | The `LD_PRELOAD` guard on Linux: Kotlin journeys pass guarded, tripwires are denied, unguarded runs end `PASS-UNGUARDED` and a guard that never denies fails the canary |
+| `live-ui-2026-11-06/` | The debug socket in the inventory apps on an iOS simulator and an Android emulator: live UI checks, live runner journeys, release exclusion and red cases |
 
 The 2026-11-06 logs predate the rename of the adoption example and fixture fields. They show `upNext` and `midSet` where the current fixture uses `label` and `fanOn`.
 

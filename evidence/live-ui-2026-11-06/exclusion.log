@@ -1,0 +1,13 @@
+IOS release binary x86_64 arm64 files=Info.plist InventoryMobile PkgInfo 
+EXCLUSION PASS ios string="SocketHost" release=0 debug=210
+EXCLUSION PASS ios string="ReflexSocketHost" release=0 debug=206
+EXCLUSION PASS ios string="ReflexKit" release=0 debug=2082
+EXCLUSION PASS ios string="InventoryIntrospection" release=0 debug=258
+EXCLUSION PASS ios string="AppNode" release=0 debug=52
+EXCLUSION PASS ios string="REFLEX LISTENING" release=0 debug=2
+EXCLUSION PASS android classes=reflex.kit.* release=0 debug=49
+EXCLUSION PASS android class=SocketHost release=0 debug=5
+EXCLUSION PASS android class=reflex.AppNode release=0 debug=1
+EXCLUSION PASS android dependency=:reflex-socket,:introspection release=0 debug=2
+EXCLUSION PASS android permission=INTERNET release=0 debug=1
+RESULT EXCLUSION PASS

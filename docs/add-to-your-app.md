@@ -117,7 +117,7 @@ targets: [
 ]
 ```
 
-If your app is an Xcode project: put the Core in a Swift package or a folder with no UIKit or SwiftUI imports. Add a second target or local package for Introspection that depends on the Core and ReflexKit. Add a Command Line Tool target for the CLI. Do not link ReflexKit into the UI target.
+If your app is an Xcode project: put the Core in a Swift package or a folder with no UIKit or SwiftUI imports. Add a second target or local package for Introspection that depends on the Core and ReflexKit. Add a Command Line Tool target for the CLI. Do not link ReflexKit into the UI target. The one exception is the optional debug [socket host](real-build.md), linked only in Debug.
 
 ## 3. Kotlin
 

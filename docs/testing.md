@@ -51,6 +51,12 @@ python3 runner/reflex_runner.py samples/outbox/reflex.json runner/red/preconditi
 
 Failure lines name platform, journey, step, action, the sent line and the first mismatching path. A polling failure also prints the poll count and the last state it saw.
 
+## Debug socket in the apps
+
+`bash scripts/check_release_exclusion.sh both` must end `RESULT EXCLUSION PASS`. It fails when a Release build holds the socket host or when a Debug build lacks it.
+
+With a debug app running on your own simulator or emulator, `scripts/live_ui_check.py` must end `RESULT LIVE-UI PASS` and `tests/inventory/live.json` must end `RESULT PASS-UNGUARDED`. With no app listening the runner ends `RESULT FAIL` and exits 2. See [real-build.md](real-build.md).
+
 ## Fixtures and timings
 
 Pass fixtures in at construction (`FixtureInventoryService`, `FakeClock`, `FlakyNetwork`). Each repeat starts new native sessions and must match the first transcript byte for byte. Warm timings reuse one session after one unmeasured journey.

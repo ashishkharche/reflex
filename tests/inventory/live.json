@@ -1,0 +1,19 @@
+{
+ "sample": "inventory",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "fake",
+ "note": "Debug socket in the real sample apps. Start the debug app on your own simulator or emulator with the reflexPort opt-in first (see docs/real-build.md). The runner only connects; it never launches a device.",
+ "platforms": {
+  "ios-simulator": {
+   "socket": "127.0.0.1:47814"
+  },
+  "android-emulator": {
+   "socket": "127.0.0.1:47815"
+  }
+ },
+ "journeys": [
+  "tests/inventory/live/*.json"
+ ]
+}
