@@ -49,19 +49,9 @@ Open your app’s repo in Grok Build, Grok Bot, Cursor, Claude Code, Codex or an
 
 ```text
 Set up or update Reflex in this app using https://github.com/ashishkharche/reflex.
-If a Reflex clone or submodule already exists next to this repo, pull its latest main (or update the submodule). Otherwise clone it next to this repo, not inside it (for example ../reflex). Do not copy Reflex files into my repo.
-If my iOS and Android apps live in separate repos, ask me where the other one is before you start.
-Follow docs/add-to-your-app.md in the Reflex repo step by step.
-Keep my app’s code and behaviour unchanged. Only add new files and targets. If a screen keeps its state in the views, tell me before you refactor anything.
-On first setup: start with my main screen; add one adapter that lists its state and actions, plus a small CLI for each platform I have (Swift and Kotlin when both exist). Write a reflex.json manifest and one journey for that screen.
-On update: read CHANGELOG.md in Reflex for anything that changed since my version and apply it to my adapters, CLIs and reflex.json.
-Rebuild the CLIs and run the runner with --platform both (or the one platform I have). If a step fails, fix it and rerun.
-When you finish, reply with only this report, short and in plain words:
-1. Result: the RESULT line.
-2. Needs your decision: anything I must choose, such as a refactor or a difference between iOS and Android. Write "None" if empty.
-3. What I added or changed: files and where they live, one line each.
-4. Where it is: branch, commit and whether it is pushed.
-5. Try it: the one command to rerun the tests.
+Keep Reflex in its own clone next to this repo, never inside it. If it’s already there, pull the latest and apply CHANGELOG.md.
+Follow docs/add-to-your-app.md, starting with my main screen. Only add new files. Ask me before any refactor, or if my iOS and Android apps are in separate repos.
+Run the tests until they pass, then reply with only the five-part report from that guide.
 ```
 
 Reflex stays a separate folder next to your app. Your app only points at it by a relative path. Your phone targets never link it. To update later, paste the same prompt again.
