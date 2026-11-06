@@ -15,6 +15,9 @@ An app declares each action’s input once as a schema. The kit decodes, rejects
 | Nodes | `Node`, `NodeAction`, `Focus` | `Node`, `NodeAction`, `Focus` |
 | Protocol v1 host | `Session`, `Session.Op`, `handle(bytes:)` | `Session`, `Session.Op`, `handle(ByteArray)` |
 | Matcher | `Expect.matches` `Expect.mismatch` | `Expect.matches` `Expect.mismatch` |
+| Debug socket host (debug builds only) | `SocketHost` in product `ReflexSocketHost` | `SocketHost` in `kit/kotlin-socket` (`reflex.kit.socket`) |
+
+The socket host is a separate product and module so release builds never link it. See [docs/real-build.md](../docs/real-build.md).
 
 The kit has no dependencies. Kotlin needs only the Kotlin standard library.
 

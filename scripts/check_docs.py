@@ -27,6 +27,7 @@ NAMES = [
     "docs/add-to-your-app.md",
     "docs/glossary.md",
     "docs/faq.md",
+    "docs/real-build.md",
     "docs/protocol/README.md",
     "docs/protocol/v1.md",
     "docs/protocol/CHANGELOG.md",

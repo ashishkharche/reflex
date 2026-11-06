@@ -21,3 +21,4 @@ jobs:
       - run: kotlin/gradlew -p samples/outbox/kotlin --no-daemon --max-workers=1 :core:test --console=plain
       - run: python3 runner/reflex_runner.py tests/inventory/reflex.json --platform both --repeat 3 --timings 20
       - run: python3 runner/reflex_runner.py samples/outbox/reflex.json --platform both --repeat 3 --timings 20
+      - run: python3 runner/reflex_runner.py samples/outbox/live.json --platform both --repeat 2 --allow-unguarded

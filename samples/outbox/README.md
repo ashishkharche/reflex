@@ -45,7 +45,7 @@ Delivery results: `created` and `duplicate` (HTTP 409) mark a message sent with 
 | `409` | already has the key | `duplicate` |
 | `422` | rejects | rejected |
 
-The CLI’s first argument picks `fake` (default) or `http`. `http` makes a real loopback TCP connect before each delivery so the runner’s DYLD guard has something to deny.
+The CLI’s first argument picks `fake` (default) or `http`. `--listen PORT` serves the session on 127.0.0.1 through the debug socket host instead of stdin. `live.json` runs `live/01-live.json` that way. `http` makes a real loopback TCP connect before each delivery so the runner’s DYLD guard has something to deny.
 
 ## Wire
 

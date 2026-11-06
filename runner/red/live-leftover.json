@@ -1,0 +1,36 @@
+{
+ "name": "live-leftover",
+ "note": "Leaves a message queued on a live host. Run with --repeat 2: the second repeat must fail its first step because state carries over.",
+ "steps": [
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": []
+     }
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": false
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "left",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": true
+   }
+  }
+ ]
+}

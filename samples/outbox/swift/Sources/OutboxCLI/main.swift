@@ -2,6 +2,7 @@ import Foundation
 import OutboxCore
 import OutboxIntrospection
 import ReflexKit
+import ReflexSocketHost
 #if canImport(Darwin)
 import Darwin
 #else
@@ -53,6 +54,25 @@ ops["advanceLater"] = Session.Op(input: Schema([.required("ms", .int64(min: 0, m
     }
 }
 let session = Session(sample: "outbox", root: { OutboxNode(vm: outbox) }, ops: ops, extras: { OutboxOps.server(network) })
+
+// `--listen PORT` serves the same session over a loopback socket instead of stdin (debug host demo).
+if let flag = CommandLine.arguments.firstIndex(of: "--listen") {
+    guard flag + 1 < CommandLine.arguments.count, let port = UInt16(CommandLine.arguments[flag + 1]) else {
+        fputs("--listen needs a port\n", stderr); exit(64)
+    }
+    do {
+        let host = try SocketHost(session: session, port: port) { work in
+            lock.lock()
+            defer { lock.unlock() }
+            return work()
+        }
+        fputs("LISTENING 127.0.0.1:\(host.port)\n", stderr)
+        host.serve()
+    } catch {
+        fputs("\(error)\n", stderr); exit(69)
+    }
+    exit(0)
+}
 
 // Same loop as Session.serveStandardIO, with each request handled under the lock.
 var framer = LineFramer()

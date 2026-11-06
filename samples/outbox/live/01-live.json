@@ -1,0 +1,85 @@
+{
+ "name": "live",
+ "note": "Runs against a long-lived host, so it leaves state as it found it: no messages queued.",
+ "steps": [
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": [],
+      "online": true
+     }
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "live-1",
+    "body": "hi"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "live-1",
+        "status": "pending"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advanceLater",
+   "input": {
+    "ms": 0,
+    "afterMs": 100
+   }
+  },
+  {
+   "eventually": {
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "live-1",
+        "status": "sent"
+       }
+      ]
+     }
+    }
+   },
+   "within_ms": 3000
+  },
+  {
+   "do": "PurgeSent",
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": []
+     }
+    }
+   }
+  }
+ ]
+}

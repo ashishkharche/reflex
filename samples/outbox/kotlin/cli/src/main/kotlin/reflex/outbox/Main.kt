@@ -5,6 +5,7 @@ import reflex.kit.FieldType
 import reflex.kit.LineFramer
 import reflex.kit.Schema
 import reflex.kit.Session
+import reflex.kit.socket.SocketHost
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.io.PrintStream
@@ -43,6 +44,18 @@ fun main(args: Array<String>) {
     }
     val ops = OutboxOps.make(outbox, clock, network) + ("advanceLater" to advanceLater)
     val session = Session("outbox", { OutboxNode(outbox) }, ops, { OutboxOps.server(network) })
+
+    // `--listen PORT` serves the same session over a loopback socket instead of stdin (debug host demo).
+    val flag = args.indexOf("--listen")
+    if (flag >= 0) {
+        val port = args.getOrNull(flag + 1)?.toIntOrNull()
+        if (port == null || port !in 0..65535) { System.err.println("--listen needs a port"); exitProcess(64) }
+        val host = try { SocketHost(session, port) { work -> synchronized(lock) { work() } } }
+            catch (e: java.io.IOException) { System.err.println(e.toString()); exitProcess(69) }
+        System.err.println("LISTENING 127.0.0.1:${host.port}")
+        host.serve()
+        return
+    }
 
     // Same loop as Session.serveStandardIO, with each request handled under the lock.
     val out = PrintStream(FileOutputStream(FileDescriptor.out), false, Charsets.UTF_8)
