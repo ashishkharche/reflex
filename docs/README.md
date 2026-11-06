@@ -6,6 +6,7 @@ Index of Reflex documentation. Start at the top and stop when you have what you 
 | --- | --- |
 | [Setup](setup.md) | You want to clone this repo and run the samples. |
 | [Add it to your app](add-to-your-app.md) | You are wiring Reflex into your own iOS and Android app. |
+| [Assistant skills](assistants.md) | You want to install the Reflex skills in Claude Code, Grok Build, Codex, Cursor or another assistant. |
 | [FAQ](faq.md) | You want OS, stack, CI, Flutter/RN and safety answers. |
 | [How you use it](how-you-use-it.md) | You want a short walkthrough of adapters, the CLI and a journey. |
 | [How it works](architecture.md) | You want the pieces, the `ls` / `do` path and the Core rules. |

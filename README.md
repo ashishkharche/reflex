@@ -47,16 +47,26 @@ You should see `RESULT PASS`.
 
 ## Set it up with your AI assistant
 
-Open your app’s repo in Grok Build, Grok Bot, Cursor, Claude Code, Codex or any coding assistant and paste this:
+Install the Reflex skills, then run `reflex-setup` in your app’s repo:
+
+| Assistant | Install | Run |
+| --- | --- | --- |
+| Claude Code | `/plugin marketplace add ashishkharche/reflex`, then `/plugin install reflex@ashishkharche-reflex` | `/reflex:reflex-setup` |
+| Grok Build | `grok plugin install ashishkharche/reflex --trust` | `/reflex-setup` |
+| Codex, Cursor and others | See [docs/assistants.md](docs/assistants.md) | `reflex-setup` |
+
+Ask for a dry run first to see the plan without any change. `reflex-add-screens` covers more screens and `reflex-run` reruns the tests.
+
+No skills? Paste this into Grok Bot or any coding assistant:
 
 ```text
 Set up or update Reflex in this app using https://github.com/ashishkharche/reflex.
 Keep Reflex in its own clone next to this repo, never inside it. If it’s already there, pull the latest and apply CHANGELOG.md.
-Follow docs/add-to-your-app.md, starting with my main screen. Only add new files. Ask me before any refactor, or if my iOS and Android apps are in separate repos.
+Follow docs/add-to-your-app.md, starting with my main screen. Only add new files and targets. Ask me before any refactor, or if my iOS and Android apps are in separate repos.
 Run the tests until they pass, then reply with only the five-part report from that guide.
 ```
 
-Reflex stays a separate folder next to your app. Your app only points at it by a relative path. Your phone targets never link it. To update later, paste the same prompt again.
+Reflex stays a separate folder next to your app. Your app only points at it by a relative path. Your phone targets never link it. To update later, run `reflex-setup` or paste the prompt again.
 
 ## More
 

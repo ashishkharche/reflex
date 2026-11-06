@@ -9,7 +9,7 @@ Step-by-step guide for adding Reflex to an existing iOS and Android app so a tes
 
 ## For AI assistants
 
-The README prompt is short on purpose. This section holds the full instructions behind it.
+The README prompt and the [Reflex skills](assistants.md) are short on purpose. This section holds the full instructions behind them.
 
 **Where Reflex lives**
 
@@ -31,11 +31,17 @@ The README prompt is short on purpose. This section holds the full instructions 
 
 **Rules**
 
-- Keep the app’s code and behaviour unchanged. Only add new files and targets.
+- Keep the app’s code and behaviour unchanged. Only add new files and targets. Registering a new target in an existing build file (`Package.swift`, `settings.gradle.kts`, an Xcode project) is part of adding it. List each such edit in the report.
+- Files Reflex added earlier (adapters, CLIs, `reflex.json`, journeys) may be updated to follow this guide or the CHANGELOG. Ask before editing any other existing file.
 - If a screen keeps its state in its views, ask before refactoring.
 - If iOS and Android are separate repos, ask where the other one is first.
 - Every adapter wraps the app’s real Core. Never copy its rules into the adapter or the CLI to get a test to pass.
 - Never hide a platform difference. Do not make one CLI copy the other platform’s value. Keep each platform’s real behaviour and mark the step with a `parity` id so the run shows `PARITY KNOWN`.
+
+**Dry run**
+
+- If the user asks for a dry run or a plan, change nothing: no clone, no writes, no installs, no builds. Reading is fine.
+- Name the platforms and the main screen, say what each step would add and report INCOMPLETE with the reason “dry run”.
 
 **Run**
 

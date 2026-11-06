@@ -1,0 +1,16 @@
+{
+  "name": "ashishkharche-reflex",
+  "owner": {
+    "name": "Ashish Kharche"
+  },
+  "metadata": {
+    "description": "Reflex skills for coding assistants"
+  },
+  "plugins": [
+    {
+      "name": "reflex",
+      "source": "./",
+      "description": "Skills to set up Reflex in an iOS and Android app, add screens and run its journeys."
+    }
+  ]
+}

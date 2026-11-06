@@ -98,7 +98,11 @@ Next to your app (for example `../reflex`), not inside it. A git submodule is op
 
 **How do I set it up or update with an AI assistant?**
 
-Paste the single prompt in the [README](../README.md). If no clone or submodule exists next to the repo, the assistant clones and sets up. If one exists, it pulls latest, reads `CHANGELOG.md` and applies changes. Both paths rebuild, run the runner and finish with the five-part report.
+Install the Reflex skills and run `reflex-setup` ([assistants.md](assistants.md)). Without skills, paste the single prompt in the [README](../README.md). If no clone or submodule exists next to the repo, the assistant clones and sets up. If one exists, it pulls latest, reads `CHANGELOG.md` and applies changes. Both paths rebuild, run the runner and finish with the five-part report.
+
+**Which assistants have Reflex skills?**
+
+Claude Code, Grok Build and Codex install the `reflex` plugin from this repo. Cursor reads `.cursor-plugin/` but was not tested. Any assistant that reads Agent Skills folders can use `skills/` directly. Commands and what was tested are in [assistants.md](assistants.md).
 
 **Why does the report say INCOMPLETE when the runner passed?**
 
