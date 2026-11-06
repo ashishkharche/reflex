@@ -4,12 +4,14 @@ Clone this repository and run the inventory sample on Swift and Kotlin. For addi
 
 ## Prerequisites
 
-- macOS (network guard uses `DYLD_INSERT_LIBRARIES`)
-- Xcode with Swift 6.0 or newer (`swift-tools-version: 6.0`)
+- macOS when you use the Swift (iOS) side or the network guard (`DYLD_INSERT_LIBRARIES`)
+- Xcode with Swift 6.0 or newer (`swift-tools-version: 6.0`) for Swift / iOS
 - JDK 17 or newer (Kotlin targets JVM 17)
 - Python 3
 - Git
 - Optional mobile hosts: iOS simulator SDK, XcodeGen, Android SDK platform 36 and build-tools 36.0.0
+
+Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin`. The network guard is skipped there. Windows works through WSL 2. Details: [faq.md](faq.md).
 
 Gradle downloads its pinned distribution on the first build. Behavior sessions cannot use the network.
 
