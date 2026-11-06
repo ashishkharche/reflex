@@ -44,6 +44,7 @@ The README prompt is short on purpose. This section holds the full instructions 
 **Report**
 
 - Reply with the five-part report in [What you get back](#what-you-get-back): Result, Needs your decision, What I added or changed, Where it is, Try it.
+- Put the whole report in one fenced `text` block with a heading per part and a blank line between parts. Follow the rules in that section and keep it under 20 lines.
 
 Layout used below: your app and a clone of this repo sit next to each other.
 
@@ -339,22 +340,40 @@ RESULT FAIL mode=xfail-tracked unexpected_failures=1 xfail=0 platforms=swift rep
 
 ## What you get back
 
-If you used the AI prompt from the README, the assistant ends with a five-part report:
+If you used the AI prompt from the README, the assistant ends with a five-part report. It follows these rules so it stays readable in a terminal:
 
-1. **Result:** the RESULT line.
-2. **Needs your decision:** anything you must choose, such as a refactor or a difference between iOS and Android. “None” if empty.
-3. **What I added or changed:** files and where they live, one line each.
-4. **Where it is:** branch, commit and whether it is pushed.
-5. **Try it:** the one command to rerun the tests.
+- The whole report sits in one fenced `text` block so the line breaks survive.
+- Each part starts with a short heading on its own line. A blank line separates the parts.
+- **Result:** the PASS or FAIL word plus the platforms, for example “PASS on swift and kotlin”. Not the full RESULT line.
+- **Needs your decision:** a numbered list with one decision per item. Each item is at most two short lines that say what differs and the options. “None” if empty.
+- **What I added** (or **What I changed** on an update): one bullet per file or folder.
+- **Where it is:** branch, commit and pushed or not, one line each.
+- **Try it:** the command alone on its own line.
+- Under 20 lines in total. No long sentences.
 
 Example:
 
 ```text
-Result: RESULT PASS platforms=swift,kotlin
-Needs your decision: Android starts on a different default item than iOS. I used the iOS value in both CLIs.
-What I added or changed: tests/reflex.json, tests/journeys/home.json, HomeNode (Swift, Kotlin), home-cli (Swift, Kotlin)
-Where it is: branch reflex/home, commit abc1234, not pushed
-Try it: python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
+Result
+PASS on swift and kotlin
+
+Needs your decision
+1. Home opens on a different default item on Android and iOS.
+   Pick one. Both CLIs use the iOS value for now.
+2. Home keeps its state in the views. The test uses a copy of its rules.
+   Say yes to move both screens onto the shared core.
+
+What I added
+- tests/reflex.json
+- tests/journeys/home.json
+- HomeCore, HomeNode, home-cli (Swift and Kotlin)
+
+Where it is
+Branch: reflex/home
+Commit: abc1234, not pushed
+
+Try it
+python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
 ```
 
 ## 9. Troubleshooting

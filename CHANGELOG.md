@@ -13,6 +13,7 @@ Docs only. No protocol change and no kit API change.
 - How-it-works diagrams in `assets/diagrams/`.
 - FAQ for environments, tech stacks, workflows and safety (`docs/faq.md`).
 - Shorter AI prompt in the README. The full instructions moved to a For AI assistants section in the setup guide.
+- The AI report is one text block with a heading per part, a numbered list of decisions and a new example, so it stays readable in a terminal.
 
 ## 1.0.0 (6 Nov 2026)
 
