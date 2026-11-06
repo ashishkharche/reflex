@@ -83,5 +83,21 @@ A file holds one journey (`name` and `steps`) or several under `journeys`. Top-l
 | `expect` | Partial JSON that must match the reply with strict types. |
 | `xfail` | Per platform finding id for this step. |
 | `parity` | Finding id that marks a known cross-platform byte or value diff. |
+| `before` | Precondition. Partial JSON that an `ls` reply must match before the step is sent. If it does not match, the step is not sent, the runner prints the last state and the journey stops. |
+| `before_within_ms` | How long `before` may poll `ls`. Default 0: one check. |
+| `eventually` | A step of its own that sends only `ls` until a reply matches this partial JSON or the deadline passes. It never re-sends an action. On failure it prints the poll count and the last state. |
+| `within_ms` | Deadline for `eventually`. Default 2000, at most 60000. |
+| `every_ms` | Wait between polls for `eventually` and `before`. Default 20, from 1 to 1000. |
+
+### Waiting for slow updates
+
+Send the action once, then wait with `eventually`:
+
+```json
+{"op": "advanceLater", "input": {"ms": 1000, "afterMs": 150}},
+{"eventually": {"node": {"state": {"items": [{"key": "a", "status": "sent"}]}}}, "within_ms": 3000}
+```
+
+Only the matching reply goes into the transcript and parity. On failure the last reply does. The number of polls never makes a run flaky. `--evidence` records `polls` for each polling step. Each poll still has the usual 6 second reply timeout. The warm journey may not poll.
 
 Adoption guide: [docs/add-to-your-app.md](../docs/add-to-your-app.md).

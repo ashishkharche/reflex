@@ -1,3 +1,4 @@
+import Foundation
 import OutboxCore
 import OutboxIntrospection
 import ReflexKit
@@ -34,7 +35,39 @@ let clock = FakeClock(now: 1_800_000_000_000)
 let network = FlakyNetwork()
 let transport: Transport = fixture == "http" ? LoopbackTripwire(network) : network
 let outbox = OutboxViewModel(clock: clock, transport: transport)
-let session = Session(sample: "outbox", root: { OutboxNode(vm: outbox) },
-                      ops: OutboxOps.make(vm: outbox, clock: clock, network: network),
-                      extras: { OutboxOps.server(network) })
-session.serveStandardIO()
+
+// One lock serialises every request and every background change, so a reply is never a torn state.
+let lock = NSLock()
+
+/// `advanceLater`: replies at once, then a background thread advances the fake clock after a real
+/// delay. Journeys use it to exercise `eventually`, which polls `ls` until the change lands.
+var ops = OutboxOps.make(vm: outbox, clock: clock, network: network)
+ops["advanceLater"] = Session.Op(input: Schema([.required("ms", .int64(min: 0, max: OutboxOps.maxAdvanceMs)),
+                                                .required("afterMs", .int64(min: 0, max: 5_000))])) { args in
+    let ms = args.int64("ms"), afterMs = args.int64("afterMs")
+    Thread.detachNewThread {
+        Thread.sleep(forTimeInterval: Double(afterMs) / 1000)
+        lock.lock()
+        clock.advance(by: ms, waking: outbox)
+        lock.unlock()
+    }
+}
+let session = Session(sample: "outbox", root: { OutboxNode(vm: outbox) }, ops: ops, extras: { OutboxOps.server(network) })
+
+// Same loop as Session.serveStandardIO, with each request handled under the lock.
+var framer = LineFramer()
+var buffer = [UInt8](repeating: 0, count: 65_536)
+func answer(_ line: [UInt8]) {
+    lock.lock()
+    let reply = session.handle(bytes: line).wire + "\n"
+    lock.unlock()
+    fputs(reply, stdout)
+    fflush(stdout)
+}
+while true {
+    let count = read(0, &buffer, buffer.count)
+    if count < 0 && errno == EINTR { continue }
+    if count <= 0 { break }
+    for line in framer.push(buffer[0..<count]) { answer(line) }
+}
+if let last = framer.finish() { answer(last) }

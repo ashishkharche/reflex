@@ -1,6 +1,13 @@
 package reflex.outbox
 
+import reflex.kit.Field
+import reflex.kit.FieldType
+import reflex.kit.LineFramer
+import reflex.kit.Schema
 import reflex.kit.Session
+import java.io.FileDescriptor
+import java.io.FileOutputStream
+import java.io.PrintStream
 import java.net.InetSocketAddress
 import java.net.Socket
 import kotlin.system.exitProcess
@@ -21,6 +28,36 @@ fun main(args: Array<String>) {
     val network = FlakyNetwork()
     val transport: Transport = if (fixture == "http") LoopbackTripwire(network) else network
     val outbox = OutboxViewModel(clock, transport)
-    Session("outbox", { OutboxNode(outbox) }, OutboxOps.make(outbox, clock, network), { OutboxOps.server(network) })
-        .serveStandardIO()
+    // One lock serialises every request and every background change, so a reply is never a torn state.
+    val lock = Any()
+    // `advanceLater`: replies at once, then a background thread advances the fake clock after a real
+    // delay. Journeys use it to exercise `eventually`, which polls `ls` until the change lands.
+    val advanceLater = Session.Op(Schema(Field.required("ms", FieldType.int64(min = 0, max = OutboxOps.MAX_ADVANCE_MS)),
+        Field.required("afterMs", FieldType.int64(min = 0, max = 5_000)))) { args ->
+        val ms = args.int64("ms")
+        val afterMs = args.int64("afterMs")
+        Thread {
+            Thread.sleep(afterMs)
+            synchronized(lock) { clock.advance(ms, outbox) }
+        }.apply { isDaemon = true }.start()
+    }
+    val ops = OutboxOps.make(outbox, clock, network) + ("advanceLater" to advanceLater)
+    val session = Session("outbox", { OutboxNode(outbox) }, ops, { OutboxOps.server(network) })
+
+    // Same loop as Session.serveStandardIO, with each request handled under the lock.
+    val out = PrintStream(FileOutputStream(FileDescriptor.out), false, Charsets.UTF_8)
+    val framer = LineFramer()
+    val buffer = ByteArray(65_536)
+    fun answer(line: ByteArray) {
+        val reply = synchronized(lock) { session.handle(line).wire }
+        out.print(reply + "\n")
+        out.flush()
+    }
+    while (true) {
+        val count = System.`in`.read(buffer)
+        if (count < 0) break
+        for (line in framer.push(buffer, count)) answer(line)
+    }
+    framer.finish()?.let { answer(it) }
+    out.flush()
 }

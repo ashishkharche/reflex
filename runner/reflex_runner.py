@@ -24,6 +24,10 @@ from pathlib import Path
 
 PROTOCOL = 1
 TIMEOUT_S = 6
+POLL_DEFAULT_MS = 2000
+POLL_MAX_MS = 60000
+POLL_EVERY_MS = 20
+LS_WIRE = '{"op":"ls"}'
 IGNORED_FOR_UNCHANGED = {"ok", "error", "protocol", "sample", "kit", "supported"}
 
 
@@ -216,6 +220,41 @@ def label(step):
     return "ls" if step.get("ls") else step.get("op", "?")
 
 
+def poll_settings(step, within_key):
+    """Deadline and interval for a polling check. Raises ValueError on a bad journey."""
+    within = step.get(within_key, POLL_DEFAULT_MS if within_key == "within_ms" else 0)
+    every = step.get("every_ms", POLL_EVERY_MS)
+    for name, value, low, high in ((within_key, within, 0, POLL_MAX_MS), ("every_ms", every, 1, 1000)):
+        if kind(value) != "integer" or not low <= value <= high:
+            raise ValueError(f"{name} must be an integer from {low} to {high}, got {dumps(value)}")
+    return within, every
+
+
+def poll(host, expected, every_response, within_ms, every_ms):
+    """Sends only `ls` until a reply matches `expected` or the deadline passes. Never re-sends an action.
+    Returns (line, dead, response, problem, polls, waited_ms). `problem` is None on a match."""
+    started = time.monotonic()
+    deadline = started + within_ms / 1000
+    polls = 0
+    while True:
+        [(line, dead)] = host.send((LS_WIRE + "\n").encode("utf-8"))
+        polls += 1
+        response, problem = None, dead
+        if line is not None and not dead:
+            try:
+                response = parse(line)
+            except ValueError as error:
+                problem = f"response is not JSON: {error}"
+            else:
+                problem = mismatch(response, expected) if isinstance(response, dict) else "response is not an object"
+                if not problem and every_response:
+                    problem = mismatch(response, every_response)
+        waited = round((time.monotonic() - started) * 1000)
+        if not problem or dead or time.monotonic() + every_ms / 1000 > deadline:
+            return line, dead, response, problem, polls, waited
+        time.sleep(every_ms / 1000)
+
+
 class Host:
     def __init__(self, manifest, target, fixture, guard):
         self.target = target
@@ -344,6 +383,7 @@ def run_journey(manifest, target, journey, guard, strict):
     records = []
     every = journey.get("everyResponse", manifest.every)
     previous = None
+    stopped = None
     steps = list(journey["steps"])
     if journey.get("handshake", True):
         steps.insert(0, {"send": {"op": "hello", "protocol": manifest.protocol},
@@ -351,6 +391,49 @@ def run_journey(manifest, target, journey, guard, strict):
     try:
         index = 0 if journey.get("handshake", True) else 1
         for step in steps:
+            if "before" in step:
+                record = {"step": f"{index}.before", "action": "before " + label(step), "wire": LS_WIRE, "raw": None,
+                          "dead": None, "resp": None, "parity": step.get("parity"), "problems": [],
+                          "xfail": (step.get("xfail") or {}).get(target)}
+                try:
+                    within, every_ms = poll_settings(step, "before_within_ms")
+                except ValueError as error:
+                    record["problems"].append(f"journey error: {error}")
+                    records.append(record)
+                    stopped = f"journey stopped at step {index}: bad precondition"
+                    break
+                line, dead, response, problem, polls, waited = poll(host, step["before"], every, within, every_ms)
+                record.update(raw=line, dead=dead, resp=response, polls=polls)
+                records.append(record)
+                if problem:
+                    record["problems"].append(f"precondition not met after {polls} ls poll(s) in {waited} ms: {problem}; "
+                                              f"step not sent; last state={brief(response) if response else dead}")
+                    stopped = f"journey stopped at step {index}: precondition not met"
+                    break
+                previous = response
+            if "eventually" in step:
+                record = {"step": index, "action": "eventually", "wire": LS_WIRE, "raw": None, "dead": None, "resp": None,
+                          "parity": step.get("parity"), "problems": [], "xfail": (step.get("xfail") or {}).get(target)}
+                try:
+                    clash = sorted(k for k in ("do", "op", "ls", "send", "raw", "bytes", "expect") if k in step)
+                    if clash:
+                        raise ValueError(f"an eventually step only polls ls; move {','.join(clash)} to its own step")
+                    within, every_ms = poll_settings(step, "within_ms")
+                except ValueError as error:
+                    record["problems"].append(f"journey error: {error}")
+                    records.append(record)
+                    index += 1
+                    continue
+                line, dead, response, problem, polls, waited = poll(host, step["eventually"], every, within, every_ms)
+                record.update(raw=line, dead=dead, resp=response, polls=polls)
+                if problem:
+                    record["problems"].append(f"eventually not met within {within} ms after {polls} ls poll(s), action not re-sent: "
+                                              f"{problem}; last state={brief(response) if response else dead}")
+                if response is not None:
+                    previous = response
+                records.append(record)
+                index += 1
+                continue
             wire = wire_for(step)
             wanted = expectations(step)
             replies = host.send(payload_for(step), len(wanted), step.get("close", False))
@@ -395,7 +478,7 @@ def run_journey(manifest, target, journey, guard, strict):
             index += 1
     finally:
         code, network, rest = host.close()
-    end = []
+    end = [stopped] if stopped else []
     if rest:
         lines = rest.split(b"\n")
         lines = lines[:-1] if lines[-1] == b"" else lines
@@ -433,6 +516,8 @@ def warm_p50(manifest, target, guard, path, samples):
         [(line, dead)] = host.send((dumps({"op": "hello", "protocol": manifest.protocol}) + "\n").encode("utf-8"))
         if dead or parse(line).get("ok") is not True:
             raise AssertionError(f"warm handshake failed platform={target} actual={line or dead}")
+        if any("eventually" in s or "before" in s for s in journey["steps"]):
+            raise AssertionError(f"warm journey {path} must not poll: remove eventually and before steps")
         payloads = [(payload_for(s), expectations(s)) for s in journey["steps"]]
 
         def once():
@@ -557,8 +642,10 @@ def main():
                     with open(folder / f"transcript-{manifest.sample}-{target}.ndjson", "w", encoding="utf-8") as handle:
                         for journey, records, code, network in run:
                             for r in records:
-                                handle.write(dumps({"journey": journey["id"], "step": r["step"], "sent": r["wire"],
-                                                    "received": r["raw"], "dead": r["dead"]}) + "\n")
+                                entry = {"journey": journey["id"], "step": r["step"], "sent": r["wire"], "received": r["raw"], "dead": r["dead"]}
+                                if "polls" in r:
+                                    entry["polls"] = r["polls"]
+                                handle.write(dumps(entry) + "\n")
                             handle.write(dumps({"journey": journey["id"], "exit": code, "network": network}) + "\n")
             else:
                 first = transcripts[target]

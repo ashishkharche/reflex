@@ -1,0 +1,35 @@
+{
+ "name": "eventually-timeout",
+ "note": "Offline, the message never sends. eventually must fail after its deadline, print the last state and send ls only.",
+ "steps": [
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": false
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "eventually": {
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "status": "sent"
+       }
+      ]
+     }
+    }
+   },
+   "within_ms": 300,
+   "every_ms": 50
+  }
+ ]
+}

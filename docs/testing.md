@@ -45,9 +45,11 @@ python3 runner/reflex_runner.py tests/inventory/reflex.json runner/red/xpass.jso
 python3 runner/reflex_runner.py tests/inventory/reflex.json runner/red/xfail.json --timings 0 --strict
 python3 runner/reflex_runner.py runner/red/parity-manifest.json --timings 0
 python3 runner/reflex_runner.py runner/red/bytes-manifest.json --timings 0
+python3 runner/reflex_runner.py samples/outbox/reflex.json runner/red/eventually-timeout.json --timings 0
+python3 runner/reflex_runner.py samples/outbox/reflex.json runner/red/precondition.json --timings 0
 ```
 
-Failure lines name platform, journey, step, action, the sent line and the first mismatching path.
+Failure lines name platform, journey, step, action, the sent line and the first mismatching path. A polling failure also prints the poll count and the last state it saw.
 
 ## Fixtures and timings
 

@@ -1,0 +1,131 @@
+{
+ "name": "eventually",
+ "note": "advanceLater replies at once and moves time on a background thread. eventually polls ls with a deadline and never re-sends the action.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "500"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800000001000,
+        "lastError": "http-500"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 1
+    }
+   }
+  },
+  {
+   "op": "advanceLater",
+   "input": {
+    "ms": 1000,
+    "afterMs": 150
+   },
+   "before": {
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "status": "retrying"
+       }
+      ]
+     }
+    }
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "now": 1800000000000,
+      "items": [
+       {
+        "key": "a",
+        "status": "retrying",
+        "attempts": 1
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 1
+    }
+   }
+  },
+  {
+   "eventually": {
+    "node": {
+     "state": {
+      "now": 1800000001000,
+      "items": [
+       {
+        "key": "a",
+        "status": "sent",
+        "attempts": 2,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 2,
+     "stored": [
+      "a"
+     ]
+    }
+   },
+   "within_ms": 3000
+  },
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "status": "sent",
+        "attempts": 2
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 2,
+     "stored": [
+      "a"
+     ],
+     "scripted": 0
+    }
+   }
+  }
+ ]
+}

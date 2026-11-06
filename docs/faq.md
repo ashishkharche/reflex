@@ -62,6 +62,10 @@ Works when you can read a serialisable snapshot and dispatch named actions. The 
 
 Inject clocks, transports and stores through the constructor. The outbox sample uses a `FakeClock` and an `advance` host op so journeys move time without sleeping (`samples/outbox`). Inventory uses named fixtures (`happy`, `save-failure`, `network`, …) selected by the CLI’s first argument. Do not call production endpoints from a behavior session.
 
+**What if state changes after the reply, on a background thread?**
+
+Use an `eventually` step. It polls `ls` up to a deadline without sending the action again and prints the last state if time runs out. A `before` key checks a precondition before a step is sent. Your host must handle requests and background changes under one lock. Example: `samples/outbox/journeys/17-eventually.json`. Details: [runner/README.md](../runner/README.md).
+
 **Kotlin Multiplatform**
 
 If iOS and Android share one Kotlin ViewModel, one JVM CLI is enough to test that logic. Add a Swift host only when you also keep a separate Swift Core you care about parity with.
