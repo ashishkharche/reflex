@@ -1,6 +1,6 @@
 # CLI hosts
 
-Build with `bash scripts/build.sh`. Every host speaks [protocol v1](protocol/v1.md) through ReflexKit’s `Session`.
+Build with `bash scripts/build.sh`. Each sample ships a small command-line host that talks to its Core. Every host speaks [protocol v1](protocol/v1.md) through ReflexKit’s `Session`.
 
 | sample | Swift executable | Kotlin entry point | fixtures |
 | --- | --- | --- | --- |

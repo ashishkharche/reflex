@@ -2,7 +2,7 @@
 
 Reference: https://shopify.engineering/reflex
 
-Core contains `InventoryApp`, `InventoryNavigator`, `InventoryListViewModel` and `InventoryDetailViewModel`. Swift uses a package that targets macOS and iOS. Kotlin uses a JVM module with no Android imports. Mobile and CLI depend on Core. Core does not import either host or ReflexKit.
+This sample shows a small inventory app whose business logic lives in a Core with no UI. The Core holds `InventoryApp`, `InventoryNavigator`, `InventoryListViewModel` and `InventoryDetailViewModel`. Swift uses a package that targets macOS and iOS. Kotlin uses a JVM module with no Android imports. Mobile and CLI depend on Core. Core does not import either host or ReflexKit.
 
 Each ViewModel has typed State, Action and private Message. `send` wraps an Action in a Message. `update` is the only state writer after construction. Save results return as internal Messages. `InventoryService` is supplied through constructors. The sample uses synchronous in-memory fixture services, not GraphQL or a production backend.
 
@@ -14,9 +14,9 @@ Quantity accepts JSON integer literals in the signed 64-bit range on both platfo
 
 The Mobile hosts read ViewModel state and call `send`. A small revision counter bridges the synchronous Core to SwiftUI and Compose rendering. The counter contains no business state. Input text is local presentation state. There is no live socket transport or async effect runtime in this sample.
 
-Behavior sessions load a macOS dynamic interposer before either native CLI starts. It denies Internet `connect`, `connectx` and `sendto` calls and records attempts. The runner refuses sessions without its ready marker and fails after an attempted request even when the service catches it. A constructor-supplied sticky guard catches unprovided HTTP at the service boundary too. This is a deterministic test guard, not a security boundary against malicious native code or direct syscalls. The process guard is macOS-only. Mobile release builds do not include it.
+Behavior sessions load a macOS network guard (a dynamic interposer) before either native CLI starts. It denies Internet `connect`, `connectx` and `sendto` calls and records attempts. The runner refuses sessions without its ready marker and fails after an attempted request even when the service catches it. A constructor-supplied sticky guard catches unprovided HTTP at the service boundary too. This is a deterministic test guard, not a security boundary against malicious native code or direct syscalls. The process guard is macOS-only. Mobile release builds do not include it.
 
-No Shopify library is imported. The shared artifacts are the journey files and the conformance fixture, not application code. ReflexKit is test infrastructure for introspection: both kits implement one documented contract and prove it on the same fixture.
+No Shopify library is imported. The shared artifacts are the journey files and the conformance fixture, not application code. ReflexKit is test infrastructure that describes each screen the same way on both platforms: both kits implement one documented contract and prove it on the same fixture.
 
 ## Outbox sample
 

@@ -1,6 +1,6 @@
 # Behavior tests
 
-Run the README Getting started path first. Journeys are JSON files that `runner/reflex_runner.py` sends to every platform CLI a manifest names. Python’s standard library supplies the runner and transport. No test framework or mock library is needed.
+Run the README Setup path first. A journey is a JSON file of `ls` and `do` steps. `runner/reflex_runner.py` sends each journey to every platform CLI a manifest names. Python’s standard library supplies the runner and transport. No test framework or mock library is needed.
 
 ```bash
 python3 runner/reflex_runner.py tests/inventory/reflex.json --platform both --repeat 3 --timings 20
@@ -18,7 +18,7 @@ python3 runner/reflex_runner.py samples/outbox/reflex.json --platform kotlin sam
 
 ## Conformance
 
-Both kits run `kit/conformance/strict-decoder.json` in their unit tests: decoder cases F-01 to F-07, G-1 exact keys, G-2 line framing, G-3 strict UTF-8, protocol cases and matcher cases. Stream cases send raw bytes and require exact reply bytes. The table step fails when any reply differs by one byte between Swift and Kotlin. The runner checks its own matcher against the same matcher cases on every run. `tests/inventory/journeys/05-wire.json` and `samples/outbox/journeys/15-wire.json` send the same raw bytes to the sample CLIs.
+Conformance is the shared kit fixture that both platforms must answer the same way. Both kits run `kit/conformance/strict-decoder.json` in their unit tests: decoder cases F-01 to F-07, G-1 exact keys, G-2 line framing, G-3 strict UTF-8, protocol cases and matcher cases. Stream cases send raw bytes and require exact reply bytes. The table step fails when any reply differs by one byte between Swift and Kotlin. The runner checks its own matcher against the same matcher cases on every run. `tests/inventory/journeys/05-wire.json` and `samples/outbox/journeys/15-wire.json` send the same raw bytes to the sample CLIs.
 
 ```bash
 REFLEX_CONFORMANCE_REPORT=/tmp/reflex-conformance swift test --package-path kit -j 2
@@ -44,7 +44,7 @@ These must exit 1. Failure output names the platform, journey, step, action, the
 
 Fixtures are passed in at construction: `FixtureInventoryService` for inventory and `FakeClock` plus `FlakyNetwork` for the outbox. Add fixture data there rather than patching a ViewModel during a test. Each repeat starts new native sessions and must reproduce the first transcript byte for byte. Warm timing samples reuse one session after one unmeasured full journey and include JSON transport plus assertions.
 
-The GitHub Actions workflow runs the same commands on macOS. The network guard is macOS only. On Linux the Kotlin journeys run and pass but the `GUARD` and `RESULT` lines say network isolation is not exercised. Linux needs a different guard, such as `LD_PRELOAD` or a network namespace. Mobile build checks do not claim pixel or device-journey coverage.
+The GitHub Actions workflow runs the same commands on macOS. The network guard (the process that blocks real Internet calls during a session) is macOS only. On Linux the Kotlin journeys run and pass but the `GUARD` and `RESULT` lines say network isolation is not exercised. Linux needs a different guard, such as `LD_PRELOAD` or a network namespace. Mobile build checks do not claim pixel or device-journey coverage.
 
 ## Mobile host UI
 
