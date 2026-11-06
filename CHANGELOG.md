@@ -7,6 +7,7 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 No protocol change and no kit API change.
 
 - Outbox sample: the adapter always lists Enqueue, PurgeSent, Retry, SetOnline and SyncNow. `update` decides validity and is the only state writer, including attempt counts. New journey `16-stable-actions.json`.
+- AI report: Result is PASS only when every adapter wraps the real Core and no platform difference is hidden. Otherwise it is FAIL, BLOCKED or INCOMPLETE with the reasons under Needs your decision. New example.
 
 - Shorter README with a plain-language intro, banner and AI setup prompt.
 - One AI prompt covers first setup and later updates and ends with a five-part report.

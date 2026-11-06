@@ -34,6 +34,8 @@ The README prompt is short on purpose. This section holds the full instructions 
 - Keep the app’s code and behaviour unchanged. Only add new files and targets.
 - If a screen keeps its state in its views, ask before refactoring.
 - If iOS and Android are separate repos, ask where the other one is first.
+- Every adapter wraps the app’s real Core. Never copy its rules into the adapter or the CLI to get a test to pass.
+- Never hide a platform difference. Do not make one CLI copy the other platform’s value. Keep each platform’s real behaviour and mark the step with a `parity` id so the run shows `PARITY KNOWN`.
 
 **Run**
 
@@ -44,6 +46,7 @@ The README prompt is short on purpose. This section holds the full instructions 
 **Report**
 
 - Reply with the five-part report in [What you get back](#what-you-get-back): Result, Needs your decision, What I added or changed, Where it is, Try it.
+- Result is PASS only when nothing is copied, skipped or hidden. Otherwise it is FAIL, BLOCKED or INCOMPLETE. See [Result words](#result-words).
 - Put the whole report in one fenced `text` block with a heading per part and a blank line between parts. Follow the rules in that section and keep it under 20 lines.
 
 Layout used below: your app and a clone of this repo sit next to each other.
@@ -346,29 +349,41 @@ If you used the AI prompt from the README, the assistant ends with a five-part r
 
 - The whole report sits in one fenced `text` block so the line breaks survive.
 - Each part starts with a short heading on its own line. A blank line separates the parts.
-- **Result:** the PASS or FAIL word plus the platforms, for example “PASS on swift and kotlin”. Not the full RESULT line.
-- **Needs your decision:** a numbered list with one decision per item. Each item is at most two short lines that say what differs and the options. “None” if empty.
+- **Result:** one result word plus the platforms, for example “PASS on swift and kotlin”. Not the full RESULT line.
+- **Needs your decision:** a numbered list with one decision per item. Each item is at most two short lines that say what differs and the options. “None” if empty. Every reason for BLOCKED or INCOMPLETE appears here.
 - **What I added** (or **What I changed** on an update): one bullet per file or folder.
 - **Where it is:** branch, commit and pushed or not, one line each.
 - **Try it:** the command alone on its own line.
 - Under 20 lines in total. No long sentences.
 
+### Result words
+
+Use the first word that applies.
+
+| Word | When |
+| --- | --- |
+| FAIL | The runner printed `RESULT FAIL` or stopped with an error. |
+| BLOCKED | You can’t finish without the user. For example a screen needs a refactor before an adapter can wrap its real Core. |
+| INCOMPLETE | The runner passed but something is not covered. An adapter wraps a copy of the rules, a platform the app has was not run, a step is marked `parity` or `xfail` or the guard was skipped. |
+| PASS | The runner printed `RESULT PASS`, every adapter wraps the real Core and no platform difference is marked or hidden. |
+
+A green runner line is not enough for PASS. A test that passes because an adapter copies the rules or because both CLIs use one platform’s value proves nothing about the app.
+
 Example:
 
 ```text
 Result
-PASS on swift and kotlin
+INCOMPLETE on swift and kotlin
 
 Needs your decision
-1. Home opens on a different default item on Android and iOS.
-   Pick one. Both CLIs use the iOS value for now.
-2. Home keeps its state in the views. The test uses a copy of its rules.
-   Say yes to move both screens onto the shared core.
+1. Home opens on Inbox on iOS and Today on Android.
+   The journey keeps both and marks it known. Pick one to fix.
+2. Search keeps its state in the views, so it has no test yet.
+   Say yes to move Search onto a shared Core.
 
 What I added
-- tests/reflex.json
-- tests/journeys/home.json
-- HomeCore, HomeNode, home-cli (Swift and Kotlin)
+- tests/reflex.json and tests/journeys/home.json
+- HomeNode and home-cli (Swift and Kotlin)
 
 Where it is
 Branch: reflex/home
