@@ -11,4 +11,4 @@ Read `TEST_PLAN.md` and `docs/architecture.md` before edits. Scope is inventory 
 7. Capture raw logs under `evidence/`. Run deliberate red paths and record exit codes.
 8. Recheck a fresh clone from README after command changes. Build Mobile hosts one at a time.
 
-Follow `docs/ux-writing.md`. No secrets or production inventory belong in fixtures.
+Follow `docs/project/ux-writing.md`. No secrets or production inventory belong in fixtures.

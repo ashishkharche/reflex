@@ -1,6 +1,8 @@
 # Reflex runner
 
-`reflex_runner.py` runs shared journey files against every platform CLI a manifest names. It uses only the Python standard library and speaks [protocol v1](../docs/protocol/v1.md).
+Reference client that runs shared journey files against every platform CLI a manifest names. Uses only the Python standard library. Speaks [protocol v1](../docs/protocol/v1.md).
+
+## Quick commands
 
 ```bash
 python3 runner/reflex_runner.py tests/inventory/reflex.json --platform both --repeat 3 --timings 20
@@ -8,7 +10,7 @@ python3 runner/reflex_runner.py samples/outbox/reflex.json --platform swift samp
 python3 runner/reflex_runner.py samples/outbox/reflex.json --strict --evidence /tmp/outbox-evidence
 ```
 
-| flag | effect |
+| Flag | Effect |
 | --- | --- |
 | `--platform` | One platform name, a comma list or `both` (every platform in the manifest). |
 | `--repeat N` | Runs the suite N times per platform. Every repeat must produce the same raw transcript as the first. |
@@ -60,7 +62,7 @@ A step or a journey may carry `"xfail": {"kotlin": "F-08"}`. A failing annotated
 
 A file holds one journey (`name` and `steps`) or several under `journeys`. Top-level keys other than `name`, `steps` and `journeys` are defaults for every journey in the file.
 
-| journey key | meaning |
+| Journey key | Meaning |
 | --- | --- |
 | `fixture` | Replaces `{fixture}` in the command. Default: the manifest’s `defaultFixture`. |
 | `handshake` | `false` skips the automatic `hello` so steps can test it. |
@@ -69,7 +71,7 @@ A file holds one journey (`name` and `steps`) or several under `journeys`. Top-l
 | `everyResponse` | Replaces the manifest’s per-response expectation. `null` turns it off. |
 | `xfail` | Per platform finding id for the whole journey. |
 
-| step key | meaning |
+| Step key | Meaning |
 | --- | --- |
 | `ls` | `true` sends `{"op":"ls"}`. |
 | `do` and `input` | Sends `{"op":"do","action":…,"input":…}`. |
@@ -78,14 +80,8 @@ A file holds one journey (`name` and `steps`) or several under `journeys`. Top-l
 | `raw` | Sends this exact line, for malformed JSON, duplicate keys or exponent literals. |
 | `bytes` | Sends these bytes, written in hex, exactly. No LF is added, so include `0a`. Use it for framing and invalid UTF-8. |
 | `replies` | Number of replies a `bytes` step produces. Default: the length of `expect` when it is a list, otherwise 1. `0` is allowed. |
-| `close` | `true` closes stdin after the step, for a last line with no LF. |
-| `expect` | Type-strict partial match on the response. A list holds one match per reply. Default `{"ok":true}`. |
-| `unchanged` | The response must equal the previous response apart from `ok` and `error`. |
-| `xfail` and `parity` | See above. |
-| `note` | Free text. |
+| `expect` | Partial JSON that must match the reply with strict types. |
+| `xfail` | Per platform finding id for this step. |
+| `parity` | Finding id that marks a known cross-platform byte or value diff. |
 
-The matcher follows ReflexKit’s `Expect`: expected object keys must be present, arrays match element by element with the same length and scalars need the same JSON kind. `true` is not `1`, `"90"` is not `90` and `90` is not `90.0`.
-
-## Red paths
-
-`runner/red/` holds journeys that must fail: `wrong-expect.json`, `xpass.json` and `parity-manifest.json` exit 1. `xfail.json` passes and fails under `--strict`.
+Adoption guide: [docs/add-to-your-app.md](../docs/add-to-your-app.md).
