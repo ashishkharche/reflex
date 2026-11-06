@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 NAMES = ["README.md", "TEST_PLAN.md", "AGENTS.md", "kit/README.md", "runner/README.md", "samples/outbox/README.md",
-         "docs/architecture.md", "docs/cli.md", "docs/testing.md", "docs/setup.md", "docs/use-cases.md",
+         "docs/architecture.md", "docs/cli.md", "docs/testing.md", "docs/setup.md", "docs/use-cases.md", "docs/how-you-use-it.md",
          "docs/protocol/README.md", "docs/protocol/v1.md", "docs/protocol/CHANGELOG.md"]
 for name in NAMES:
     text = (ROOT / name).read_text(encoding="utf-8")
