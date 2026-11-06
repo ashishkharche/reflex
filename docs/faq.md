@@ -92,6 +92,10 @@ Next to your app (for example `../reflex`), not inside it. A git submodule is op
 
 Paste the single prompt in the [README](../README.md). If no clone or submodule exists next to the repo, the assistant clones and sets up. If one exists, it pulls latest, reads `CHANGELOG.md` and applies changes. Both paths rebuild, run the runner and finish with the five-part report.
 
+**Why does the report say INCOMPLETE when the runner passed?**
+
+PASS means the tests drove your real Core on every platform with nothing hidden. If an adapter uses a copy of the rules, a platform was skipped, a difference is marked known or the guard did not run, the report says INCOMPLETE or BLOCKED and lists why under Needs your decision. See [Result words](add-to-your-app.md#result-words).
+
 **How do I update by hand?**
 
 `git -C ../reflex pull` (or update the submodule), read [CHANGELOG.md](../CHANGELOG.md), rebuild both CLIs and rerun the runner. Same steps as the “Updating Reflex” section in the setup guide.
