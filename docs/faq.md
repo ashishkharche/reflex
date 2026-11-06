@@ -132,4 +132,8 @@ On macOS the guard denies Internet `connect` / `connectx` / `sendto` and the run
 
 **What does the CLI expose?**
 
-Local stdin/stdout on your machine. There is no server socket in the runner or the kits. Anyone who can run the CLI already has local code execution on that checkout.
+Local stdin/stdout on your machine. Anyone who can run the CLI already has local code execution on that checkout.
+
+**Is there a server socket?**
+
+Only if you add one. The optional debug socket host (`ReflexSocketHost` in Swift, `kit/kotlin-socket` in Kotlin) listens on 127.0.0.1 inside a debug build, one client at a time. Any local process can drive it while it runs, so keep it out of release builds. It works with the sample CLIs today. It has not run inside a phone app yet and no check yet proves release builds exclude it. See [real-build.md](real-build.md).

@@ -15,6 +15,7 @@ import os
 import platform as host_platform
 import select
 import shutil
+import socket
 import statistics
 import subprocess
 import sys
@@ -348,6 +349,94 @@ class Host:
         return code, status, rest
 
 
+class SocketConn:
+    """A live host reached over a loopback socket (a debug build of an app). Same interface as Host.
+    State lives as long as the app, so exit codes and the network guard do not apply."""
+
+    def __init__(self, address):
+        name, port = address.rsplit(":", 1)
+        if name not in ("127.0.0.1", "localhost", "::1"):
+            raise ValueError(f"socket {address}: only loopback addresses are allowed")
+        self.sock = socket.create_connection((name, int(port)), timeout=TIMEOUT_S)
+        self.buffer = b""
+        self.dead = None
+        self.closed = False
+
+    def _read_line(self):
+        deadline = time.monotonic() + TIMEOUT_S
+        while b"\n" not in self.buffer:
+            left = deadline - time.monotonic()
+            ready, _, _ = select.select([self.sock], [], [], max(left, 0))
+            if not ready:
+                return None, False
+            chunk = self.sock.recv(65536)
+            if not chunk:
+                return None, True
+            self.buffer += chunk
+        line, self.buffer = self.buffer.split(b"\n", 1)
+        return line, True
+
+    def send(self, data, replies=1, close=False):
+        if self.dead:
+            return [(None, self.dead)] * replies
+        try:
+            self.sock.sendall(data)
+            if close:
+                self.sock.shutdown(socket.SHUT_WR)
+                self.closed = True
+        except OSError:
+            pass
+        out = []
+        for _ in range(replies):
+            raw, ready = self._read_line()
+            if raw is None:
+                self.dead = "socket closed" if ready else f"no response in {TIMEOUT_S}s"
+                out.append((None, self.dead))
+                continue
+            try:
+                out.append((raw.decode("utf-8"), None))
+            except UnicodeDecodeError:
+                out.append((raw.decode("utf-8", "backslashreplace"), "reply is not UTF-8"))
+        return out
+
+    def close(self):
+        rest = self.buffer
+        try:
+            if not self.closed:
+                self.sock.shutdown(socket.SHUT_WR)
+            self.sock.settimeout(0.3)
+            while True:
+                chunk = self.sock.recv(65536)
+                if not chunk:
+                    break
+                rest += chunk
+        except OSError:
+            pass
+        self.sock.close()
+        return "live", "live", rest
+
+
+def launch_live(manifest, target):
+    """Starts a socket platform’s optional `command` once and waits until its port accepts."""
+    entry = manifest.platforms[target]
+    proc = None
+    if "command" in entry:
+        proc = subprocess.Popen(manifest.command(target, manifest.default_fixture), stdin=subprocess.DEVNULL,
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    name, port = entry["socket"].rsplit(":", 1)
+    deadline = time.monotonic() + 20
+    while True:
+        try:
+            socket.create_connection((name, int(port)), timeout=1).close()
+            return proc
+        except OSError:
+            if time.monotonic() > deadline or (proc and proc.poll() is not None):
+                if proc:
+                    proc.kill()
+                raise RuntimeError(f"socket {entry['socket']} for platform {target} did not accept connections")
+            time.sleep(0.1)
+
+
 def build_guard(manifest):
     """Builds the guard for this OS. Returns (library, None) or (None, why it is unavailable)."""
     src = manifest.guard_source
@@ -396,7 +485,8 @@ def matcher_self_test(manifest):
 
 
 def run_journey(manifest, target, journey, guard, strict):
-    host = Host(manifest, target, journey["fixture"], guard)
+    live = "socket" in manifest.platforms[target]
+    host = SocketConn(manifest.platforms[target]["socket"]) if live else Host(manifest, target, journey["fixture"], guard)
     records = []
     every = journey.get("everyResponse", manifest.every)
     previous = None
@@ -500,6 +590,10 @@ def run_journey(manifest, target, journey, guard, strict):
         lines = rest.split(b"\n")
         lines = lines[:-1] if lines[-1] == b"" else lines
         end.append(f"unexpected output after the last expected reply: {len(lines)} line(s), first={lines[0][:120]!r}")
+    if live:
+        if journey.get("exit", 0) != 0 or journey.get("network", "clean") != "clean":
+            end.append("journey error: a socket platform cannot check exit or network")
+        return records, code, network, end
     want_exit = journey.get("exit", 0)
     if code != want_exit:
         end.append(f"expected exit={want_exit} actual exit={code}")
@@ -578,7 +672,10 @@ def main():
     out(f"HOST {host_platform.platform()} python={host_platform.python_version()} runner=reflex_runner protocol={manifest.protocol} "
         f"sample={manifest.sample} platforms={','.join(targets)} journeys={len(journeys)} files={len(paths)}")
     failures = 0
+    live_targets = [t for t in targets if "socket" in manifest.platforms[t]]
     for target in targets:
+        if target in live_targets and "command" not in manifest.platforms[target]:
+            continue
         executable = manifest.command(target, manifest.default_fixture)[0]
         if not os.access(executable, os.X_OK):
             out(f"RESULT FAIL platform={target} host binary not found: {os.path.relpath(executable, manifest.root)}. "
@@ -606,6 +703,18 @@ def main():
             out(f"GUARD SKIP {why}")
     if guard:
         guard_label = "canary-pass"
+    launched = []
+    for target in live_targets:
+        try:
+            launched.append(launch_live(manifest, target))
+        except RuntimeError as error:
+            out(f"RESULT FAIL {error}")
+            for proc in launched:
+                if proc:
+                    proc.kill()
+            sys.exit(2)
+        out(f"SOCKET platform={target} address={manifest.platforms[target]['socket']} live session: state carries across journeys, "
+            "exit codes and network isolation are NOT checked")
     unchecked = sorted({j["id"] for j in journeys if j.get("network", "clean") != "clean"}) if not guard else []
     for journey_id in unchecked:
         out(f"NETWORK UNCHECKED journey={journey_id} expects network={next(j for j in journeys if j['id'] == journey_id)['network']} "
@@ -624,7 +733,7 @@ def main():
                 cold[target].append((time.perf_counter() - began) * 1000)
                 end_status = classify(records, end, journey, target, args.strict)
                 run.append((journey, records, code, network))
-                if iteration:
+                if iteration and target not in live_targets:
                     continue
                 if target not in announced and records and records[0]["step"] == 0 and isinstance(records[0]["resp"], dict):
                     announced.add(target)
@@ -666,7 +775,7 @@ def main():
                                     entry["polls"] = r["polls"]
                                 handle.write(dumps(entry) + "\n")
                             handle.write(dumps({"journey": journey["id"], "exit": code, "network": network}) + "\n")
-            else:
+            elif target not in live_targets:
                 first = transcripts[target]
                 drift = [j["id"] for (j, a, c1, n1), (_, b, c2, n2) in zip(first, run)
                          if c1 != c2 or n1 != n2 or [x["raw"] for x in a] != [y["raw"] for y in b]]
@@ -728,6 +837,16 @@ def main():
                 f"n={len(times)} steps_per_journey={count} journey={manifest.warm} startup=excluded warmup=one-full-journey network={network}")
         for target in targets:
             out(f"COLD platform={target} per_journey_ms_p50={statistics.median(cold[target]):.1f} n={len(cold[target])} startup=included")
+    for proc in launched:
+        if proc:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+    if live_targets:
+        guard = None
+        guard_label = "live-socket"
     mode = "strict" if args.strict else "xfail-tracked"
     # An unguarded run never reports a plain PASS: it proves behaviour, not network isolation.
     word = "FAIL" if failures else ("PASS" if guard else "PASS-UNGUARDED")

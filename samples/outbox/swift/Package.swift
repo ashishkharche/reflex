@@ -8,6 +8,7 @@ let package = Package(name: "Outbox", platforms: [.macOS(.v13), .iOS(.v17)], pro
 ], targets: [
     .target(name: "OutboxCore"),
     .target(name: "OutboxIntrospection", dependencies: ["OutboxCore", .product(name: "ReflexKit", package: "kit")]),
-    .executableTarget(name: "OutboxCLI", dependencies: ["OutboxCore", "OutboxIntrospection", .product(name: "ReflexKit", package: "kit")]),
+    .executableTarget(name: "OutboxCLI", dependencies: ["OutboxCore", "OutboxIntrospection", .product(name: "ReflexKit", package: "kit"),
+                                                  .product(name: "ReflexSocketHost", package: "kit")]),
     .testTarget(name: "OutboxCoreTests", dependencies: ["OutboxCore", "OutboxIntrospection", .product(name: "ReflexKit", package: "kit")])
 ], swiftLanguageModes: [.v5])

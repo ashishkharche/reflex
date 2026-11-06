@@ -1,0 +1,40 @@
+{
+ "sample": "outbox",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "fake",
+ "note": "Debug socket host. Each platform starts one long-lived CLI with --listen and the runner connects over loopback. A phone build lists only socket.",
+ "platforms": {
+  "swift-live": {
+   "socket": "127.0.0.1:47811",
+   "command": [
+    "{root}/samples/outbox/swift/.build/debug/outbox-cli",
+    "fake",
+    "--listen",
+    "47811"
+   ]
+  },
+  "kotlin-live": {
+   "socket": "127.0.0.1:47812",
+   "command": [
+    "{java}",
+    "-Xmx96m",
+    "-cp",
+    "{root}/samples/outbox/kotlin/cli/build/install/cli/lib/*",
+    "reflex.outbox.MainKt",
+    "fake",
+    "--listen",
+    "47812"
+   ]
+  }
+ },
+ "journeys": [
+  "samples/outbox/live/*.json"
+ ],
+ "everyResponse": {
+  "node": {
+   "name": "Outbox"
+  }
+ }
+}
