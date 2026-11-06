@@ -48,7 +48,7 @@ All of the following must pass before inventory sample A is recommended:
 | 3 | Parity: the same journey pass/fail outcome on both platforms. |
 | 4 | Warm journey p50 < 1s (after a documented warm-up step; raw timings in the evidence pack). |
 | 5 | Failure messages name step action expected state and actual state. |
-| 6 | README and plan prose follow `docs/ux-writing.md` (plain facts curly apostrophes ’ no Oxford comma the banned-word rule end on a fact no AI wrap-ups). |
+| 6 | README and plan prose follow `docs/project/ux-writing.md` (plain facts curly apostrophes ’ no Oxford comma the banned-word rule end on a fact no AI wrap-ups). |
 | 7 | Fresh-clone README check: a clean clone succeeds by following only the README Setup commands (no tribal knowledge). Failure of that clone-and-follow path is a no-go. |
 
 A single miss is a no-go.

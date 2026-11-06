@@ -59,6 +59,6 @@ If a step fails, fix it and tell me what you changed.
 
 ## More
 
-[How you use it](docs/how-you-use-it.md) · [Add to your app](docs/add-to-your-app.md) · [Setup](docs/setup.md) · [How it works](docs/architecture.md) · [Writing tests](docs/testing.md)
+Full docs index: [docs/README.md](docs/README.md).
 
 MIT licence. Copyright (c) 2026 Ashish Kharche.

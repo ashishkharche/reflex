@@ -1,23 +1,66 @@
-# Inventory sample A
+# How it works
 
-Reference: https://shopify.engineering/reflex
+Architecture overview for people who want to see how a Core, adapter, CLI and runner fit together. Reference: https://shopify.engineering/reflex
 
-This sample shows a small inventory app whose business logic lives in a Core with no UI. The Core holds `InventoryApp`, `InventoryNavigator`, `InventoryListViewModel` and `InventoryDetailViewModel`. Swift uses a package that targets macOS and iOS. Kotlin uses a JVM module with no Android imports. Mobile and CLI depend on Core. Core does not import either host or ReflexKit.
+## Intro
 
-Each ViewModel has typed State, Action and private Message. `send` wraps an Action in a Message. `update` is the only state writer after construction. Save results return as internal Messages. `InventoryService` is supplied through constructors. The sample uses synchronous in-memory fixture services, not GraphQL or a production backend.
+Reflex keeps business logic in a UI-free [Core](glossary.md). A thin [adapter node](glossary.md) describes each screen. A [CLI](glossary.md) speaks [protocol v1](protocol/v1.md). The [runner](glossary.md) drives the same [journey](glossary.md) on Swift and Kotlin and fails when the answers differ.
 
-Navigation is Core state. The tree is app → navigator → list or detail. The CLI follows `child` until it reaches the leaf. The navigator lends `OpenProduct` and `goBack` on every screen. Opening from detail is a reducer no-op. A missing product ID is also a no-op. A leaf’s unavailable actions are rejected before dispatch.
+```mermaid
+flowchart LR
+  J[Journey file] --> R[Runner]
+  R --> S[Swift CLI]
+  R --> K[Kotlin CLI]
+  S --> AS[Adapter / ReflexKit]
+  K --> AK[Adapter / ReflexKit]
+  AS --> CS[Swift Core]
+  AK --> CK[Kotlin Core]
+```
 
-Swift’s `InventoryIntrospection` target and Kotlin’s `introspection` module hold adapter nodes built on ReflexKit. Nodes expose stable names, JSON state, actions and optional child links. Action maps are unconditional. Every action closure calls `send`. Optional error encoding and child selection serialize Core state without deciding business rules. Each action declares its input as a kit `Schema`. Input validation belongs to the kit’s strict decoder, not the reducer or node action map.
+## The pieces
 
-Quantity accepts JSON integer literals in the signed 64-bit range on both platforms. Fractions and exponents are rejected even when whole. The business range is 0 through 999999. Out-of-range business values expose a visible error without changing quantity. Decrement clamps at zero and remains listed. Save commits to fixture memory. Back refreshes the list and discards unsaved detail edits. Save failure leaves persisted stock unchanged.
+| Piece | What it is | Where it lives |
+| --- | --- | --- |
+| Core | Business logic, no UI, no ReflexKit | `swift/Sources/InventoryCore`, `kotlin/core`, `samples/outbox/*/core` |
+| ViewModel | Typed state + `send` / `update` for one screen | Inside each Core |
+| Adapter node | Name, JSON state, actions → `send` | `swift/Sources/InventoryIntrospection`, `kotlin/introspection`, outbox introspection modules |
+| ReflexKit | Strict decoder, `Node`, `Session` | `kit/` (Swift package and `kit/kotlin`) |
+| CLI | NDJSON host for one sample | `swift/Sources/InventoryCLI`, `kotlin/cli`, outbox CLIs |
+| Journey | Shared `ls` / `do` steps | `tests/inventory/journeys/`, `samples/outbox/journeys/` |
+| Runner | Parity + guard + `RESULT` | `runner/reflex_runner.py` |
+| Network guard | Denies Internet sockets in tests | `scripts/network_guard.c` |
 
-The Mobile hosts read ViewModel state and call `send`. A small revision counter bridges the synchronous Core to SwiftUI and Compose rendering. The counter contains no business state. Input text is local presentation state. There is no live socket transport or async effect runtime in this sample.
+## What happens on `ls` and `do`
 
-Behavior sessions load a macOS network guard (a dynamic interposer) before either native CLI starts. It denies Internet `connect`, `connectx` and `sendto` calls and records attempts. The runner refuses sessions without its ready marker and fails after an attempted request even when the service catches it. A constructor-supplied sticky guard catches unprovided HTTP at the service boundary too. This is a deterministic test guard, not a security boundary against malicious native code or direct syscalls. The process guard is macOS-only. Mobile release builds do not include it.
+1. The runner (or you) sends `{"op":"hello","protocol":1}` once per process.
+2. `ls` asks the focused [adapter node](glossary.md) for its name, state and actions.
+3. `do` names an action and optional JSON input. ReflexKit decodes the input with the action’s schema.
+4. The adapter calls `send` on the ViewModel. The Core updates state.
+5. The reply includes `ok` and the new `node` snapshot. Both platforms must match on a shared journey.
 
-No Shopify library is imported. The shared artifacts are the journey files and the conformance fixture, not application code. ReflexKit is test infrastructure that describes each screen the same way on both platforms: both kits implement one documented contract and prove it on the same fixture.
+## Rules the Core follows
 
-## Outbox sample
+- No UI framework imports in the Core.
+- No ReflexKit imports in the Core.
+- One `update` path writes state after construction.
+- Services and clocks arrive through constructors (fixtures in tests).
+- Navigation is Core state when the sample has more than one screen.
+- Adapters only serialize state and dispatch actions; they do not invent business rules.
 
-`OutboxViewModel` follows the same shape: typed State and Action, a private Message for delivery results and one `update`. It takes a `Clock` and a `Transport` at construction. The Core never reads the system clock and has no network code. The CLI owns the wake loop through `FakeClock.advance` and the `http` tripwire transport.
+## Network guard
+
+On macOS the runner loads `scripts/network_guard.c` through `DYLD_INSERT_LIBRARIES` before a behavior session. It denies Internet `connect`, `connectx` and `sendto` and records attempts. The runner fails a session that skips the ready marker or that attempts a request.
+
+This is a deterministic test aid. It is not a security boundary against malicious native code. It is macOS only. Off macOS the runner prints `guard=skipped-not-macos` and network isolation is not exercised. Mobile release builds do not include it.
+
+## The samples
+
+### Inventory
+
+A list and detail flow with quantity edits. Code lives under `swift/`, `kotlin/` and `tests/inventory/`. Sample rules: [samples/inventory/README.md](../samples/inventory/README.md).
+
+### Outbox
+
+An offline queue with backoff and idempotency keys. Code lives under `samples/outbox/`. Sample rules: [samples/outbox/README.md](../samples/outbox/README.md).
+
+No Shopify library is imported. Shared artifacts are journey files and the conformance fixture, not application code.

@@ -1,6 +1,6 @@
 # Outbox sample
 
-A standalone Reflex sample whose behaviour is hard to test on a device: an offline outbox that retries with exponential backoff and dedups by idempotency key. Swift and Kotlin each have a UI-free Core, an introspection adapter built on ReflexKit and a CLI. There is no mobile host.
+Standalone Reflex sample for an offline outbox with exponential backoff and idempotency-key dedup. There is no mobile host.
 
 ## Build and run
 
@@ -19,7 +19,7 @@ The Kotlin build reuses the wrapper in `kotlin/`. Both builds include the shared
 
 `OutboxViewModel` takes a `Clock` and a `Transport` at construction. Actions go in through `send` and one `update` owns every state write.
 
-| action | effect |
+| Action | Effect |
 | --- | --- |
 | `Enqueue(key, body)` | Queues a message due now. A key already in the queue is dropped and counted in `deduped`. Keys are 1 to 64 ASCII letters, digits, dots, dashes or underscores. Bodies hold at most 280 Unicode code points. |
 | `SyncNow` | Attempts every waiting message at once and ignores backoff. Offline it sets a visible error. |
@@ -32,9 +32,9 @@ Delivery results: `created` and `duplicate` (HTTP 409) mark a message sent with 
 
 ## Fixtures
 
-`FakeClock` starts at 1800000000000 ms (above 2^31) and `advance(by:waking:)` fires the timer at every wake time on the way, as a host scheduler would. `FlakyNetwork` sits in front of a fake server that stores each idempotency key once. Each delivery consumes one scripted outcome and an empty script means `ok`:
+`FakeClock` starts at 1800000000000 ms (above 2^31) and `advance(by:waking:)` fires the timer at every wake time on the way. `FlakyNetwork` sits in front of a fake server that stores each idempotency key once. Each delivery consumes one scripted outcome; an empty script means `ok`.
 
-| outcome | server | client sees |
+| Outcome | Server | Client sees |
 | --- | --- | --- |
 | `ok` | stores the key or already has it | `created` or `duplicate` |
 | `lost` | stores the key | `timeout` |

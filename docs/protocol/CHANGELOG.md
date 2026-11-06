@@ -1,5 +1,7 @@
 # Protocol changelog
 
+History of the Reflex NDJSON protocol text. Newest first.
+
 ## 1, clarified (6 Nov 2026, kit 1.0.1)
 
 Still protocol 1. These rules define behaviour the first text left open. Swift and Kotlin disagreed on each one. A client that sends LF-terminated strict UTF-8 lines sees no change. No error code was added.

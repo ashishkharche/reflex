@@ -1,9 +1,9 @@
 # Reflex NDJSON protocol
 
-The CLI hosts in this repository speak one versioned line protocol. ReflexKit implements it on Swift and Kotlin and the runner is its reference client.
+Versioned line protocol spoken by every CLI host in this repository. ReflexKit implements it on Swift and Kotlin. The runner is the reference client.
 
-| version | status | spec |
+| Version | Status | Spec |
 | --- | --- | --- |
 | 1 | current | [v1.md](v1.md) |
 
-Changes between versions are in [CHANGELOG.md](CHANGELOG.md). A host announces its version only in reply to `hello`.
+Changes: [CHANGELOG.md](CHANGELOG.md). A host announces its version only in reply to `hello`.

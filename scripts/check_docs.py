@@ -1,12 +1,30 @@
 #!/usr/bin/env python3
-"""Mechanical prose checks for the repository’s hand-written docs (docs/ux-writing.md)."""
+"""Mechanical prose checks for the repository’s hand-written docs (docs/project/ux-writing.md)."""
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-NAMES = ["README.md", "TEST_PLAN.md", "AGENTS.md", "kit/README.md", "runner/README.md", "samples/outbox/README.md",
-         "docs/architecture.md", "docs/cli.md", "docs/testing.md", "docs/setup.md", "docs/use-cases.md", "docs/how-you-use-it.md", "docs/add-to-your-app.md",
-         "docs/protocol/README.md", "docs/protocol/v1.md", "docs/protocol/CHANGELOG.md"]
+NAMES = [
+    "README.md",
+    "TEST_PLAN.md",
+    "AGENTS.md",
+    "kit/README.md",
+    "runner/README.md",
+    "samples/outbox/README.md",
+    "samples/inventory/README.md",
+    "docs/README.md",
+    "docs/architecture.md",
+    "docs/cli.md",
+    "docs/testing.md",
+    "docs/setup.md",
+    "docs/how-you-use-it.md",
+    "docs/add-to-your-app.md",
+    "docs/glossary.md",
+    "docs/protocol/README.md",
+    "docs/protocol/v1.md",
+    "docs/protocol/CHANGELOG.md",
+    "docs/project/brand.md",
+]
 for name in NAMES:
     text = (ROOT / name).read_text(encoding="utf-8")
     prose = re.sub(r"```.*?```", "", text, flags=re.S)

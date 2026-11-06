@@ -1,6 +1,16 @@
 # How you use it
 
-You want a test or an AI agent to check your app’s logic on iOS and Android without tapping through screens. The inventory sample shows the whole path.
+Walkthrough of adapters, the CLI and a shared journey using the inventory sample. For wiring your own app from zero, see [add-to-your-app.md](add-to-your-app.md).
+
+## When to use it
+
+- Test app logic with no UI by driving `ls` and `do` over [NDJSON](glossary.md).
+- Prove iOS and Android parity from one shared journey file.
+- Cover behaviour that is hard to test on a device (timers, backoff, offline outbox).
+- Run fast CI checks on the Core without a simulator or emulator.
+- Let an agent explore and assert state through the same protocol a human uses.
+
+The inventory sample shows the whole path below.
 
 ## Keep the ViewModel. Add a small adapter.
 
