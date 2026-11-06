@@ -4,6 +4,7 @@
 # iOS needs Xcode and XcodeGen. Android needs the Android SDK (ANDROID_HOME or ~/Library/Android/sdk).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+mkdir -p .build
 which=${1:-both}
 failures=0
 report() { # name, count in release, count in debug
