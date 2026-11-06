@@ -45,7 +45,7 @@ You should see `RESULT PASS`.
 
 ## Set it up with your AI assistant
 
-Open your app’s repo in Cursor, Claude Code, Codex or any coding assistant and paste this:
+Open your app’s repo in Grok Build, Grok Bot, Cursor, Claude Code, Codex or any coding assistant and paste this:
 
 ```text
 Add Reflex to this app using https://github.com/ashishkharche/reflex.
