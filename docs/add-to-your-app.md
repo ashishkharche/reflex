@@ -10,6 +10,17 @@ your-workspace/
   your-app/        # your project
 ```
 
+### If iOS and Android are separate repos
+
+```text
+your-workspace/
+  reflex/           # the kit
+  my-app-ios/       # its own repo, builds the Swift CLI
+  my-app-android/   # its own repo, builds the Kotlin CLI
+```
+
+Put `tests/reflex.json` and `tests/journeys/` in either repo or in a small third tests repo. Each platform command in the manifest points at its own repo with a relative path, for example `"../my-app-ios/.build/debug/your-cli"` and `"-cp", "../my-app-android/cli/build/install/cli/lib/*"`. Both CLIs must use the same node names, state keys and action names.
+
 ## 0. Prerequisites
 
 - macOS (the network guard needs `DYLD_INSERT_LIBRARIES`)
@@ -20,7 +31,7 @@ your-workspace/
 
 ## 1. Get the kit
 
-Clone this repo next to your app. You can also add it as a git submodule at `reflex/`.
+Clone Reflex next to your repo, not inside it. A git submodule is optional.
 
 ```bash
 cd your-workspace

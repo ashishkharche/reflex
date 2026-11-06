@@ -49,13 +49,17 @@ Open your app’s repo in Grok Build, Grok Bot, Cursor, Claude Code, Codex or an
 
 ```text
 Add Reflex to this app using https://github.com/ashishkharche/reflex.
-Follow docs/add-to-your-app.md in that repo step by step.
-Keep my app’s code and behaviour unchanged. Only add new files and targets.
-Start with my main screen’s ViewModel: add one adapter that lists its state and actions, plus a small Swift and Kotlin CLI.
+Clone that repo next to this repo, not inside it (for example ../reflex). Do not copy Reflex files into my repo.
+If my iOS and Android apps live in separate repos, ask me where the other one is before you start.
+Follow docs/add-to-your-app.md in the Reflex repo step by step.
+Keep my app’s code and behaviour unchanged. Only add new files and targets. If a screen keeps its state in the views, tell me before you refactor anything.
+Start with my main screen: add one adapter that lists its state and actions, plus a small Swift and Kotlin CLI.
 Write a reflex.json manifest and one journey for that screen.
 Run the runner with --platform both and show me the RESULT line.
 If a step fails, fix it and tell me what you changed.
 ```
+
+Reflex stays a separate folder next to your app. Your app only points at it by a relative path. Your phone targets never link it.
 
 ## More
 
