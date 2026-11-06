@@ -1,0 +1,21 @@
+```text
+Result
+INCOMPLETE on swift and kotlin
+
+Needs your decision
+1. Settings keeps dark mode in the view on iOS and in SettingsScreen on Android.
+   No ViewModel, so it was skipped. Say yes to move it onto a shared Core.
+2. Notes keeps "\nhello\n" on iOS and stores "hello" on Android.
+   The journey marks that step known. Pick one trim.
+
+What I added
+- Notes: NotesNode.swift, NotesNode.kt, tests/journeys/notes.json
+- counter-cli, Main.kt, tests/reflex.json (fixture selects the Notes node)
+
+Where it is
+Branch: main
+Commit: bab6d13, not pushed; Notes edits uncommitted
+
+Try it
+python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
+```

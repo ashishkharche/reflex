@@ -1,0 +1,18 @@
+```text
+Result
+INCOMPLETE on swift and kotlin
+
+Needs your decision
+1. Notes Add of "\nhello\n" stays "\nhello\n" on Swift and becomes "hello" on Kotlin.
+   Step 8 is marked parity notes-newline. Pick one trim rule, or leave the known difference.
+
+What I changed
+- None
+
+Where it is
+Branch: main
+Commit: bee3ac4, not pushed
+
+Try it
+python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
+```

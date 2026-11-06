@@ -28,11 +28,11 @@ No skills support? Paste the prompt from the [README](../README.md). It points a
 
 ## What was tested
 
-On 6 Nov 2026 with this repo’s skills and manifests:
+On 6 Nov 2026 with this repo’s skills and manifests. Nothing was cloned from GitHub for these tests.
 
 | Assistant | Version | Checked | Not checked |
 | --- | --- | --- | --- |
-| Grok Build | 1.0.69 | `grok plugin validate` passed. The install listed the 3 skills as `plugin: reflex`. A headless `/reflex-setup` dry run in a toy app only read files, changed nothing and ended with an INCOMPLETE report. | Install from GitHub before this commit was pushed |
+| Grok Build | 1.0.69 | `grok plugin validate` passed. Installed from a clean export of this repo, it listed the 3 skills as `plugin: reflex`. Headless sessions in a small toy app ran all 3 skills end to end: first setup, add the whole app, rerun and an update from a local upstream with a new CHANGELOG entry. Each ended with a five-part report that matched the runner. A dry run changed nothing. | Install from GitHub, an interactive session |
 | Claude Code | 2.1.319 | `claude plugin validate` passed with one warning: no listing icon. Marketplace add, install and `plugin details` showed the 3 skills. | A session, which needs a sign-in |
 | Codex | 0.167.0 | `codex plugin marketplace add` read `.claude-plugin/marketplace.json`. `codex plugin add` installed the 3 skills. | A session, which needs a sign-in |
 | Cursor | none | Both manifests pass Cursor’s published JSON schemas. | Cursor was not installed |
