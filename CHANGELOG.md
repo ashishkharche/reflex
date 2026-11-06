@@ -12,6 +12,7 @@ Docs only. No protocol change and no kit API change.
 - Docs reorganised into an index, a glossary and `docs/project/`.
 - How-it-works diagrams in `assets/diagrams/`.
 - FAQ for environments, tech stacks, workflows and safety (`docs/faq.md`).
+- Shorter AI prompt in the README. The full instructions moved to a For AI assistants section in the setup guide.
 
 ## 1.0.0 (6 Nov 2026)
 

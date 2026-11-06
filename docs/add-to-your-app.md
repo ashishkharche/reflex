@@ -7,6 +7,44 @@ Step-by-step guide for adding Reflex to an existing iOS and Android app so a tes
   <img src="../assets/diagrams/04-assistant-setup-light.svg" alt="Paste the README prompt into an assistant and it sets Reflex up step by step" width="100%">
 </picture>
 
+## For AI assistants
+
+The README prompt is short on purpose. This section holds the full instructions behind it.
+
+**Where Reflex lives**
+
+- Its own clone next to the app repo, for example `../reflex`. A git submodule also works.
+- Never copy Reflex files into the app repo.
+
+**First setup**
+
+- Start with the main screen.
+- Add one adapter that lists its state and actions.
+- Add one small CLI per platform the app has: Swift and Kotlin when both exist.
+- Write a `reflex.json` manifest and one journey for that screen.
+
+**Update**
+
+- Pull the latest main. With a submodule, update the submodule instead.
+- Read [CHANGELOG.md](../CHANGELOG.md) for changes since the app’s version.
+- Apply them to the adapters, the CLIs and `reflex.json`.
+
+**Rules**
+
+- Keep the app’s code and behaviour unchanged. Only add new files and targets.
+- If a screen keeps its state in its views, ask before refactoring.
+- If iOS and Android are separate repos, ask where the other one is first.
+
+**Run**
+
+- Rebuild the CLIs.
+- Run the runner with `--platform both`. If the app has one platform, pass just that one.
+- Fix any failure and rerun.
+
+**Report**
+
+- Reply with the five-part report in [What you get back](#what-you-get-back): Result, Needs your decision, What I added or changed, Where it is, Try it.
+
 Layout used below: your app and a clone of this repo sit next to each other.
 
 ```text
