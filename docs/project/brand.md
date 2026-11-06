@@ -21,8 +21,8 @@ At 16 px and 32 px the mark uses a simplified solid diamond (same silhouette as 
 | `assets/brand/icon-{light,dark}-{16,32,64,128,256,512}.png` | Size ladder (16/32 solid) |
 | `assets/brand/lockup-light.svg` · `lockup-dark.svg` | Mark + outlined “Reflex” |
 | `assets/brand/lockup-light.png` · `lockup-dark.png` | Lockup PNG |
-| `assets/brand/readme-banner-light.png` · `readme-banner-dark.png` | README hero 1600×480 (+ SVG) |
-| `assets/brand/social-preview.png` | GitHub social 1280×640 (dark) |
+| `assets/brand/readme-banner-light.png` · `readme-banner-dark.png` | README hero 1600×560 (+ SVG), direction B |
+| `assets/brand/social-preview.png` | GitHub social 1280×640 (dark), matching B |
 | `assets/brand/icons/favicon.ico` | 16 / 32 / 48 ICO |
 | `assets/brand/icons/favicon-16.png` · `favicon-32.png` | Solid diamond favicons |
 | `assets/brand/icons/favicon.svg` | Vector favicon |
@@ -39,6 +39,8 @@ At 16 px and 32 px the mark uses a simplified solid diamond (same silhouette as 
 | Cloud | `#e6edf3` | Mark and wordmark on dark |
 | Muted light | `#57606a` | Tagline on light |
 | Muted dark | `#8b949e` | Tagline on dark |
+| Dot light | `#afb8c1` | Soft field on light banners |
+| Dot dark | `#484f58` | Soft field on dark banners |
 | Surface light | `#ffffff` | GitHub light |
 | Surface dark | `#0d1117` | GitHub dark |
 
@@ -52,11 +54,13 @@ At 16 px and 32 px the mark uses a simplified solid diamond (same silhouette as 
 
 Wordmarks are hand-kerned title-case “Reflex”, outlined as SVG paths. There is no underline under the x.
 
-README banners and the social preview show only the mark, the wordmark and this tagline:
+## Banners
 
-> Ask the app what’s on screen. Tell it what to do. Same answers on iOS and Android.
+README banners and the social preview use a centred stack: Prism A mark, then the wordmark, then one tagline line:
 
-They do not show `ls`, `do` or other diagram labels.
+> Test your iOS and Android app logic without a screen.
+
+A soft fading dot field sits behind the stack and falls to nothing well before the edges. Quiet depth only. They do not show `ls`, `do` or other diagram labels.
 
 Full OFL texts live next to the font files in `assets/brand/fonts/`.
 
@@ -67,7 +71,8 @@ Keep clear space around the mark of at least the diamond’s half-width on every
 Minimum sizes:
 - Mark alone: 16 px (solid diamond form)
 - Lockup: 24 px mark height
-- README banner: use the shipped 1600×480 assets
+- README banner: use the shipped 1600×560 assets
+- Social preview: use the shipped 1280×640 asset (content stays inside ≥80 px margins)
 
 ## Do
 
