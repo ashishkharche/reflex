@@ -1,0 +1,5 @@
+HOST Linux-6.12.113+-x86_64-with-glibc2.41 python=3.13.5 runner=reflex_runner protocol=1 sample=outbox platforms=kotlin journeys=17 files=17
+MATCHER PASS cases=19 source=kit/conformance/strict-decoder.json
+GUARD FAIL backend=LD_PRELOAD canary=python-connect-192.0.2.1 audit='READY' canary_out='ERR None'
+RESULT FAIL guard canary did not prove denial
+exit=2

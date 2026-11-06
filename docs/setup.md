@@ -11,7 +11,7 @@ Clone this repository and run the inventory sample on Swift and Kotlin. For addi
 - Git
 - Optional mobile hosts: iOS simulator SDK, XcodeGen, Android SDK platform 36 and build-tools 36.0.0
 
-Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin`. The network guard is skipped there. Windows works through WSL 2. Details: [faq.md](faq.md).
+Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin`. The network guard runs there through `LD_PRELOAD` when a C compiler is installed. Windows works through WSL 2. Details: [faq.md](faq.md).
 
 Gradle downloads its pinned distribution on the first build. Behavior sessions cannot use the network.
 
@@ -48,7 +48,7 @@ Expect `ConformanceTest` lines marked `PASSED` and `BUILD SUCCESSFUL`.
 python3 runner/reflex_runner.py tests/inventory/reflex.json --platform both
 ```
 
-Expect `RESULT PASS`. Off macOS the line includes `guard=skipped-not-macos`.
+Expect `RESULT PASS`. Without the network guard the runner prints `RESULT PASS-UNGUARDED` and exits 3. See [faq.md](faq.md).
 
 ## Explore by hand
 

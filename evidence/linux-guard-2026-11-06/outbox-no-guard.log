@@ -1,0 +1,26 @@
+HOST Linux-6.12.113+-x86_64-with-glibc2.41 python=3.13.5 runner=reflex_runner protocol=1 sample=outbox platforms=kotlin journeys=17 files=17
+MATCHER PASS cases=19 source=kit/conformance/strict-decoder.json
+GUARD SKIP --no-guard: network isolation NOT exercised
+NETWORK UNCHECKED journey=samples/outbox/journeys/14-tripwire.json#tripwire expects network=denied but the run is unguarded, so this expectation is not tested
+HANDSHAKE platform=kotlin protocol=1 sample=outbox kit=1.0.1
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/01-happy.json#happy steps=6 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/02-backoff.json#backoff steps=9 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/03-give-up.json#give-up steps=8 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/04-lost-reply.json#lost-reply steps=5 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/05-conflict.json#conflict steps=4 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/06-dedup.json#dedup steps=8 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/07-offline.json#offline steps=15 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/08-rejected.json#rejected steps=7 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/09-order.json#order steps=7 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/10-sync-now.json#sync-now steps=6 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/11-validation.json#validation steps=8 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/12-rejects.json#rejects steps=28 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/13-int64-time.json#int64-time steps=5 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/14-tripwire.json#tripwire steps=3 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/15-wire.json#wire steps=18 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/16-stable-actions.json#stable-actions steps=13 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=samples/outbox/journeys/17-eventually.json#eventually steps=8 exit=0 network=unguarded
+SUITE platform=kotlin repeat=1/1 journeys=17 steps=158 wall_s=2.26
+RESULT PASS-UNGUARDED mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=kotlin repeat=1 sample=outbox guard=skipped-no-guard network_isolation=NOT-exercised network_unchecked=1
+NOTE exit 3: the run was not guarded. Pass --allow-unguarded to accept that and exit 0.
+exit=3

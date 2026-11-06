@@ -4,8 +4,8 @@
 Runs shared journey files against N platform CLIs over NDJSON protocol v1, checks each step
 with a type-strict partial matcher, compares every reply across platforms step by step as raw
 bytes and as parsed JSON, tracks xfail annotations (XPASS fails the run), repeats suites for
-determinism, measures warm p50 and runs every host under the macOS DYLD network guard after a
-canary proves denial. Steps may send raw bytes, so framing and UTF-8 rules are exercised too.
+determinism, measures warm p50 and runs every host under the network guard (DYLD on macOS,
+LD_PRELOAD on Linux) after a canary proves denial. A run without the guard never prints a plain PASS. Steps may send raw bytes, so framing and UTF-8 rules are exercised too.
 Manifest and journey formats: runner/README.md. Protocol: docs/protocol/v1.md.
 """
 import argparse
@@ -28,6 +28,8 @@ POLL_DEFAULT_MS = 2000
 POLL_MAX_MS = 60000
 POLL_EVERY_MS = 20
 LS_WIRE = '{"op":"ls"}'
+GUARD_ENV = "DYLD_INSERT_LIBRARIES" if sys.platform == "darwin" else "LD_PRELOAD"
+EXIT_UNGUARDED = 3
 IGNORED_FOR_UNCHANGED = {"ok", "error", "protocol", "sample", "kit", "supported"}
 
 
@@ -264,7 +266,7 @@ class Host:
             handle = tempfile.NamedTemporaryFile(prefix="reflex-net-", delete=False)
             handle.close()
             self.audit = handle.name
-            env.update(DYLD_INSERT_LIBRARIES=str(guard), REFLEX_NETWORK_LOG=self.audit)
+            env.update({GUARD_ENV: str(guard), "REFLEX_NETWORK_LOG": self.audit})
         self.stderr = tempfile.TemporaryFile()
         self.proc = subprocess.Popen(manifest.command(target, fixture), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                      stderr=self.stderr, env=env, bufsize=0)
@@ -347,12 +349,26 @@ class Host:
 
 
 def build_guard(manifest):
-    if sys.platform != "darwin":
-        return None, "not macOS: the DYLD guard is macOS only, network isolation is NOT exercised"
-    lib, src = manifest.guard_library, manifest.guard_source
+    """Builds the guard for this OS. Returns (library, None) or (None, why it is unavailable)."""
+    src = manifest.guard_source
+    if sys.platform == "darwin":
+        lib = manifest.guard_library
+        build = ["clang", "-dynamiclib", "-O2", "-Wall", "-Werror", str(src), "-o", str(lib)]
+    elif sys.platform.startswith("linux"):
+        lib = manifest.guard_library.with_suffix(".so")
+        compiler = shutil.which("cc") or shutil.which("gcc") or shutil.which("clang")
+        if not compiler and not (lib.exists() and lib.stat().st_mtime >= src.stat().st_mtime):
+            return None, "linux: no C compiler to build the LD_PRELOAD guard, network isolation is NOT exercised"
+        build = [compiler or "cc", "-shared", "-fPIC", "-O2", "-Wall", "-Werror", str(src), "-o", str(lib), "-ldl"]
+    else:
+        return None, f"{sys.platform}: no network guard for this OS, network isolation is NOT exercised"
     if not lib.exists() or lib.stat().st_mtime < src.stat().st_mtime:
         lib.parent.mkdir(parents=True, exist_ok=True)
-        subprocess.run(["clang", "-dynamiclib", "-O2", "-Wall", "-Werror", str(src), "-o", str(lib)], check=True)
+        result = subprocess.run(build, capture_output=True, text=True)
+        if result.returncode != 0:
+            if sys.platform == "darwin":
+                raise subprocess.CalledProcessError(result.returncode, build, result.stdout, result.stderr)
+            return None, f"guard did not build: {result.stderr.strip()[:200]!r}, network isolation is NOT exercised"
     return lib, None
 
 
@@ -360,7 +376,8 @@ def guard_canary(guard):
     """Positive control: a non-SIP Python under the guard must be denied an Internet connect."""
     handle = tempfile.NamedTemporaryFile(prefix="reflex-canary-", delete=False)
     handle.close()
-    env = dict(os.environ, DYLD_INSERT_LIBRARIES=str(guard), REFLEX_NETWORK_LOG=handle.name)
+    env = dict(os.environ, REFLEX_NETWORK_LOG=handle.name)
+    env[GUARD_ENV] = str(guard)
     code = ("import socket\ns=socket.socket()\ns.settimeout(2)\ntry:\n s.connect(('192.0.2.1',443));print('CONNECTED')\n"
             "except OSError as e:\n print('ERR',e.errno)")
     out = subprocess.run([os.path.realpath(sys.executable), "-c", code], env=env, capture_output=True, text=True, timeout=10)
@@ -544,6 +561,8 @@ def main():
     parser.add_argument("--timings", type=int, default=20, help="measured warm runs (0 skips)")
     parser.add_argument("--strict", action="store_true", help="ignore xfail annotations: every finding fails")
     parser.add_argument("--no-guard", action="store_true", help="run unguarded (network isolation NOT exercised)")
+    parser.add_argument("--allow-unguarded", action="store_true",
+                        help=f"exit 0 on PASS-UNGUARDED instead of {EXIT_UNGUARDED} (network isolation NOT exercised)")
     parser.add_argument("--evidence", help="directory for raw NDJSON transcripts")
     args = parser.parse_args()
 
@@ -578,12 +597,12 @@ def main():
         guard, why = build_guard(manifest)
         if guard:
             ok, audit, canary = guard_canary(guard)
-            out(f"GUARD {'PASS' if ok else 'FAIL'} canary=python-connect-192.0.2.1 audit={audit!r} canary_out={canary!r}")
+            out(f"GUARD {'PASS' if ok else 'FAIL'} backend={GUARD_ENV} canary=python-connect-192.0.2.1 audit={audit!r} canary_out={canary!r}")
             if not ok:
                 out("RESULT FAIL guard canary did not prove denial")
                 sys.exit(2)
         else:
-            guard_label = "skipped-not-macos"
+            guard_label = "skipped-unavailable"
             out(f"GUARD SKIP {why}")
     if guard:
         guard_label = "canary-pass"
@@ -710,9 +729,14 @@ def main():
         for target in targets:
             out(f"COLD platform={target} per_journey_ms_p50={statistics.median(cold[target]):.1f} n={len(cold[target])} startup=included")
     mode = "strict" if args.strict else "xfail-tracked"
-    out(f"RESULT {'PASS' if failures == 0 else 'FAIL'} mode={mode} unexpected_failures={failures} xfail={xfails} "
+    # An unguarded run never reports a plain PASS: it proves behaviour, not network isolation.
+    word = "FAIL" if failures else ("PASS" if guard else "PASS-UNGUARDED")
+    out(f"RESULT {word} mode={mode} unexpected_failures={failures} xfail={xfails} "
         f"platforms={','.join(targets)} repeat={args.repeat} sample={manifest.sample} guard={guard_label}"
         + ("" if guard else f" network_isolation=NOT-exercised network_unchecked={len(unchecked)}"))
+    if word == "PASS-UNGUARDED" and not args.allow_unguarded:
+        out(f"NOTE exit {EXIT_UNGUARDED}: the run was not guarded. Pass --allow-unguarded to accept that and exit 0.")
+        sys.exit(EXIT_UNGUARDED)
     sys.exit(0 if failures == 0 else 1)
 
 

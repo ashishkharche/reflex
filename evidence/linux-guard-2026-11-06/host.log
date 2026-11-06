@@ -1,0 +1,6 @@
+HOST Linux-6.12.113+-x86_64-with-glibc2.41 python 3.13.5
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+ldd (Debian GLIBC 2.41-12+deb13u4) 2.41
+openjdk version "21.0.13" 2026-10-20 LTS
+OpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)
+cc (Debian 14.2.0-19) 14.2.0

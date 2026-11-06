@@ -57,6 +57,6 @@ Pass fixtures in at construction (`FixtureInventoryService`, `FakeClock`, `Flaky
 
 ## Network guard and Linux
 
-The [network guard](glossary.md) is macOS only. On Linux, Kotlin journeys can pass while `GUARD` / `RESULT` say network isolation is not exercised. Mobile UI YAML under `tests/mobile/` does not claim pixel coverage.
+The [network guard](glossary.md) runs on macOS (`DYLD_INSERT_LIBRARIES`) and Linux (`LD_PRELOAD`, needs a C compiler). Anywhere else and with `--no-guard` a clean run prints `RESULT PASS-UNGUARDED` and exits 3. `--allow-unguarded` makes it exit 0. The result word stays the same. Mobile UI YAML under `tests/mobile/` does not claim pixel coverage.
 
 Full runner flags: [runner/README.md](../runner/README.md).
