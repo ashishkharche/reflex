@@ -1,0 +1,20 @@
+[0/1] Planning build
+Building for debugging...
+[0/2] Write swift-version-69A768CDF2A0BEE1.txt
+Build complete! (0.21s)
+Test Suite 'Selected tests' started at 2026-11-06 2:05:42.772 am.
+Test Suite 'ReflexKitPackageTests.xctest' started at 2026-11-06 2:05:42.775 am.
+Test Suite 'ConformanceTests' started at 2026-11-06 2:05:42.775 am.
+Test Case '-[ReflexKitTests.ConformanceTests testSharedConformanceFixture]' started.
+Test Case '-[ReflexKitTests.ConformanceTests testSharedConformanceFixture]' passed (0.061 seconds).
+Test Suite 'ConformanceTests' passed at 2026-11-06 2:05:42.836 am.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.061 (0.061) seconds
+Test Suite 'ReflexKitPackageTests.xctest' passed at 2026-11-06 2:05:42.836 am.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.061 (0.061) seconds
+Test Suite 'Selected tests' passed at 2026-11-06 2:05:42.836 am.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.061 (0.064) seconds
+CONFORMANCE platform=swift cases=161 passed=161
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

@@ -1,0 +1,10 @@
+.DS_Store
+.build/
+.gradle/
+build/
+local.properties
+*.xcodeproj/
+DerivedData/
+__pycache__/
+
+.kotlin/

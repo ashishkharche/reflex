@@ -1,0 +1,160 @@
+{
+ "name": "wire",
+ "note": "Raw byte steps for protocol v1 framing, exact keys and strict UTF-8 (G-1 to G-3). PARITY also requires byte-identical replies.",
+ "steps": [
+  {
+   "bytes": "7b226f70223a226c73227d0d0a",
+   "expect": {
+    "ok": true
+   },
+   "note": "G-2: CRLF. The CR is JSON whitespace."
+  },
+  {
+   "bytes": "7b226f70223a226c73227d0d7b226f70223a226c73227d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.malformed",
+     "path": "$"
+    }
+   },
+   "note": "G-2: LF is the only terminator, so a lone CR leaves two objects on one line."
+  },
+  {
+   "bytes": "0d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.malformed",
+     "path": "$"
+    }
+   },
+   "note": "G-2: a line holding only CR."
+  },
+  {
+   "bytes": "7b226f70223a226c73227d0a0a7b226f70223a226c73227d0a",
+   "expect": [
+    {
+     "ok": true
+    },
+    {
+     "ok": false,
+     "error": {
+      "code": "json.malformed",
+      "path": "$"
+     }
+    },
+    {
+     "ok": true
+    }
+   ],
+   "note": "G-2: a blank line gets its own json.malformed reply."
+  },
+  {
+   "bytes": "7b226f70223a226c73222c225c7530306539223a312c22655c7530333031223a327d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.unknown",
+     "path": "$.e\u0301"
+    }
+   },
+   "note": "G-1: U+00E9 and e U+0301 are two keys. No normalisation."
+  },
+  {
+   "bytes": "7b226f70223a226c73222c22c3a9223a312c2265cc81223a327d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.unknown",
+     "path": "$.e\u0301"
+    }
+   },
+   "note": "G-1: the same keys as raw UTF-8."
+  },
+  {
+   "bytes": "7b226f70223a226c73222c224b223a312c225c7532313261223a327d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.unknown",
+     "path": "$.K"
+    }
+   },
+   "note": "G-1: KELVIN SIGN is not K."
+  },
+  {
+   "bytes": "7b226f70223a226c73222c2278223a2261ff62e28263eda08064227d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.malformed",
+     "path": "$"
+    }
+   },
+   "note": "G-3: invalid UTF-8 is json.malformed and is never echoed."
+  },
+  {
+   "bytes": "7b226f70223a226c73222c2278223a22c0af227d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.malformed",
+     "path": "$"
+    }
+   },
+   "note": "G-3: overlong encoding."
+  },
+  {
+   "bytes": "7b226f70223a226c73222c2278223a22610062227d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.malformed",
+     "path": "$"
+    }
+   },
+   "note": "G-2: a raw NUL inside a string is a control character."
+  },
+  {
+   "bytes": "efbbbf7b226f70223a226c73227d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.malformed",
+     "path": "$"
+    }
+   },
+   "note": "G-2: a BOM is not whitespace."
+  },
+  {
+   "bytes": "7b226f70223a226c73222c2278223a225c7564383030227d0a",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.malformed",
+     "path": "$"
+    }
+   },
+   "note": "Lone surrogate escape."
+  },
+  {
+   "bytes": "7b226f70223a226c73227d",
+   "close": true,
+   "expect": {
+    "ok": true
+   },
+   "note": "G-2: bytes after the last LF are one more line at EOF."
+  }
+ ]
+}

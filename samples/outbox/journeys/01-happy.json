@@ -1,0 +1,137 @@
+{
+ "name": "happy",
+ "note": "Two messages deliver on the first wake; the server stores each key once.",
+ "steps": [
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Outbox",
+     "actions": [
+      "Enqueue",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "online": true,
+      "now": 1800000000000,
+      "deduped": 0,
+      "items": []
+     }
+    },
+    "server": {
+     "requests": 0,
+     "stored": [],
+     "scripted": 0
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": true,
+      "now": 1800000000000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "pending",
+        "attempts": 0,
+        "nextAttemptAt": 1800000000000
+       }
+      ],
+      "nextWakeAt": 1800000000000
+     }
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "b",
+    "body": "second"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "nextWakeAt": 1800000000000
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "online": true,
+      "now": 1800000000000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       },
+       {
+        "key": "b",
+        "body": "second",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 2,
+     "stored": [
+      "a",
+      "b"
+     ]
+    }
+   }
+  },
+  {
+   "do": "PurgeSent",
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "online": true,
+      "now": 1800000000000,
+      "deduped": 0,
+      "items": []
+     }
+    }
+   }
+  }
+ ]
+}

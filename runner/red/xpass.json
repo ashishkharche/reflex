@@ -1,0 +1,38 @@
+{
+ "name": "xpass",
+ "fixture": "happy",
+ "note": "A step marked xfail that passes. Must exit 1 with an XPASS line.",
+ "steps": [
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail"
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 12
+   },
+   "xfail": {
+    "swift": "DEMO-1"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 12
+      }
+     }
+    }
+   }
+  }
+ ]
+}

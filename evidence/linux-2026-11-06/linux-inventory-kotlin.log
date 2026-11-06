@@ -1,0 +1,20 @@
+HOST Linux-6.12.94+-x86_64-with-glibc2.41 python=3.13.5 runner=reflex_runner protocol=1 sample=inventory platforms=kotlin journeys=9 files=5
+MATCHER PASS cases=19 source=kit/conformance/strict-decoder.json
+GUARD SKIP not macOS: the DYLD guard is macOS only, network isolation is NOT exercised
+NETWORK UNCHECKED journey=tests/inventory/journeys/04-tripwires.json#http-caught expects network=denied but the run is unguarded, so this expectation is not tested
+HANDSHAKE platform=kotlin protocol=1 sample=inventory kit=1.0.1
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/01-happy.json#happy steps=18 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/02-rejects.json#detail steps=24 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/02-rejects.json#list steps=6 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/02-rejects.json#handshake steps=3 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/03-save-failure.json#save-failure steps=6 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/04-tripwires.json#network steps=4 exit=70 network=unguarded
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/04-tripwires.json#network-caught steps=4 exit=70 network=unguarded
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/04-tripwires.json#http-caught steps=4 exit=0 network=unguarded
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/05-wire.json#wire steps=16 exit=0 network=unguarded
+SUITE platform=kotlin repeat=1/3 journeys=9 steps=85 wall_s=0.97
+SUITE platform=kotlin repeat=2/3 journeys=9 steps=85 wall_s=0.81
+SUITE platform=kotlin repeat=3/3 journeys=9 steps=85 wall_s=0.87
+P50 platform=kotlin warm_ms=1.617 min=1.181 max=4.229 n=20 steps_per_journey=17 journey=tests/inventory/journeys/01-happy.json startup=excluded warmup=one-full-journey network=unguarded
+COLD platform=kotlin per_journey_ms_p50=90.0 n=27 startup=included
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=kotlin repeat=3 sample=inventory guard=skipped-not-macos network_isolation=NOT-exercised network_unchecked=1

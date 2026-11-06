@@ -1,0 +1,12 @@
+STYLE PASS README.md
+STYLE PASS TEST_PLAN.md
+STYLE PASS AGENTS.md
+STYLE PASS kit/README.md
+STYLE PASS runner/README.md
+STYLE PASS samples/outbox/README.md
+STYLE PASS docs/architecture.md
+STYLE PASS docs/cli.md
+STYLE PASS docs/testing.md
+STYLE PASS docs/protocol/README.md
+STYLE PASS docs/protocol/v1.md
+STYLE PASS docs/protocol/CHANGELOG.md

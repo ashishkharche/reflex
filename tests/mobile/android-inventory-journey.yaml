@@ -1,0 +1,24 @@
+appId: com.ashishkharche.reflex.inventory
+---
+- launchApp
+- assertVisible: "Inventory"
+- assertVisible: "Cotton shirt: 3"
+- assertVisible: "Ceramic mug: 0"
+- tapOn: "Cotton shirt: 3"
+- assertVisible: "Cotton shirt"
+- assertVisible: "Quantity: 3"
+- tapOn:
+    text: "3"
+    index: 0
+- eraseText
+- inputText: "12"
+- hideKeyboard
+- tapOn: "Set quantity"
+- assertVisible: "Quantity: 12"
+- tapOn: "Decrement"
+- assertVisible: "Quantity: 11"
+- tapOn: "Save"
+- assertVisible: "Stock saved"
+- tapOn: "Back"
+- assertVisible: "Cotton shirt: 11"
+- assertVisible: "Ceramic mug: 0"

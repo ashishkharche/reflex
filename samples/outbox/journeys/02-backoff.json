@@ -1,0 +1,190 @@
+{
+ "name": "backoff",
+ "note": "Timeouts and 500s retry at 1 s, 2 s and 4 s on the fake clock; nothing fires early.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "timeout",
+     "500",
+     "timeout"
+    ]
+   },
+   "expect": {
+    "ok": true,
+    "server": {
+     "scripted": 3
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": true,
+      "now": 1800000000000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800000001000,
+        "lastError": "timeout"
+       }
+      ],
+      "nextWakeAt": 1800000001000
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 999
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": true,
+      "now": 1800000000999,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800000001000,
+        "lastError": "timeout"
+       }
+      ],
+      "nextWakeAt": 1800000001000
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 1
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": true,
+      "now": 1800000001000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 2,
+        "nextAttemptAt": 1800000003000,
+        "lastError": "http-500"
+       }
+      ],
+      "nextWakeAt": 1800000003000
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 1999
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "now": 1800000002999,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 2,
+        "nextAttemptAt": 1800000003000,
+        "lastError": "http-500"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 1
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "now": 1800000003000,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 3,
+        "nextAttemptAt": 1800000007000,
+        "lastError": "timeout"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 10000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": true,
+      "now": 1800000013000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 4,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 4,
+     "stored": [
+      "a"
+     ],
+     "scripted": 0
+    }
+   }
+  }
+ ]
+}

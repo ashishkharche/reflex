@@ -1,0 +1,15 @@
+$ python3 runner/reflex_runner.py tests/inventory/reflex.json runner/red/xfail.json --timings 0 --strict
+HOST macOS-26.5.1-arm64-arm-64bit-Mach-O python=3.15.0 runner=reflex_runner protocol=1 sample=inventory platforms=swift,kotlin journeys=1 files=1
+MATCHER PASS cases=15 source=kit/conformance/strict-decoder.json
+GUARD PASS canary=python-connect-192.0.2.1 audit='READY | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=swift protocol=1 sample=inventory kit=1.0.0
+FAIL platform=swift journey=runner/red/xfail.json#xfail step=2 action=SetQuantity send={"action":"SetQuantity","input":{"quantity":12},"op":"do"} $.node.state.product.quantity expected=13 (integer) actual=12 (integer) response={"networkAttempts":0,"node":{"actions":["Decrement","OpenProduct","Save","SetQuantity","goBack"],"name":"InventoryDetail","state":{"product":{"id":"shirt","quantity":12,"title":"Cotton shirt"},"saved":false}},"ok":true}
+JOURNEY FAIL platform=swift journey=runner/red/xfail.json#xfail steps=3 exit=0 network=clean
+SUITE platform=swift repeat=1/1 journeys=1 steps=3 wall_s=0.01
+HANDSHAKE platform=kotlin protocol=1 sample=inventory kit=1.0.0
+FAIL platform=kotlin journey=runner/red/xfail.json#xfail step=2 action=SetQuantity send={"action":"SetQuantity","input":{"quantity":12},"op":"do"} $.node.state.product.quantity expected=13 (integer) actual=12 (integer) response={"networkAttempts":0,"node":{"actions":["Decrement","OpenProduct","Save","SetQuantity","goBack"],"name":"InventoryDetail","state":{"product":{"id":"shirt","quantity":12,"title":"Cotton shirt"},"saved":false}},"ok":true}
+JOURNEY FAIL platform=kotlin journey=runner/red/xfail.json#xfail steps=3 exit=0 network=clean
+SUITE platform=kotlin repeat=1/1 journeys=1 steps=3 wall_s=0.06
+PARITY PASS platforms=swift,kotlin steps=3 unexpected_diffs=0 known_diffs=0 wire_format_only=0 (full parsed JSON, strict types)
+RESULT FAIL mode=strict unexpected_failures=2 xfail=0 platforms=swift,kotlin repeat=1 sample=inventory
+exit=1 elapsed_s=1

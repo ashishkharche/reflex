@@ -1,0 +1,29 @@
+{
+ "sample": "inventory",
+ "protocol": 1,
+ "root": "../..",
+ "defaultFixture": "happy",
+ "note": "Two platforms with the same values and different reply bytes: the second rewrites every reply with spaces. Must print PARITY BYTES lines and exit 1.",
+ "platforms": {
+  "swift": {
+   "command": [
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  },
+  "swift-spaced": {
+   "command": [
+    "{python}",
+    "{root}/runner/red/spaced_host.py",
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  }
+ },
+ "journeys": [
+  "tests/inventory/journeys/05-wire.json"
+ ],
+ "everyResponse": {
+  "networkAttempts": 0
+ }
+}

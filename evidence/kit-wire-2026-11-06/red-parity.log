@@ -1,0 +1,11 @@
+HOST macOS-26.5.1-arm64-arm-64bit-Mach-O python=3.15.0 runner=reflex_runner protocol=1 sample=inventory platforms=swift,swift-save-failure journeys=1 files=1
+GUARD PASS canary=python-connect-192.0.2.1 audit='READY | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=swift protocol=1 sample=inventory kit=1.0.1
+JOURNEY PASS platform=swift journey=runner/red/parity.json#parity steps=3 exit=0 network=clean
+SUITE platform=swift repeat=1/1 journeys=1 steps=3 wall_s=0.02
+HANDSHAKE platform=swift-save-failure protocol=1 sample=inventory kit=1.0.1
+JOURNEY PASS platform=swift-save-failure journey=runner/red/parity.json#parity steps=3 exit=0 network=clean
+SUITE platform=swift-save-failure repeat=1/1 journeys=1 steps=3 wall_s=0.01
+PARITY DIFF journey=runner/red/parity.json#parity step=2 action=Save $.node.state.error swift="<absent>" swift-save-failure="Couldn’t save stock. Try again."; $.node.state.saved swift=true swift-save-failure=false
+PARITY FAIL platforms=swift,swift-save-failure steps=3 unexpected_diffs=1 byte_diffs=0 known_diffs=0 (raw reply bytes and full parsed JSON, strict types)
+RESULT FAIL mode=xfail-tracked unexpected_failures=1 xfail=0 platforms=swift,swift-save-failure repeat=1 sample=inventory

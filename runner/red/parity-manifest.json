@@ -1,0 +1,27 @@
+{
+ "sample": "inventory",
+ "protocol": 1,
+ "root": "../..",
+ "defaultFixture": "happy",
+ "note": "Two platforms that disagree on purpose: the second always runs the save-failure fixture. Must print PARITY DIFF lines and exit 1.",
+ "platforms": {
+  "swift": {
+   "command": [
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  },
+  "swift-save-failure": {
+   "command": [
+    "{root}/swift/.build/debug/inventory-cli",
+    "save-failure"
+   ]
+  }
+ },
+ "journeys": [
+  "runner/red/parity.json"
+ ],
+ "everyResponse": {
+  "networkAttempts": 0
+ }
+}

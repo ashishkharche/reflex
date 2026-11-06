@@ -1,0 +1,28 @@
+$ swift test --package-path swift -j 2
+[0/1] Planning build
+Building for debugging...
+[0/4] Write swift-version-69A768CDF2A0BEE1.txt
+Build complete! (0.14s)
+Test Suite 'All tests' started at 2026-11-06 1:01:41.997 am.
+Test Suite 'InventoryPackageTests.xctest' started at 2026-11-06 1:01:41.998 am.
+Test Suite 'CoreTests' started at 2026-11-06 1:01:41.998 am.
+Test Case '-[InventoryCoreTests.CoreTests testClampAndValidation]' started.
+Test Case '-[InventoryCoreTests.CoreTests testClampAndValidation]' passed (0.000 seconds).
+Test Case '-[InventoryCoreTests.CoreTests testStickyNetworkGuard]' started.
+Test Case '-[InventoryCoreTests.CoreTests testStickyNetworkGuard]' passed (0.000 seconds).
+Test Suite 'CoreTests' passed at 2026-11-06 1:01:41.998 am.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'IntrospectionTests' started at 2026-11-06 1:01:41.998 am.
+Test Case '-[InventoryCoreTests.IntrospectionTests testSessionUsesStrictKit]' started.
+Test Case '-[InventoryCoreTests.IntrospectionTests testSessionUsesStrictKit]' passed (0.001 seconds).
+Test Suite 'IntrospectionTests' passed at 2026-11-06 1:01:41.999 am.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'InventoryPackageTests.xctest' passed at 2026-11-06 1:01:41.999 am.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'All tests' passed at 2026-11-06 1:01:41.999 am.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.001 (0.003) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+exit=0 elapsed_s=1

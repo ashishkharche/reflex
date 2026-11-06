@@ -1,0 +1,432 @@
+{
+ "name": "rejects",
+ "fixture": "happy",
+ "note": "Every malformed or mistyped request returns ok:false with the kit’s error code and path and leaves the node unchanged.",
+ "journeys": [
+  {
+   "name": "detail",
+   "steps": [
+    {
+     "do": "OpenProduct",
+     "input": {
+      "id": "shirt"
+     },
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryDetail"
+      }
+     }
+    },
+    {
+     "raw": "{bad json",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "json.malformed",
+       "path": "$"
+      }
+     }
+    },
+    {
+     "do": "NotAnAction",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "action.unknown",
+       "path": "$.action"
+      }
+     }
+    },
+    {
+     "do": "SetQuantity",
+     "input": {
+      "quantity": true
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.type",
+       "path": "$.input.quantity"
+      }
+     },
+     "note": "F-03"
+    },
+    {
+     "do": "SetQuantity",
+     "input": {
+      "quantity": "4"
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.type",
+       "path": "$.input.quantity"
+      }
+     },
+     "note": "F-01"
+    },
+    {
+     "do": "SetQuantity",
+     "input": {
+      "quantity": 1.5
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "int.syntax",
+       "path": "$.input.quantity"
+      }
+     },
+     "note": "F-02"
+    },
+    {
+     "do": "SetQuantity",
+     "input": {
+      "quantity": 5.0
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "int.syntax",
+       "path": "$.input.quantity"
+      }
+     },
+     "note": "F-02"
+    },
+    {
+     "raw": "{\"op\":\"do\",\"action\":\"SetQuantity\",\"input\":{\"quantity\":1e2}}",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "int.syntax",
+       "path": "$.input.quantity"
+      }
+     }
+    },
+    {
+     "raw": "{\"op\":\"do\",\"action\":\"SetQuantity\",\"input\":{\"quantity\":9223372036854775808}}",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "int.range",
+       "path": "$.input.quantity"
+      }
+     }
+    },
+    {
+     "do": "SetQuantity",
+     "input": {
+      "quantity": null
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.type",
+       "path": "$.input.quantity"
+      }
+     },
+     "note": "F-05"
+    },
+    {
+     "do": "SetQuantity",
+     "input": {
+      "quantity": 1,
+      "extra": 2
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.unknown",
+       "path": "$.input.extra"
+      }
+     },
+     "note": "F-05"
+    },
+    {
+     "do": "SetQuantity",
+     "input": {},
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.missing",
+       "path": "$.input.quantity"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "do",
+      "action": "SetQuantity",
+      "input": null
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "input.not_object",
+       "path": "$.input"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "do",
+      "action": "SetQuantity",
+      "input": 5
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "input.not_object",
+       "path": "$.input"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "do",
+      "action": "Save",
+      "input": []
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "input.not_object",
+       "path": "$.input"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "do",
+      "action": "Save",
+      "input": {
+       "extra": 1
+      }
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.unknown",
+       "path": "$.input.extra"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "do",
+      "action": "SetQuantity",
+      "args": {
+       "quantity": 4
+      }
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.unknown",
+       "path": "$.args"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "ls",
+      "extra": 1
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.unknown",
+       "path": "$.extra"
+      }
+     }
+    },
+    {
+     "raw": "{\"op\":\"do\",\"action\":\"SetQuantity\",\"input\":{\"quantity\":4,\"quantity\":9}}",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "json.duplicate_key",
+       "path": "$.input.quantity"
+      }
+     }
+    },
+    {
+     "raw": "{\"op\":\"do\",\"action\":\"Save\",\"action\":\"Decrement\"}",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "json.duplicate_key",
+       "path": "$.action"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "tick"
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "request.unknown_op",
+       "path": "$.op"
+      }
+     }
+    },
+    {
+     "raw": "[]",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "request.not_object",
+       "path": "$"
+      }
+     }
+    },
+    {
+     "ls": true,
+     "unchanged": true,
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryDetail",
+       "state": {
+        "product": {
+         "id": "shirt",
+         "title": "Cotton shirt",
+         "quantity": 3
+        },
+        "saved": false
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "list",
+   "steps": [
+    {
+     "ls": true,
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryList"
+      }
+     }
+    },
+    {
+     "do": "Save",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "action.unknown",
+       "path": "$.action"
+      }
+     }
+    },
+    {
+     "raw": "{\"op\":\"do\",\"action\":\"OpenProduct\",\"input\":{\"id\":\"shirt\",\"id\":\"mug\"}}",
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "json.duplicate_key",
+       "path": "$.input.id"
+      }
+     }
+    },
+    {
+     "do": "OpenProduct",
+     "input": {
+      "id": 5
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "field.type",
+       "path": "$.input.id"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "hello",
+      "protocol": 2
+     },
+     "unchanged": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "protocol.unsupported",
+       "path": "$.protocol"
+      },
+      "supported": [
+       1
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "handshake",
+   "handshake": false,
+   "steps": [
+    {
+     "ls": true,
+     "expect": {
+      "ok": false,
+      "error": {
+       "code": "protocol.handshake_required",
+       "path": "$.op"
+      }
+     }
+    },
+    {
+     "send": {
+      "op": "hello",
+      "protocol": 1
+     },
+     "expect": {
+      "ok": true,
+      "protocol": 1,
+      "sample": "inventory",
+      "kit": "1.0.1"
+     }
+    },
+    {
+     "ls": true,
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryList"
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

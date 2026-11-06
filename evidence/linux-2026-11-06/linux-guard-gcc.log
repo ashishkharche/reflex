@@ -1,0 +1,21 @@
+scripts/network_guard.c:30:41: error: unknown type name ‘sa_endpoints_t’
+   30 | static int guard_connectx(int fd, const sa_endpoints_t *endpoints, sae_associd_t association,
+      |                                         ^~~~~~~~~~~~~~
+scripts/network_guard.c:30:68: error: unknown type name ‘sae_associd_t’
+   30 | static int guard_connectx(int fd, const sa_endpoints_t *endpoints, sae_associd_t association,
+      |                                                                    ^~~~~~~~~~~~~
+scripts/network_guard.c:32:43: error: unknown type name ‘sae_connid_t’
+   32 |                           size_t *length, sae_connid_t *connection) {
+      |                                           ^~~~~~~~~~~~
+scripts/network_guard.c:53:11: error: ‘guard_connectx’ undeclared here (not in a function); did you mean ‘guard_connect’?
+   53 | INTERPOSE(guard_connectx, connectx)
+      |           ^~~~~~~~~~~~~~
+scripts/network_guard.c:51:24: note: in definition of macro ‘INTERPOSE’
+   51 |         (const void *)&replacement, (const void *)&replacee };
+      |                        ^~~~~~~~~~~
+scripts/network_guard.c:53:27: error: ‘connectx’ undeclared here (not in a function); did you mean ‘connect’?
+   53 | INTERPOSE(guard_connectx, connectx)
+      |                           ^~~~~~~~
+scripts/network_guard.c:51:52: note: in definition of macro ‘INTERPOSE’
+   51 |         (const void *)&replacement, (const void *)&replacee };
+      |                                                    ^~~~~~~~

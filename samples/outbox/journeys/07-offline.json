@@ -1,0 +1,252 @@
+{
+ "name": "offline",
+ "note": "Offline holds every message with no wake time; reconnecting delivers what is due and keeps future backoff.",
+ "steps": [
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": false
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": false
+     }
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "SyncNow",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": false,
+      "error": "You’re offline. Messages will send when you’re back online.",
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "pending",
+        "attempts": 0,
+        "nextAttemptAt": 1800000000000
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 3600000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": false,
+      "now": 1800003600000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "pending",
+        "attempts": 0,
+        "nextAttemptAt": 1800000000000
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 0
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": true
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": true,
+      "now": 1800003600000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 1
+    }
+   }
+  },
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "timeout"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "b",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       },
+       {
+        "key": "b",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800003601000,
+        "lastError": "timeout"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": false
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 500
+   },
+   "expect": {
+    "ok": true,
+    "server": {
+     "requests": 2
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": true
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "nextWakeAt": 1800003601000,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       },
+       {
+        "key": "b",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800003601000,
+        "lastError": "timeout"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": false
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 5000
+   },
+   "expect": {
+    "ok": true,
+    "server": {
+     "requests": 2
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": true
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       },
+       {
+        "key": "b",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 2,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 3,
+     "stored": [
+      "a",
+      "b"
+     ]
+    }
+   }
+  }
+ ]
+}

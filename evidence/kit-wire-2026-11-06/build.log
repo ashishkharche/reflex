@@ -1,0 +1,92 @@
+[0/1] Planning build
+Building for debugging...
+[0/3] Write swift-version-69A768CDF2A0BEE1.txt
+[1/4] Write sources
+[3/9] Compiling ReflexKit Expect.swift
+[4/9] Compiling ReflexKit Framing.swift
+[5/9] Compiling ReflexKit JSONValue.swift
+[6/9] Compiling ReflexKit Node.swift
+[7/9] Emitting module ReflexKit
+[8/13] Compiling ReflexKit Schema.swift
+[9/13] Compiling ReflexKit Session.swift
+[10/13] Compiling ReflexKit WireError.swift
+[11/13] Compiling ReflexKit WireJSON.swift
+Build complete! (0.98s)
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :cli:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar UP-TO-DATE
+> Task :introspection:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:compileKotlin
+> Task :reflex-kit:compileJava NO-SOURCE
+> Task :reflex-kit:processResources NO-SOURCE
+> Task :reflex-kit:classes UP-TO-DATE
+> Task :reflex-kit:jar
+> Task :introspection:compileKotlin UP-TO-DATE
+> Task :introspection:compileJava NO-SOURCE
+> Task :introspection:processResources NO-SOURCE
+> Task :introspection:classes UP-TO-DATE
+> Task :introspection:jar UP-TO-DATE
+> Task :cli:compileKotlin UP-TO-DATE
+> Task :cli:compileJava NO-SOURCE
+> Task :cli:processResources NO-SOURCE
+> Task :cli:classes UP-TO-DATE
+> Task :cli:jar UP-TO-DATE
+> Task :cli:startScripts UP-TO-DATE
+> Task :cli:installDist UP-TO-DATE
+
+BUILD SUCCESSFUL in 7s
+10 actionable tasks: 2 executed, 8 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
+[0/1] Planning build
+Building for debugging...
+[0/3] Write swift-version-69A768CDF2A0BEE1.txt
+[1/4] Write sources
+[3/9] Emitting module ReflexKit
+[4/9] Compiling ReflexKit Expect.swift
+[5/9] Compiling ReflexKit Framing.swift
+[6/9] Compiling ReflexKit JSONValue.swift
+[7/9] Compiling ReflexKit Node.swift
+[8/13] Compiling ReflexKit Schema.swift
+[9/13] Compiling ReflexKit Session.swift
+[10/13] Compiling ReflexKit WireError.swift
+[11/13] Compiling ReflexKit WireJSON.swift
+Build complete! (0.94s)
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :cli:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar UP-TO-DATE
+> Task :introspection:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:compileKotlin UP-TO-DATE
+> Task :reflex-kit:compileJava NO-SOURCE
+> Task :reflex-kit:processResources NO-SOURCE
+> Task :reflex-kit:classes UP-TO-DATE
+> Task :reflex-kit:jar UP-TO-DATE
+> Task :introspection:compileKotlin UP-TO-DATE
+> Task :introspection:compileJava NO-SOURCE
+> Task :introspection:processResources NO-SOURCE
+> Task :introspection:classes UP-TO-DATE
+> Task :introspection:jar UP-TO-DATE
+> Task :cli:compileKotlin UP-TO-DATE
+> Task :cli:compileJava NO-SOURCE
+> Task :cli:processResources NO-SOURCE
+> Task :cli:classes UP-TO-DATE
+> Task :cli:jar UP-TO-DATE
+> Task :cli:startScripts UP-TO-DATE
+> Task :cli:installDist UP-TO-DATE
+
+BUILD SUCCESSFUL in 4s
+10 actionable tasks: 10 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html

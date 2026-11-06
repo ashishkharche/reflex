@@ -1,0 +1,119 @@
+{
+ "name": "order",
+ "note": "One slow message does not block the queue; each keeps its own schedule.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "timeout",
+     "ok",
+     "500"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "b",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "c",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800000001000,
+        "lastError": "timeout"
+       },
+       {
+        "key": "b",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       },
+       {
+        "key": "c",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800000001000,
+        "lastError": "http-500"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 1000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 2,
+        "ack": "created"
+       },
+       {
+        "key": "b",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       },
+       {
+        "key": "c",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 2,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "stored": [
+      "b",
+      "a",
+      "c"
+     ],
+     "requests": 5
+    }
+   }
+  }
+ ]
+}

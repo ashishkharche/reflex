@@ -1,0 +1,93 @@
+{
+ "name": "warm",
+ "note": "Repeatable in one process: timeout, lost reply, then delivered; purged at the end.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "timeout",
+     "lost"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "w",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "w",
+        "status": "retrying",
+        "attempts": 1
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 1000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "w",
+        "status": "retrying",
+        "attempts": 2
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 2000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "w",
+        "status": "sent",
+        "attempts": 3
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "PurgeSent",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": []
+     }
+    }
+   }
+  }
+ ]
+}

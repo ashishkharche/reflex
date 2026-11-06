@@ -1,0 +1,138 @@
+{
+ "name": "dedup",
+ "note": "The client drops a repeated key while it is queued or sent. After PurgeSent the server still dedups it.",
+ "steps": [
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "again"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "deduped": 1,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "pending",
+        "attempts": 0,
+        "nextAttemptAt": 1800000000000
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "deduped": 2,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "PurgeSent"
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "late"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "deduped": 2,
+      "items": [
+       {
+        "key": "a",
+        "body": "late",
+        "status": "pending",
+        "attempts": 0,
+        "nextAttemptAt": 1800000000000
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "late",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "duplicate"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 2,
+     "stored": [
+      "a"
+     ]
+    }
+   }
+  }
+ ]
+}

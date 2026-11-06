@@ -1,0 +1,123 @@
+{
+ "name": "tripwires",
+ "note": "Red paths that must be detected. network and network-caught hit the service guard: the CLI answers with networkAttempts 1 and exits 70. http-caught makes a real loopback connect that the DYLD guard denies; the service swallows the error, so only the process audit sees it.",
+ "journeys": [
+  {
+   "name": "network",
+   "fixture": "network",
+   "everyResponse": null,
+   "exit": 70,
+   "steps": [
+    {
+     "ls": true,
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryList"
+      }
+     }
+    },
+    {
+     "do": "OpenProduct",
+     "input": {
+      "id": "shirt"
+     },
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryDetail"
+      }
+     }
+    },
+    {
+     "do": "Save",
+     "expect": {
+      "ok": true,
+      "networkAttempts": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "network-caught",
+   "fixture": "network-caught",
+   "everyResponse": null,
+   "exit": 70,
+   "steps": [
+    {
+     "ls": true,
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryList"
+      }
+     }
+    },
+    {
+     "do": "OpenProduct",
+     "input": {
+      "id": "shirt"
+     },
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryDetail"
+      }
+     }
+    },
+    {
+     "do": "Save",
+     "expect": {
+      "ok": true,
+      "networkAttempts": 1,
+      "node": {
+       "state": {
+        "saved": true
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "http-caught",
+   "fixture": "http-caught",
+   "network": "denied",
+   "steps": [
+    {
+     "ls": true,
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryList"
+      }
+     }
+    },
+    {
+     "do": "OpenProduct",
+     "input": {
+      "id": "shirt"
+     },
+     "expect": {
+      "ok": true,
+      "node": {
+       "name": "InventoryDetail"
+      }
+     }
+    },
+    {
+     "do": "Save",
+     "expect": {
+      "ok": true,
+      "networkAttempts": 0,
+      "node": {
+       "state": {
+        "saved": true
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

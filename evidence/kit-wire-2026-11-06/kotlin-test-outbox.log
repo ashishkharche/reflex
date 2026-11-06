@@ -1,0 +1,79 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :cli:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar
+> Task :introspection:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:compileKotlin
+> Task :reflex-kit:compileJava NO-SOURCE
+> Task :reflex-kit:processResources NO-SOURCE
+> Task :reflex-kit:classes UP-TO-DATE
+> Task :reflex-kit:jar
+> Task :introspection:compileKotlin
+> Task :introspection:compileJava NO-SOURCE
+> Task :introspection:processResources NO-SOURCE
+> Task :introspection:classes UP-TO-DATE
+> Task :introspection:jar
+> Task :cli:compileKotlin
+> Task :cli:compileJava NO-SOURCE
+> Task :cli:processResources NO-SOURCE
+> Task :cli:classes UP-TO-DATE
+> Task :cli:jar
+> Task :cli:compileTestKotlin NO-SOURCE
+> Task :cli:compileTestJava NO-SOURCE
+> Task :cli:processTestResources NO-SOURCE
+> Task :cli:testClasses UP-TO-DATE
+> Task :cli:test NO-SOURCE
+> Task :core:compileTestKotlin
+> Task :core:compileTestJava NO-SOURCE
+> Task :core:processTestResources NO-SOURCE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:test
+
+OutboxCoreTest > offlineHoldsThenReconnectFlushes PASSED
+
+OutboxCoreTest > rejectedFailsAndRetryResets PASSED
+
+OutboxCoreTest > syncNowIgnoresBackoffAndServerErrorsRetry PASSED
+
+OutboxCoreTest > lostReplyIsDedupedByIdempotencyKey PASSED
+
+OutboxCoreTest > clientDedupAndValidation PASSED
+
+OutboxCoreTest > backoffDoublesCapsAndGivesUp PASSED
+
+> Task :introspection:compileTestKotlin NO-SOURCE
+> Task :introspection:compileTestJava NO-SOURCE
+> Task :introspection:processTestResources NO-SOURCE
+> Task :introspection:testClasses UP-TO-DATE
+> Task :introspection:test NO-SOURCE
+> Task :reflex-kit:compileTestKotlin
+> Task :reflex-kit:compileTestJava NO-SOURCE
+> Task :reflex-kit:processTestResources NO-SOURCE
+> Task :reflex-kit:testClasses UP-TO-DATE
+
+> Task :reflex-kit:test
+
+AdoptionExampleTest > readmeSnippet PASSED
+
+ConformanceTest > strictUtf8 PASSED
+
+ConformanceTest > mismatchIsReadable PASSED
+
+ConformanceTest > typedAccessors PASSED
+
+ConformanceTest > loneSurrogateInStringArgument PASSED
+
+ConformanceTest > sharedConformanceFixture PASSED
+
+ConformanceTest > canonicalWire PASSED
+
+BUILD SUCCESSFUL in 11s
+12 actionable tasks: 12 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html

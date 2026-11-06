@@ -1,0 +1,376 @@
+{
+ "name": "rejects",
+ "note": "The kit rejects mistyped input before the Core sees it. Every rejection leaves state and server unchanged.",
+ "steps": [
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": 5,
+    "body": "x"
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.key"
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "x"
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.missing",
+     "path": "$.input.body"
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "x",
+    "body": "y",
+    "priority": 1
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.unknown",
+     "path": "$.input.priority"
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": "true"
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.online"
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": 1
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.online"
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": null
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.online"
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": -1
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "int.range",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 86400001
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "int.range",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 1.5
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "int.syntax",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "raw": "{\"op\":\"advance\",\"input\":{\"ms\":1e3}}",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "int.syntax",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": "1000"
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": true
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "raw": "{\"op\":\"advance\",\"input\":{\"ms\":9223372036854775808}}",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "int.range",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "raw": "{\"op\":\"advance\",\"input\":{\"ms\":1,\"ms\":2}}",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.duplicate_key",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "send": {
+    "op": "advance",
+    "args": {
+     "ms": 1
+    }
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.unknown",
+     "path": "$.args"
+    }
+   }
+  },
+  {
+   "send": {
+    "op": "advance",
+    "input": 5
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "input.not_object",
+     "path": "$.input"
+    }
+   }
+  },
+  {
+   "send": {
+    "op": "advance"
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.missing",
+     "path": "$.input.ms"
+    }
+   }
+  },
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "flaky"
+    ]
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.value",
+     "path": "$.input.script[0]"
+    }
+   }
+  },
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "ok",
+     "503"
+    ]
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.value",
+     "path": "$.input.script[1]"
+    }
+   }
+  },
+  {
+   "op": "network",
+   "input": {
+    "script": "ok"
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.script"
+    }
+   }
+  },
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     500
+    ]
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.script[0]"
+    }
+   }
+  },
+  {
+   "do": "Retry",
+   "input": {
+    "key": "a"
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "action.unknown",
+     "path": "$.action"
+    }
+   }
+  },
+  {
+   "do": "PurgeSent",
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "action.unknown",
+     "path": "$.action"
+    }
+   }
+  },
+  {
+   "send": {
+    "op": "tick",
+    "seconds": 5
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "request.unknown_op",
+     "path": "$.op"
+    }
+   }
+  },
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": true,
+      "now": 1800000000000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "pending",
+        "attempts": 0,
+        "nextAttemptAt": 1800000000000
+       }
+      ],
+      "nextWakeAt": 1800000000000
+     }
+    },
+    "server": {
+     "requests": 0,
+     "stored": [],
+     "scripted": 0
+    }
+   }
+  }
+ ]
+}

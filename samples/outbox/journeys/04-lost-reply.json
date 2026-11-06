@@ -1,0 +1,78 @@
+{
+ "name": "lost-reply",
+ "note": "The server stores the message but the reply is lost. The retry carries the same idempotency key, so the server answers duplicate and stores it once.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "lost"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800000001000,
+        "lastError": "timeout"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 1,
+     "stored": [
+      "a"
+     ]
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 1000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 2,
+        "ack": "duplicate"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 2,
+     "stored": [
+      "a"
+     ]
+    }
+   }
+  }
+ ]
+}

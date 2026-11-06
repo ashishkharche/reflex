@@ -1,0 +1,2 @@
+HOST Linux-6.12.94+-x86_64-with-glibc2.41 python=3.13.5 runner=reflex_runner protocol=1 sample=inventory platforms=swift journeys=9 files=5
+RESULT FAIL platform=swift host binary not found: swift/.build/debug/inventory-cli. Build it with the README commands first.
