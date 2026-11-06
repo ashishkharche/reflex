@@ -1,0 +1,14 @@
+$ python3 runner/reflex_runner.py tests/inventory/reflex.json runner/red/xpass.json --timings 0
+HOST macOS-26.5.1-arm64-arm-64bit-Mach-O python=3.15.0 runner=reflex_runner protocol=1 sample=inventory platforms=swift,kotlin journeys=1 files=1
+MATCHER PASS cases=15 source=kit/conformance/strict-decoder.json
+GUARD PASS canary=python-connect-192.0.2.1 audit='READY | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=swift protocol=1 sample=inventory kit=1.0.0
+XPASS platform=swift journey=runner/red/xpass.json#xpass step=2 action=SetQuantity finding=DEMO-1 passes now: remove the xfail
+JOURNEY FAIL platform=swift journey=runner/red/xpass.json#xpass steps=3 exit=0 network=clean
+SUITE platform=swift repeat=1/1 journeys=1 steps=3 wall_s=0.01
+HANDSHAKE platform=kotlin protocol=1 sample=inventory kit=1.0.0
+JOURNEY PASS platform=kotlin journey=runner/red/xpass.json#xpass steps=3 exit=0 network=clean
+SUITE platform=kotlin repeat=1/1 journeys=1 steps=3 wall_s=0.06
+PARITY PASS platforms=swift,kotlin steps=3 unexpected_diffs=0 known_diffs=0 wire_format_only=0 (full parsed JSON, strict types)
+RESULT FAIL mode=xfail-tracked unexpected_failures=1 xfail=0 platforms=swift,kotlin repeat=1 sample=inventory
+exit=1 elapsed_s=0

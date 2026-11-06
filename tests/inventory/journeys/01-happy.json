@@ -1,0 +1,303 @@
+{
+ "name": "happy",
+ "fixture": "happy",
+ "note": "List, detail, set quantity, save, persistence after back, decrement at zero and validation. Restores stock so it can rerun in one process for warm timings.",
+ "steps": [
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList",
+     "state": {
+      "products": [
+       {
+        "id": "shirt",
+        "title": "Cotton shirt",
+        "quantity": 3
+       },
+       {
+        "id": "mug",
+        "title": "Ceramic mug",
+        "quantity": 0
+       }
+      ]
+     },
+     "actions": [
+      "OpenProduct",
+      "Refresh",
+      "goBack"
+     ]
+    }
+   }
+  },
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "state": {
+      "product": {
+       "id": "shirt",
+       "title": "Cotton shirt",
+       "quantity": 3
+      },
+      "saved": false
+     }
+    }
+   }
+  },
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "actions": [
+      "Decrement",
+      "OpenProduct",
+      "Save",
+      "SetQuantity",
+      "goBack"
+     ]
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 12
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 12
+      },
+      "saved": false
+     }
+    }
+   }
+  },
+  {
+   "do": "Save",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "saved": true
+     }
+    }
+   }
+  },
+  {
+   "do": "goBack",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList",
+     "state": {
+      "products": [
+       {
+        "id": "shirt",
+        "title": "Cotton shirt",
+        "quantity": 12
+       },
+       {
+        "id": "mug",
+        "title": "Ceramic mug",
+        "quantity": 0
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "mug"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail",
+     "state": {
+      "product": {
+       "id": "mug",
+       "title": "Ceramic mug",
+       "quantity": 0
+      }
+     }
+    }
+   }
+  },
+  {
+   "do": "Decrement",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 0
+      }
+     }
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": -1
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 0
+      },
+      "error": "Quantity must be between 0 and 999999."
+     }
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 2147483648
+   },
+   "note": "Int64 on both platforms: decoded, then rejected by Core validation.",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 0
+      },
+      "error": "Quantity must be between 0 and 999999."
+     }
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 999999
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 999999
+      },
+      "saved": false
+     }
+    }
+   }
+  },
+  {
+   "do": "goBack",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList",
+     "state": {
+      "products": [
+       {
+        "id": "shirt",
+        "title": "Cotton shirt",
+        "quantity": 12
+       },
+       {
+        "id": "mug",
+        "title": "Ceramic mug",
+        "quantity": 0
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "missing"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList"
+    }
+   }
+  },
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail"
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 3
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 3
+      }
+     }
+    }
+   }
+  },
+  {
+   "do": "Save",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "saved": true
+     }
+    }
+   }
+  },
+  {
+   "do": "goBack",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList",
+     "state": {
+      "products": [
+       {
+        "id": "shirt",
+        "title": "Cotton shirt",
+        "quantity": 3
+       },
+       {
+        "id": "mug",
+        "title": "Ceramic mug",
+        "quantity": 0
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

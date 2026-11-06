@@ -1,0 +1,83 @@
+{
+ "name": "sync-now",
+ "note": "SyncNow ignores backoff; the wake timer does not.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "500",
+     "500"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "SyncNow",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 1,
+        "nextAttemptAt": 1800000001000,
+        "lastError": "http-500"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "SyncNow",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "now": 1800000000000,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 2,
+        "nextAttemptAt": 1800000002000,
+        "lastError": "http-500"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "SyncNow",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "now": 1800000000000,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 3,
+        "ack": "created"
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

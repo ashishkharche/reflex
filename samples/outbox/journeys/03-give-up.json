@@ -1,0 +1,163 @@
+{
+ "name": "give-up",
+ "note": "Seven failed attempts: the delay caps at 30 s, then the message fails and Retry appears.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "timeout",
+     "timeout",
+     "timeout",
+     "timeout",
+     "timeout",
+     "timeout",
+     "timeout"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 30999
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 5,
+        "nextAttemptAt": 1800000031000,
+        "lastError": "timeout"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 1
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "now": 1800000031000,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "retrying",
+        "attempts": 6,
+        "nextAttemptAt": 1800000061000,
+        "lastError": "timeout"
+       }
+      ],
+      "nextWakeAt": 1800000061000
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 30000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "online": true,
+      "now": 1800000061000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "failed",
+        "attempts": 7,
+        "lastError": "timeout"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 7
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 3600000
+   },
+   "expect": {
+    "ok": true,
+    "server": {
+     "requests": 7
+    },
+    "node": {
+     "state": {
+      "now": 1800003661000
+     }
+    }
+   }
+  },
+  {
+   "do": "Retry",
+   "input": {
+    "key": "a"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "online": true,
+      "now": 1800003661000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 8,
+     "stored": [
+      "a"
+     ]
+    }
+   }
+  }
+ ]
+}

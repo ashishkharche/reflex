@@ -1,0 +1,46 @@
+{
+ "name": "conflict",
+ "note": "409 means another writer already created this key: the message counts as delivered.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "409"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "SyncNow",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "duplicate"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 1,
+     "stored": [
+      "a"
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,117 @@
+{
+ "name": "rejected",
+ "note": "422 is not retryable: the message fails at once and only Retry brings it back.",
+ "steps": [
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "422"
+    ]
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "b",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "failed",
+        "attempts": 1,
+        "lastError": "http-422"
+       },
+       {
+        "key": "b",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "Retry",
+   "input": {
+    "key": "b"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "error": "Only failed messages can be retried."
+     }
+    }
+   }
+  },
+  {
+   "do": "Retry",
+   "input": {
+    "key": "a"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "online": true,
+      "now": 1800000000000,
+      "deduped": 0,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       },
+       {
+        "key": "b",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 3,
+     "stored": [
+      "b",
+      "a"
+     ]
+    }
+   }
+  }
+ ]
+}

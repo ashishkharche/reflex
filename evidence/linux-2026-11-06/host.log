@@ -1,0 +1,8 @@
+Linux 6.12.94+ x86_64
+Python 3.13.5
+openjdk version "21.0.13" 2026-10-20 LTS
+source: git archive of reflex 94e6970 plus the runner change; Kotlin CLI jars built on macOS (JVM 17 bytecode)
+inventory-kotlin exit=0
+outbox-kotlin exit=0
+inventory-swift exit=2
+guard-gcc exit=1

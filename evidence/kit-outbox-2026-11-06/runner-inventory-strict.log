@@ -1,0 +1,27 @@
+$ python3 runner/reflex_runner.py tests/inventory/reflex.json --platform both --strict --timings 0
+HOST macOS-26.5.1-arm64-arm-64bit-Mach-O python=3.15.0 runner=reflex_runner protocol=1 sample=inventory platforms=swift,kotlin journeys=8 files=4
+MATCHER PASS cases=15 source=kit/conformance/strict-decoder.json
+GUARD PASS canary=python-connect-192.0.2.1 audit='READY | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=swift protocol=1 sample=inventory kit=1.0.0
+JOURNEY PASS platform=swift journey=tests/inventory/journeys/01-happy.json#happy steps=18 exit=0 network=clean
+JOURNEY PASS platform=swift journey=tests/inventory/journeys/02-rejects.json#detail steps=24 exit=0 network=clean
+JOURNEY PASS platform=swift journey=tests/inventory/journeys/02-rejects.json#list steps=6 exit=0 network=clean
+JOURNEY PASS platform=swift journey=tests/inventory/journeys/02-rejects.json#handshake steps=3 exit=0 network=clean
+JOURNEY PASS platform=swift journey=tests/inventory/journeys/03-save-failure.json#save-failure steps=6 exit=0 network=clean
+JOURNEY PASS platform=swift journey=tests/inventory/journeys/04-tripwires.json#network steps=4 exit=70 network=clean
+JOURNEY PASS platform=swift journey=tests/inventory/journeys/04-tripwires.json#network-caught steps=4 exit=70 network=clean
+JOURNEY PASS platform=swift journey=tests/inventory/journeys/04-tripwires.json#http-caught steps=4 exit=0 network=denied
+SUITE platform=swift repeat=1/1 journeys=8 steps=69 wall_s=0.07
+HANDSHAKE platform=kotlin protocol=1 sample=inventory kit=1.0.0
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/01-happy.json#happy steps=18 exit=0 network=clean
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/02-rejects.json#detail steps=24 exit=0 network=clean
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/02-rejects.json#list steps=6 exit=0 network=clean
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/02-rejects.json#handshake steps=3 exit=0 network=clean
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/03-save-failure.json#save-failure steps=6 exit=0 network=clean
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/04-tripwires.json#network steps=4 exit=70 network=clean
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/04-tripwires.json#network-caught steps=4 exit=70 network=clean
+JOURNEY PASS platform=kotlin journey=tests/inventory/journeys/04-tripwires.json#http-caught steps=4 exit=0 network=denied
+SUITE platform=kotlin repeat=1/1 journeys=8 steps=69 wall_s=0.57
+PARITY PASS platforms=swift,kotlin steps=69 unexpected_diffs=0 known_diffs=0 wire_format_only=0 (full parsed JSON, strict types)
+RESULT PASS mode=strict unexpected_failures=0 xfail=0 platforms=swift,kotlin repeat=1 sample=inventory
+exit=0 elapsed_s=0

@@ -1,0 +1,71 @@
+A-leading-zero	y	{"op":"do","action":"Start","input":{"seconds":090}}
+A-plus	y	{"op":"do","action":"Start","input":{"seconds":+90}}
+A-NaN	y	{"op":"do","action":"Start","input":{"seconds":NaN}}
+A-op-unknown	y	{"op":"nope"}
+A-op-case	y	{"op":"LS"}
+A-op-empty	y	{"op":""}
+A-op-number	y	{"op":5}
+A-op-missing	y	{}
+A-req-array	y	[]
+A-req-string	y	"ls"
+A-req-null	y	null
+A-empty-line	y	
+A-spaces-line	y	   
+A-bad-json	y	{"op":"ls"
+A-trailing	y	{"op":"ls"} x
+A-two-objects	y	{"op":"ls"}{"op":"ls"}
+A-ws-inside	y	  { "op" :<x09>"ls" }  
+A-action-unknown	y	{"op":"do","action":"Fly"}
+A-action-number	y	{"op":"do","action":5}
+A-action-missing	y	{"op":"do"}
+A-ls-extra	y	{"op":"ls","input":{}}
+A-depth-64	y	{"op":"ls","x":[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}
+A-depth-65	y	{"op":"ls","x":[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}
+H-missing-ls	n	{"op":"ls"}
+H-missing-do	n	{"op":"do","action":"Start","input":{"seconds":90}}
+H-missing-tick	n	{"op":"tick","input":{"seconds":5}}
+H-missing-unknownop	n	{"op":"nope"}
+H-v2	n	{"op":"hello","protocol":2}
+H-v0	n	{"op":"hello","protocol":0}
+H-v-string	n	{"op":"hello","protocol":"1"}
+H-v-1.0	n	{"op":"hello","protocol":1.0}
+H-v-huge	n	{"op":"hello","protocol":99999999999999999999}
+H-v-missing	n	{"op":"hello"}
+H-extra	n	{"op":"hello","protocol":1,"sample":"x"}
+H-v2-then-ls	n	{"op":"hello","protocol":2}<LF>{"op":"ls"}
+H-twice	y	{"op":"hello","protocol":1}
+H-twice-v2	y	{"op":"hello","protocol":2}<LF>{"op":"ls"}
+U-upnext-nonascii	y	{"op":"do","action":"Start","input":{"seconds":90,"upNext":"B\u00e4nk \ud83d\ude00 \u2028 \u007f \u001f \/ \b"}}
+U-upnext-raw-utf8	y	{"op":"do","action":"Start","input":{"seconds":90,"upNext":"caf<xC3><xA9> <xF0><x9F><x98><x80>"}}
+U-upnext-invalid-utf8	y	{"op":"do","action":"Start","input":{"seconds":90,"upNext":"a<xFF>b<xE2><x82>c<xED><xA0><x80>d"}}
+U-lone-surrogate	y	{"op":"do","action":"Start","input":{"seconds":90,"upNext":"\ud800"}}
+U-ctrl-raw	y	{"op":"do","action":"Start","input":{"seconds":90,"upNext":"a<x01>b"}}
+U-nul-raw	y	{"op":"do","action":"Start","input":{"seconds":90,"upNext":"a<x00>b"}}
+U-dup-nfc-nfd	y	{"op":"ls","\u00e9":1,"e\u0301":2}
+U-dup-nfc-nfd-raw	y	{"op":"ls","<xC3><xA9>":1,"e<xCC><x81>":2}
+U-dup-nfc-nfd-input	y	{"op":"do","action":"Start","input":{"seconds":90,"\u00e9":1,"e\u0301":2}}
+U-key-order	y	{"op":"ls","\uff01":1,"\ud83d\ude00":1}
+U-kelvin-key	y	{"op":"ls","\u212a":1}
+T-crlf	y	{"op":"ls"}<CR>
+T-lone-cr	y	{"op":"ls"}<CR>{"op":"ls"}
+T-bom	n	<xEF><xBB><xBF>{"op":"hello","protocol":1}
+X-crlf-two	y	{"op":"ls"}<CR><LF>{"op":"ls"}<CR>
+X-cr-only-line	y	<CR>
+X-blank-between	y	{"op":"ls"}<LF><LF>{"op":"ls"}
+X-no-final-newline	y	{"op":"ls"}<LF>{"op":"ls"}<EOF>
+X-cr-no-final-newline	y	{"op":"ls"}<CR>{"op":"ls"}<EOF>
+X-overlong-slash	y	{"op":"ls","x":"<xC0><xAF>"}
+X-overlong-nul	y	{"op":"ls","x":"<xC0><x80>"}
+X-overlong-3byte	y	{"op":"ls","x":"<xE0><x80><xAF>"}
+X-utf8-surrogate	y	{"op":"ls","x":"<xED><xA0><x80>"}
+X-utf8-above-max	y	{"op":"ls","x":"<xF4><x90><x80><x80>"}
+X-utf8-truncated	y	{"op":"ls","x":"<xE2><x82>"}
+X-utf8-continuation	y	{"op":"ls","x":"<x80>"}
+X-utf8-in-key	y	{"op":"ls","<xFF>":1}
+X-nul-escape-key	y	{"op":"ls","\u0000":1}
+X-nul-raw-outside	y	{"op":"ls"}<x00>
+X-bom-after-hello	y	<xEF><xBB><xBF>{"op":"ls"}
+X-lone-low-escape	y	{"op":"ls","x":"\udc00"}
+X-high-then-text	y	{"op":"ls","x":"\ud800x"}
+X-pair-key	y	{"op":"ls","\ud83d\ude00":1}
+X-kelvin-vs-k	y	{"op":"ls","K":1,"\u212a":2}

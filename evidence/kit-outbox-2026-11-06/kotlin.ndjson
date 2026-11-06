@@ -1,0 +1,105 @@
+{"expected":"reject \"field.type\" \"$.input.seconds\"","finding":"F-01","got":"reject \"field.type\" \"$.input.seconds\"","group":"decoder","id":"F-01-string-seconds","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.seconds\"","finding":"F-01","got":"reject \"field.type\" \"$.input.seconds\"","group":"decoder","id":"F-01-string-negative","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.meta.level\"","finding":"F-01","got":"reject \"field.type\" \"$.input.meta.level\"","group":"decoder","id":"F-01-string-nested","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.laps[1]\"","finding":"F-01","got":"reject \"field.type\" \"$.input.laps[1]\"","group":"decoder","id":"F-01-string-in-array","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.count\"","finding":"F-01","got":"reject \"field.type\" \"$.input.count\"","group":"decoder","id":"F-01-string-bounded","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.protocol\"","finding":"F-01","got":"reject \"field.type\" \"$.protocol\"","group":"decoder","id":"F-01-string-protocol","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.syntax\" \"$.input.seconds\"","finding":"F-02","got":"reject \"int.syntax\" \"$.input.seconds\"","group":"decoder","id":"F-02-fraction","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.syntax\" \"$.input.seconds\"","finding":"F-02","got":"reject \"int.syntax\" \"$.input.seconds\"","group":"decoder","id":"F-02-whole-fraction","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.syntax\" \"$.input.seconds\"","finding":"F-02","got":"reject \"int.syntax\" \"$.input.seconds\"","group":"decoder","id":"F-02-exponent","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.syntax\" \"$.input.seconds\"","finding":"F-02","got":"reject \"int.syntax\" \"$.input.seconds\"","group":"decoder","id":"F-02-exponent-upper","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.syntax\" \"$.input.seconds\"","finding":"F-02","got":"reject \"int.syntax\" \"$.input.seconds\"","group":"decoder","id":"F-02-exponent-negative","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.syntax\" \"$.input.seconds\"","finding":"F-02","got":"reject \"int.syntax\" \"$.input.seconds\"","group":"decoder","id":"F-02-exponent-huge","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.syntax\" \"$.input.rows[0].n\"","finding":"F-02","got":"reject \"int.syntax\" \"$.input.rows[0].n\"","group":"decoder","id":"F-02-fraction-nested","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"seconds\":90}","finding":"F-02","got":"accept {\"seconds\":90}","group":"decoder","id":"F-02-integer","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"seconds\":0}","finding":"F-02","got":"accept {\"seconds\":0}","group":"decoder","id":"F-02-negative-zero","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.syntax\" \"$.protocol\"","finding":"F-02","got":"reject \"int.syntax\" \"$.protocol\"","group":"decoder","id":"F-02-protocol-fraction","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.seconds\"","finding":"F-03","got":"reject \"field.type\" \"$.input.seconds\"","group":"decoder","id":"F-03-true-as-int","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.seconds\"","finding":"F-03","got":"reject \"field.type\" \"$.input.seconds\"","group":"decoder","id":"F-03-false-as-int","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.midSet\"","finding":"F-03","got":"reject \"field.type\" \"$.input.midSet\"","group":"decoder","id":"F-03-int-as-bool","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.midSet\"","finding":"F-03","got":"reject \"field.type\" \"$.input.midSet\"","group":"decoder","id":"F-03-zero-as-bool","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"midSet\":true,\"seconds\":90}","finding":"F-03","got":"accept {\"midSet\":true,\"seconds\":90}","group":"decoder","id":"F-03-bool","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"seconds\":2147483648}","finding":"F-04","got":"accept {\"seconds\":2147483648}","group":"decoder","id":"F-04-above-int32","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"seconds\":-2147483649}","finding":"F-04","got":"accept {\"seconds\":-2147483649}","group":"decoder","id":"F-04-below-int32","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"seconds\":9223372036854775807}","finding":"F-04","got":"accept {\"seconds\":9223372036854775807}","group":"decoder","id":"F-04-int64-max","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"seconds\":-9223372036854775808}","finding":"F-04","got":"accept {\"seconds\":-9223372036854775808}","group":"decoder","id":"F-04-int64-min","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.range\" \"$.input.seconds\"","finding":"F-04","got":"reject \"int.range\" \"$.input.seconds\"","group":"decoder","id":"F-04-above-int64","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.range\" \"$.input.seconds\"","finding":"F-04","got":"reject \"int.range\" \"$.input.seconds\"","group":"decoder","id":"F-04-below-int64","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.range\" \"$.input.seconds\"","finding":"F-04","got":"reject \"int.range\" \"$.input.seconds\"","group":"decoder","id":"F-04-huge","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"count\":100}","finding":"F-04","got":"accept {\"count\":100}","group":"decoder","id":"F-04-bounded-max","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.range\" \"$.input.count\"","finding":"F-04","got":"reject \"int.range\" \"$.input.count\"","group":"decoder","id":"F-04-bounded-above","pass":true,"platform":"kotlin"}
+{"expected":"reject \"int.range\" \"$.input.count\"","finding":"F-04","got":"reject \"int.range\" \"$.input.count\"","group":"decoder","id":"F-04-bounded-below","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.upNext\"","finding":"F-05","got":"reject \"field.type\" \"$.input.upNext\"","group":"decoder","id":"F-05-int-as-string","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.upNext\"","finding":"F-05","got":"reject \"field.type\" \"$.input.upNext\"","group":"decoder","id":"F-05-object-as-string","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.midSet\"","finding":"F-05","got":"reject \"field.type\" \"$.input.midSet\"","group":"decoder","id":"F-05-string-as-bool","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.upNext\"","finding":"F-05","got":"reject \"field.type\" \"$.input.upNext\"","group":"decoder","id":"F-05-null-optional","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.seconds\"","finding":"F-05","got":"reject \"field.type\" \"$.input.seconds\"","group":"decoder","id":"F-05-null-required","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.meta\"","finding":"F-05","got":"reject \"field.type\" \"$.input.meta\"","group":"decoder","id":"F-05-int-as-object","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.input.laps\"","finding":"F-05","got":"reject \"field.type\" \"$.input.laps\"","group":"decoder","id":"F-05-object-as-array","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.input.extra\"","finding":"F-05","got":"reject \"field.unknown\" \"$.input.extra\"","group":"decoder","id":"F-05-unknown","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.input.meta.x\"","finding":"F-05","got":"reject \"field.unknown\" \"$.input.meta.x\"","group":"decoder","id":"F-05-unknown-nested","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.input.rows[1].m\"","finding":"F-05","got":"reject \"field.unknown\" \"$.input.rows[1].m\"","group":"decoder","id":"F-05-unknown-in-array","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.input.zzz\"","finding":"F-05","got":"reject \"field.unknown\" \"$.input.zzz\"","group":"decoder","id":"F-05-unknown-before-type","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.missing\" \"$.input.seconds\"","finding":"F-05","got":"reject \"field.missing\" \"$.input.seconds\"","group":"decoder","id":"F-05-missing","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.missing\" \"$.input.meta.tag\"","finding":"F-05","got":"reject \"field.missing\" \"$.input.meta.tag\"","group":"decoder","id":"F-05-missing-nested","pass":true,"platform":"kotlin"}
+{"expected":"accept {\"laps\":[1,2],\"meta\":{\"level\":3,\"tag\":\"t\"},\"midSet\":false,\"rows\":[{\"n\":4}],\"seconds\":90,\"upNext\":\"Bench · Set 2\"}","finding":"F-05","got":"accept {\"laps\":[1,2],\"meta\":{\"level\":3,\"tag\":\"t\"},\"midSet\":false,\"rows\":[{\"n\":4}],\"seconds\":90,\"upNext\":\"Bench · Set 2\"}","group":"decoder","id":"F-05-all-fields","pass":true,"platform":"kotlin"}
+{"expected":"reject \"input.not_object\" \"$.input\"","finding":"F-06","got":"reject \"input.not_object\" \"$.input\"","group":"decoder","id":"F-06-int-input","pass":true,"platform":"kotlin"}
+{"expected":"reject \"input.not_object\" \"$.input\"","finding":"F-06","got":"reject \"input.not_object\" \"$.input\"","group":"decoder","id":"F-06-array-input","pass":true,"platform":"kotlin"}
+{"expected":"reject \"input.not_object\" \"$.input\"","finding":"F-06","got":"reject \"input.not_object\" \"$.input\"","group":"decoder","id":"F-06-null-input","pass":true,"platform":"kotlin"}
+{"expected":"reject \"input.not_object\" \"$.input\"","finding":"F-06","got":"reject \"input.not_object\" \"$.input\"","group":"decoder","id":"F-06-string-input","pass":true,"platform":"kotlin"}
+{"expected":"reject \"input.not_object\" \"$.input\"","finding":"F-06","got":"reject \"input.not_object\" \"$.input\"","group":"decoder","id":"F-06-null-input-with-schema","pass":true,"platform":"kotlin"}
+{"expected":"accept {}","finding":"F-06","got":"accept {}","group":"decoder","id":"F-06-empty-object","pass":true,"platform":"kotlin"}
+{"expected":"accept {}","finding":"F-06","got":"accept {}","group":"decoder","id":"F-06-absent","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.input.a\"","finding":"F-06","got":"reject \"field.unknown\" \"$.input.a\"","group":"decoder","id":"F-06-extra-key-no-input","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.missing\" \"$.input.seconds\"","finding":"F-06","got":"reject \"field.missing\" \"$.input.seconds\"","group":"decoder","id":"F-06-absent-with-schema","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.args\"","finding":"F-06","got":"reject \"field.unknown\" \"$.args\"","group":"decoder","id":"F-06-args-alias","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.args\"","finding":"F-06","got":"reject \"field.unknown\" \"$.args\"","group":"decoder","id":"F-06-null-args-fallback","pass":true,"platform":"kotlin"}
+{"expected":"reject \"request.not_object\" \"$\"","finding":"F-06","got":"reject \"request.not_object\" \"$\"","group":"decoder","id":"F-06-array-root","pass":true,"platform":"kotlin"}
+{"expected":"reject \"request.not_object\" \"$\"","finding":"F-06","got":"reject \"request.not_object\" \"$\"","group":"decoder","id":"F-06-number-root","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.duplicate_key\" \"$.input.seconds\"","finding":"F-07","got":"reject \"json.duplicate_key\" \"$.input.seconds\"","group":"decoder","id":"F-07-duplicate","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.duplicate_key\" \"$.input.meta.tag\"","finding":"F-07","got":"reject \"json.duplicate_key\" \"$.input.meta.tag\"","group":"decoder","id":"F-07-duplicate-nested","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.duplicate_key\" \"$.input.rows[0].n\"","finding":"F-07","got":"reject \"json.duplicate_key\" \"$.input.rows[0].n\"","group":"decoder","id":"F-07-duplicate-in-array","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.duplicate_key\" \"$.input.x.a\"","finding":"F-07","got":"reject \"json.duplicate_key\" \"$.input.x.a\"","group":"decoder","id":"F-07-duplicate-in-unknown","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.duplicate_key\" \"$.op\"","finding":"F-07","got":"reject \"json.duplicate_key\" \"$.op\"","group":"decoder","id":"F-07-duplicate-op","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.duplicate_key\" \"$.action\"","finding":"F-07","got":"reject \"json.duplicate_key\" \"$.action\"","group":"decoder","id":"F-07-duplicate-action","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.duplicate_key\" \"$.input\"","finding":"F-07","got":"reject \"json.duplicate_key\" \"$.input\"","group":"decoder","id":"F-07-duplicate-input","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.duplicate_key\" \"$.protocol\"","finding":"F-07","got":"reject \"json.duplicate_key\" \"$.protocol\"","group":"decoder","id":"F-07-duplicate-protocol","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.malformed\" \"$\"","finding":"P","got":"reject \"json.malformed\" \"$\"","group":"decoder","id":"P-malformed","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.malformed\" \"$\"","finding":"P","got":"reject \"json.malformed\" \"$\"","group":"decoder","id":"P-trailing","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.malformed\" \"$\"","finding":"P","got":"reject \"json.malformed\" \"$\"","group":"decoder","id":"P-leading-zero","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.malformed\" \"$\"","finding":"P","got":"reject \"json.malformed\" \"$\"","group":"decoder","id":"P-lone-surrogate","pass":true,"platform":"kotlin"}
+{"expected":"response","finding":"P","got":"accept {\"seconds\":1,\"upNext\":\"😀\"}","group":"decoder","id":"P-surrogate-pair","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.malformed\" \"$\"","finding":"P","got":"reject \"json.malformed\" \"$\"","group":"decoder","id":"P-control-char","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.depth\" \"$\"","finding":"P","got":"reject \"json.depth\" \"$\"","group":"decoder","id":"P-too-deep","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.input.x\"","finding":"P","got":"reject \"field.unknown\" \"$.input.x\"","group":"decoder","id":"P-deep-ok","pass":true,"platform":"kotlin"}
+{"expected":"reject \"json.malformed\" \"$\"","finding":"P","got":"reject \"json.malformed\" \"$\"","group":"decoder","id":"P-empty-line","pass":true,"platform":"kotlin"}
+{"expected":"reject \"protocol.handshake_required\" \"$.op\"","finding":"P","got":"reject \"protocol.handshake_required\" \"$.op\"","group":"decoder","id":"P-handshake-required","pass":true,"platform":"kotlin"}
+{"expected":"reject \"protocol.unsupported\" \"$.protocol\"","finding":"P","got":"reject \"protocol.unsupported\" \"$.protocol\"","group":"decoder","id":"P-unsupported-version","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.missing\" \"$.protocol\"","finding":"P","got":"reject \"field.missing\" \"$.protocol\"","group":"decoder","id":"P-version-missing","pass":true,"platform":"kotlin"}
+{"expected":"response","finding":"P","got":"accept ","group":"decoder","id":"P-hello","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.client\"","finding":"P","got":"reject \"field.unknown\" \"$.client\"","group":"decoder","id":"P-hello-extra","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.missing\" \"$.op\"","finding":"P","got":"reject \"field.missing\" \"$.op\"","group":"decoder","id":"P-op-missing","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.op\"","finding":"P","got":"reject \"field.type\" \"$.op\"","group":"decoder","id":"P-op-type","pass":true,"platform":"kotlin"}
+{"expected":"reject \"request.unknown_op\" \"$.op\"","finding":"P","got":"reject \"request.unknown_op\" \"$.op\"","group":"decoder","id":"P-unknown-op","pass":true,"platform":"kotlin"}
+{"expected":"reject \"request.unknown_op\" \"$.op\"","finding":"P","got":"reject \"request.unknown_op\" \"$.op\"","group":"decoder","id":"P-unknown-op-before-handshake","pass":true,"platform":"kotlin"}
+{"expected":"reject \"action.unknown\" \"$.action\"","finding":"P","got":"reject \"action.unknown\" \"$.action\"","group":"decoder","id":"P-unknown-action","pass":true,"platform":"kotlin"}
+{"expected":"reject \"action.unknown\" \"$.action\"","finding":"P","got":"reject \"action.unknown\" \"$.action\"","group":"decoder","id":"P-action-case","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.type\" \"$.action\"","finding":"P","got":"reject \"field.type\" \"$.action\"","group":"decoder","id":"P-action-type","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.missing\" \"$.action\"","finding":"P","got":"reject \"field.missing\" \"$.action\"","group":"decoder","id":"P-action-missing","pass":true,"platform":"kotlin"}
+{"expected":"reject \"field.unknown\" \"$.extra\"","finding":"P","got":"reject \"field.unknown\" \"$.extra\"","group":"decoder","id":"P-ls-extra","pass":true,"platform":"kotlin"}
+{"expected":"response","finding":"P","got":"accept ","group":"decoder","id":"P-ls","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-bool-vs-int","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-int-vs-string","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-bool-vs-string","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-false-vs-zero","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-string-vs-int","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-int-vs-fraction","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-null-vs-false","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-missing-key","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-array-length","pass":true,"platform":"kotlin"}
+{"expected":"no match","finding":"F-13","got":"no match","group":"matcher","id":"F-13-array-vs-object","pass":true,"platform":"kotlin"}
+{"expected":"match","finding":"F-13","got":"match","group":"matcher","id":"F-13-partial-object","pass":true,"platform":"kotlin"}
+{"expected":"match","finding":"F-13","got":"match","group":"matcher","id":"F-13-nested","pass":true,"platform":"kotlin"}
+{"expected":"match","finding":"F-13","got":"match","group":"matcher","id":"F-13-equal-bool","pass":true,"platform":"kotlin"}
+{"expected":"match","finding":"F-13","got":"match","group":"matcher","id":"F-13-equal-int64","pass":true,"platform":"kotlin"}
+{"expected":"match","finding":"F-13","got":"match","group":"matcher","id":"F-13-fraction-equal","pass":true,"platform":"kotlin"}

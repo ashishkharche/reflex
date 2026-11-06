@@ -1,0 +1,31 @@
+$ swift test --package-path samples/outbox/swift -j 2
+[0/1] Planning build
+Building for debugging...
+[0/4] Write swift-version-69A768CDF2A0BEE1.txt
+Build complete! (0.14s)
+Test Suite 'All tests' started at 2026-11-06 1:01:43.047 am.
+Test Suite 'OutboxPackageTests.xctest' started at 2026-11-06 1:01:43.048 am.
+Test Suite 'OutboxCoreTests' started at 2026-11-06 1:01:43.048 am.
+Test Case '-[OutboxCoreTests.OutboxCoreTests testBackoffDoublesCapsAndGivesUp]' started.
+Test Case '-[OutboxCoreTests.OutboxCoreTests testBackoffDoublesCapsAndGivesUp]' passed (0.001 seconds).
+Test Case '-[OutboxCoreTests.OutboxCoreTests testClientDedupAndValidation]' started.
+Test Case '-[OutboxCoreTests.OutboxCoreTests testClientDedupAndValidation]' passed (0.000 seconds).
+Test Case '-[OutboxCoreTests.OutboxCoreTests testLostReplyIsDedupedByIdempotencyKey]' started.
+Test Case '-[OutboxCoreTests.OutboxCoreTests testLostReplyIsDedupedByIdempotencyKey]' passed (0.000 seconds).
+Test Case '-[OutboxCoreTests.OutboxCoreTests testOfflineHoldsThenReconnectFlushes]' started.
+Test Case '-[OutboxCoreTests.OutboxCoreTests testOfflineHoldsThenReconnectFlushes]' passed (0.000 seconds).
+Test Case '-[OutboxCoreTests.OutboxCoreTests testRejectedFailsAndRetryResets]' started.
+Test Case '-[OutboxCoreTests.OutboxCoreTests testRejectedFailsAndRetryResets]' passed (0.000 seconds).
+Test Case '-[OutboxCoreTests.OutboxCoreTests testSyncNowIgnoresBackoffAndServerErrorsRetry]' started.
+Test Case '-[OutboxCoreTests.OutboxCoreTests testSyncNowIgnoresBackoffAndServerErrorsRetry]' passed (0.000 seconds).
+Test Suite 'OutboxCoreTests' passed at 2026-11-06 1:01:43.050 am.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'OutboxPackageTests.xctest' passed at 2026-11-06 1:01:43.050 am.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'All tests' passed at 2026-11-06 1:01:43.050 am.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.001 (0.003) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+exit=0 elapsed_s=1

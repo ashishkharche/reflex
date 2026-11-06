@@ -1,0 +1,23 @@
+name: InventoryMobile
+options:
+  bundleIdPrefix: com.ashishkharche.reflex
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  Inventory:
+    path: ../../swift
+targets:
+  InventoryMobile:
+    type: application
+    platform: iOS
+    sources: [InventoryMobile.swift]
+    dependencies:
+      - package: Inventory
+        product: InventoryCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ashishkharche.reflex.inventory
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        SWIFT_VERSION: "5.0"
+        CODE_SIGNING_ALLOWED: NO

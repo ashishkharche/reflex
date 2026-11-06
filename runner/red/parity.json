@@ -1,0 +1,24 @@
+{
+ "name": "parity",
+ "fixture": "happy",
+ "steps": [
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail"
+    }
+   }
+  },
+  {
+   "do": "Save",
+   "expect": {
+    "ok": true
+   }
+  }
+ ]
+}

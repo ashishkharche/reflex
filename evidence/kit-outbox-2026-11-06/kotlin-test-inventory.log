@@ -1,0 +1,62 @@
+$ kotlin/gradlew -p kotlin --no-daemon --max-workers=1 --console=plain --rerun-tasks :reflex-kit:test :core:test :cli:installDist
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :reflex-kit:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:compileKotlin
+> Task :reflex-kit:compileJava NO-SOURCE
+> Task :reflex-kit:processResources NO-SOURCE
+> Task :reflex-kit:classes UP-TO-DATE
+> Task :reflex-kit:jar
+> Task :reflex-kit:compileTestKotlin
+> Task :reflex-kit:compileTestJava NO-SOURCE
+> Task :reflex-kit:processTestResources NO-SOURCE
+> Task :reflex-kit:testClasses UP-TO-DATE
+
+> Task :reflex-kit:test
+
+AdoptionExampleTest > readmeSnippet PASSED
+
+ConformanceTest > mismatchIsReadable PASSED
+
+ConformanceTest > typedAccessors PASSED
+
+ConformanceTest > sharedConformanceFixture PASSED
+
+ConformanceTest > canonicalWire PASSED
+
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar
+> Task :core:compileTestKotlin
+> Task :core:compileTestJava NO-SOURCE
+> Task :core:processTestResources NO-SOURCE
+> Task :core:testClasses UP-TO-DATE
+
+> Task :core:test
+
+InventoryCoreTest > clampAndValidation PASSED
+
+InventoryCoreTest > stickyNetworkGuard PASSED
+
+> Task :cli:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :introspection:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :introspection:compileKotlin
+> Task :introspection:compileJava NO-SOURCE
+> Task :introspection:processResources NO-SOURCE
+> Task :introspection:classes UP-TO-DATE
+> Task :introspection:jar
+> Task :cli:compileKotlin
+> Task :cli:compileJava NO-SOURCE
+> Task :cli:processResources NO-SOURCE
+> Task :cli:classes UP-TO-DATE
+> Task :cli:jar
+> Task :cli:startScripts
+> Task :cli:installDist
+
+BUILD SUCCESSFUL in 10s
+14 actionable tasks: 14 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
+exit=0 elapsed_s=10

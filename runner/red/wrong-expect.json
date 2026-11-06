@@ -1,0 +1,52 @@
+{
+ "name": "wrong-expect",
+ "fixture": "happy",
+ "note": "Deliberate failures. Must exit 1 with readable FAIL lines.",
+ "steps": [
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail"
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 12
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 999
+      }
+     }
+    }
+   }
+  },
+  {
+   "do": "Save",
+   "expect": {
+    "ok": 1
+   }
+  },
+  {
+   "do": "Save",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "saved": "true"
+     }
+    }
+   }
+  }
+ ]
+}

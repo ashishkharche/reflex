@@ -1,0 +1,78 @@
+{
+ "name": "save-failure",
+ "fixture": "save-failure",
+ "steps": [
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList"
+    }
+   }
+  },
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail"
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 9
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 9
+      }
+     }
+    }
+   }
+  },
+  {
+   "do": "Save",
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "saved": false,
+      "error": "Couldn’t save stock. Try again."
+     }
+    }
+   }
+  },
+  {
+   "do": "goBack",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryList",
+     "state": {
+      "products": [
+       {
+        "id": "shirt",
+        "title": "Cotton shirt",
+        "quantity": 3
+       },
+       {
+        "id": "mug",
+        "title": "Ceramic mug",
+        "quantity": 0
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

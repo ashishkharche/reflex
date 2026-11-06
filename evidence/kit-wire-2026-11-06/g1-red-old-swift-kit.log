@@ -1,0 +1,12 @@
+failed - G1-nfc-nfd-escaped: expected reject "field.unknown" "$.é" got reject "json.duplicate_key" "$.é": error {"code":"json.duplicate_key","path":"$.é"}
+failed - G1-nfc-nfd-raw: expected reject "field.unknown" "$.é" got reject "json.duplicate_key" "$.é": error {"code":"json.duplicate_key","path":"$.é"}
+failed - G1-nfc-nfd-input: expected reject "field.unknown" "$.input.é" got reject "json.duplicate_key" "$.input.é": error {"code":"json.duplicate_key","path":"$.input.é"}
+failed - G1-nfc-nfd-nested: expected reject "field.unknown" "$.input.meta.é" got reject "json.duplicate_key" "$.input.meta.é": error {"code":"json.duplicate_key","path":"$.input.meta.é"}
+failed - G1-kelvin-key: expected reject "field.unknown" "$.K" got reject "json.duplicate_key" "$.K": error {"code":"json.duplicate_key","path":"$.K"}
+failed - G1-field-nfd-undeclared: expected reject "field.unknown" "$.input.é" got accept {"é":"x"}: expected ok:false; error <absent>; state changed to {"last":{"action":"Kelvin","input":{"é":"x"}}}
+failed - G1-field-both-forms: expected reject "field.unknown" "$.input.é" got reject "json.duplicate_key" "$.input.é": error {"code":"json.duplicate_key","path":"$.input.é"}
+failed - G1-action-kelvin-sign: expected reject "action.unknown" "$.action" got accept {}: expected ok:false; error <absent>; state changed to {"last":{"action":"Kelvin","input":{}}}
+failed - G1-matcher-nfc-vs-nfd-value: Expect.matches expected false got true
+failed - G1-matcher-nfc-vs-nfd-key: Expect.matches expected false got true
+failed - G1-matcher-kelvin-key: Expect.matches expected false got true
+CONFORMANCE platform=swift cases=122 passed=111

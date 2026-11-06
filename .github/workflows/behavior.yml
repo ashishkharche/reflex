@@ -1,0 +1,23 @@
+name: Native behavior parity
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  samples:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: python3 scripts/check_docs.py
+      - run: bash scripts/build.sh
+      - run: swift test --package-path kit -j 2
+      - run: swift test --package-path swift -j 2
+      - run: swift test --package-path samples/outbox/swift -j 2
+      - run: kotlin/gradlew -p kotlin --no-daemon --max-workers=1 :reflex-kit:test :core:test --console=plain
+      - run: kotlin/gradlew -p samples/outbox/kotlin --no-daemon --max-workers=1 :core:test --console=plain
+      - run: python3 runner/reflex_runner.py tests/inventory/reflex.json --platform both --repeat 3 --timings 20
+      - run: python3 runner/reflex_runner.py samples/outbox/reflex.json --platform both --repeat 3 --timings 20

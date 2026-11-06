@@ -1,0 +1,6 @@
+$ swift build --package-path swift -j 2
+[0/1] Planning build
+Building for debugging...
+[0/3] Write swift-version-69A768CDF2A0BEE1.txt
+Build complete! (0.53s)
+exit=0 elapsed_s=2

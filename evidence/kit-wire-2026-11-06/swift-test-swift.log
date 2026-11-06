@@ -1,0 +1,35 @@
+[0/1] Planning build
+Building for debugging...
+[0/8] Write sources
+[1/8] swift/.build/arm64-apple-macosx/debug/InventoryPackageTests.derived/runner.swift
+[2/8] Write sources
+[3/8] Write swift-version-69A768CDF2A0BEE1.txt
+[5/8] Compiling InventoryCoreTests CoreTests.swift
+[6/8] Emitting module InventoryCoreTests
+[7/10] Emitting module InventoryPackageTests
+[8/10] Compiling InventoryPackageTests runner.swift
+[8/10] Write Objects.LinkFileList
+[9/10] Linking InventoryPackageTests
+Build complete! (10.82s)
+Test Suite 'All tests' started at 2026-11-06 2:04:49.802 am.
+Test Suite 'InventoryPackageTests.xctest' started at 2026-11-06 2:04:49.813 am.
+Test Suite 'CoreTests' started at 2026-11-06 2:04:49.813 am.
+Test Case '-[InventoryCoreTests.CoreTests testClampAndValidation]' started.
+Test Case '-[InventoryCoreTests.CoreTests testClampAndValidation]' passed (0.003 seconds).
+Test Case '-[InventoryCoreTests.CoreTests testStickyNetworkGuard]' started.
+Test Case '-[InventoryCoreTests.CoreTests testStickyNetworkGuard]' passed (0.000 seconds).
+Test Suite 'CoreTests' passed at 2026-11-06 2:04:49.816 am.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.003 (0.003) seconds
+Test Suite 'IntrospectionTests' started at 2026-11-06 2:04:49.816 am.
+Test Case '-[InventoryCoreTests.IntrospectionTests testSessionUsesStrictKit]' started.
+Test Case '-[InventoryCoreTests.IntrospectionTests testSessionUsesStrictKit]' passed (0.002 seconds).
+Test Suite 'IntrospectionTests' passed at 2026-11-06 2:04:49.818 am.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.002 (0.002) seconds
+Test Suite 'InventoryPackageTests.xctest' passed at 2026-11-06 2:04:49.818 am.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.005 (0.005) seconds
+Test Suite 'All tests' passed at 2026-11-06 2:04:49.818 am.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.005 (0.016) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

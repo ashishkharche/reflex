@@ -1,0 +1,37 @@
+{
+ "name": "tripwire",
+ "fixture": "http",
+ "network": "denied",
+ "note": "Red path: the http fixture makes a real loopback connect per delivery. The DYLD guard must deny it and the journey must see network=denied.",
+ "steps": [
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 0
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

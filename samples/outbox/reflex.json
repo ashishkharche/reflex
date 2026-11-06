@@ -1,0 +1,34 @@
+{
+ "sample": "outbox",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "fake",
+ "platforms": {
+  "swift": {
+   "command": [
+    "{root}/samples/outbox/swift/.build/debug/outbox-cli",
+    "{fixture}"
+   ]
+  },
+  "kotlin": {
+   "command": [
+    "{java}",
+    "-Xmx96m",
+    "-cp",
+    "{root}/samples/outbox/kotlin/cli/build/install/cli/lib/*",
+    "reflex.outbox.MainKt",
+    "{fixture}"
+   ]
+  }
+ },
+ "journeys": [
+  "samples/outbox/journeys/*.json"
+ ],
+ "warm": "samples/outbox/warm.json",
+ "everyResponse": {
+  "node": {
+   "name": "Outbox"
+  }
+ }
+}

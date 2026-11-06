@@ -1,0 +1,70 @@
+{
+ "name": "int64-time",
+ "note": "Clock values sit above 2^31 and stay exact on both platforms.",
+ "steps": [
+  {
+   "op": "advance",
+   "input": {
+    "ms": 86400000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "now": 1800086400000
+     }
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   }
+  },
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "nextWakeAt": 1800086400000,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "pending",
+        "attempts": 0,
+        "nextAttemptAt": 1800086400000
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "advance",
+   "input": {
+    "ms": 86400000
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "now": 1800172800000,
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

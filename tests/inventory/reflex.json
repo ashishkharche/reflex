@@ -1,0 +1,32 @@
+{
+ "sample": "inventory",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "happy",
+ "platforms": {
+  "swift": {
+   "command": [
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  },
+  "kotlin": {
+   "command": [
+    "{java}",
+    "-Xmx96m",
+    "-cp",
+    "{root}/kotlin/cli/build/install/cli/lib/*",
+    "reflex.MainKt",
+    "{fixture}"
+   ]
+  }
+ },
+ "journeys": [
+  "tests/inventory/journeys/*.json"
+ ],
+ "warm": "tests/inventory/journeys/01-happy.json",
+ "everyResponse": {
+  "networkAttempts": 0
+ }
+}

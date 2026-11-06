@@ -1,0 +1,39 @@
+{
+ "name": "xfail",
+ "fixture": "happy",
+ "note": "A known failure marked xfail. Passes in xfail-tracked mode and fails with --strict.",
+ "steps": [
+  {
+   "do": "OpenProduct",
+   "input": {
+    "id": "shirt"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "InventoryDetail"
+    }
+   }
+  },
+  {
+   "do": "SetQuantity",
+   "input": {
+    "quantity": 12
+   },
+   "xfail": {
+    "swift": "DEMO-2",
+    "kotlin": "DEMO-2"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "state": {
+      "product": {
+       "quantity": 13
+      }
+     }
+    }
+   }
+  }
+ ]
+}
