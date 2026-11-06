@@ -10,3 +10,5 @@ Fonts bundled under `assets/brand/fonts/` are SIL Open Font Licence 1.1 (OFL-1.1
 
 Wordmark SVGs outline Space Grotesk into paths so runtime use of the TTF is optional.
 JetBrains Mono is for diagram and CLI labels (`ls`, `do`).
+
+The diagram SVGs in `assets/diagrams/` embed Space Grotesk and JetBrains Mono under the same OFL-1.1 licences listed above.
