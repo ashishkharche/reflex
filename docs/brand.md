@@ -21,7 +21,7 @@ At 16 px and 32 px the mark uses a simplified solid diamond (same silhouette as 
 | `assets/brand/icon-{light,dark}-{16,32,64,128,256,512}.png` | Size ladder (16/32 solid) |
 | `assets/brand/lockup-light.svg` · `lockup-dark.svg` | Mark + outlined “Reflex” |
 | `assets/brand/lockup-light.png` · `lockup-dark.png` | Lockup PNG |
-| `assets/brand/readme-banner-light.png` · `readme-banner-dark.png` | README hero 1280×400 (+ SVG) |
+| `assets/brand/readme-banner-light.png` · `readme-banner-dark.png` | README hero 1600×480 (+ SVG) |
 | `assets/brand/social-preview.png` | GitHub social 1280×640 (dark) |
 | `assets/brand/icons/favicon.ico` | 16 / 32 / 48 ICO |
 | `assets/brand/icons/favicon-16.png` · `favicon-32.png` | Solid diamond favicons |
@@ -67,7 +67,7 @@ Keep clear space around the mark of at least the diamond’s half-width on every
 Minimum sizes:
 - Mark alone: 16 px (solid diamond form)
 - Lockup: 24 px mark height
-- README banner: use the shipped 1280×400 assets
+- README banner: use the shipped 1600×480 assets
 
 ## Do
 
