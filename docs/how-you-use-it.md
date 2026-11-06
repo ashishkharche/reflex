@@ -166,6 +166,6 @@ python3 runner/reflex_runner.py tests/inventory/reflex.json --platform both --st
 RESULT PASS mode=strict unexpected_failures=0 xfail=0 platforms=swift,kotlin repeat=1 sample=inventory guard=canary-pass
 ```
 
-Warm P50 on this machine was about 1.4 ms per step. When the two Cores disagree, the runner fails the suite. The same approach found a real rest timer crash in Workout Director: a Swift trap when adding seconds to the rest timer.
+Warm P50 on this machine was about 1.4 ms per step. When the two Cores disagree, the runner fails the suite.
 
 Full setup commands: [setup.md](setup.md).
