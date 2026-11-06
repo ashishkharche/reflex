@@ -308,19 +308,36 @@
   {
    "do": "Retry",
    "input": {
-    "key": "a"
+    "key": 1
    },
    "unchanged": true,
    "expect": {
     "ok": false,
     "error": {
-     "code": "action.unknown",
-     "path": "$.action"
+     "code": "field.type",
+     "path": "$.input.key"
     }
    }
   },
   {
    "do": "PurgeSent",
+   "input": {
+    "all": true
+   },
+   "unchanged": true,
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.unknown",
+     "path": "$.input.all"
+    }
+   }
+  },
+  {
+   "do": "retry",
+   "input": {
+    "key": "a"
+   },
    "unchanged": true,
    "expect": {
     "ok": false,

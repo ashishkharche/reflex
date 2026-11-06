@@ -14,6 +14,7 @@ import reflex.kit.json
 import reflex.kit.jsonObject
 
 // Adapter only: every closure dispatches through send. No delivery rules here.
+// The action set never depends on state. The ViewModel’s update decides if an action is valid.
 private val enqueueInput = Schema(Field.required("key", FieldType.string), Field.required("body", FieldType.string))
 private val onlineInput = Schema(Field.required("online", FieldType.bool))
 private val keyInput = Schema(Field.required("key", FieldType.string))
@@ -31,12 +32,8 @@ class OutboxNode(private val vm: OutboxViewModel) : Node {
         put("Enqueue", NodeAction(enqueueInput) { vm.send(OutboxViewModel.Action.Enqueue(it.string("key"), it.string("body"))) })
         put("SyncNow", NodeAction { vm.send(OutboxViewModel.Action.SyncNow) })
         put("SetOnline", NodeAction(onlineInput) { vm.send(OutboxViewModel.Action.SetOnline(it.bool("online"))) })
-        if (vm.state.items.any { it.status == OutboxViewModel.Status.FAILED }) {
-            put("Retry", NodeAction(keyInput) { vm.send(OutboxViewModel.Action.Retry(it.string("key"))) })
-        }
-        if (vm.state.items.any { it.status == OutboxViewModel.Status.SENT }) {
-            put("PurgeSent", NodeAction { vm.send(OutboxViewModel.Action.PurgeSent) })
-        }
+        put("Retry", NodeAction(keyInput) { vm.send(OutboxViewModel.Action.Retry(it.string("key"))) })
+        put("PurgeSent", NodeAction { vm.send(OutboxViewModel.Action.PurgeSent) })
     }
 }
 

@@ -1,0 +1,289 @@
+{
+ "name": "stable-actions",
+ "note": "Every state lists the same five actions. update decides validity: Retry on a message that is not failed sets an error and PurgeSent with nothing sent changes nothing.",
+ "steps": [
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": []
+     }
+    }
+   }
+  },
+  {
+   "do": "PurgeSent",
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": [],
+      "deduped": 0
+     }
+    },
+    "server": {
+     "requests": 0
+    }
+   }
+  },
+  {
+   "do": "Retry",
+   "input": {
+    "key": "missing"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": [],
+      "error": "Only failed messages can be retried."
+     }
+    },
+    "server": {
+     "requests": 0
+    }
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": false
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "online": false
+     }
+    }
+   }
+  },
+  {
+   "do": "Enqueue",
+   "input": {
+    "key": "a",
+    "body": "hi"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "body": "hi",
+        "status": "pending",
+        "attempts": 0,
+        "nextAttemptAt": 1800000000000
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "do": "Retry",
+   "input": {
+    "key": "a"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "error": "Only failed messages can be retried.",
+      "items": [
+       {
+        "key": "a",
+        "status": "pending",
+        "attempts": 0
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 0
+    }
+   }
+  },
+  {
+   "op": "network",
+   "input": {
+    "script": [
+     "422"
+    ]
+   }
+  },
+  {
+   "do": "SetOnline",
+   "input": {
+    "online": true
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "online": true,
+      "items": [
+       {
+        "key": "a",
+        "status": "failed",
+        "attempts": 1,
+        "lastError": "http-422"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 1
+    }
+   }
+  },
+  {
+   "do": "PurgeSent",
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "status": "failed"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 1
+    }
+   }
+  },
+  {
+   "do": "Retry",
+   "input": {
+    "key": "a"
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": [
+       {
+        "key": "a",
+        "status": "sent",
+        "attempts": 1,
+        "ack": "created"
+       }
+      ]
+     }
+    },
+    "server": {
+     "requests": 2,
+     "stored": [
+      "a"
+     ]
+    }
+   }
+  },
+  {
+   "do": "PurgeSent",
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ],
+     "state": {
+      "items": []
+     }
+    },
+    "server": {
+     "requests": 2
+    }
+   }
+  },
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "actions": [
+      "Enqueue",
+      "PurgeSent",
+      "Retry",
+      "SetOnline",
+      "SyncNow"
+     ]
+    }
+   }
+  }
+ ]
+}

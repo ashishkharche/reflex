@@ -68,6 +68,7 @@ class OutboxViewModel(private val clock: Clock, private val transport: Transport
 
     private sealed interface Message {
         data class ViewAction(val action: Action) : Message
+        data class Attempting(val key: String) : Message
         data class Delivered(val key: String, val result: DeliveryResult) : Message
     }
 
@@ -94,9 +95,8 @@ class OutboxViewModel(private val clock: Clock, private val transport: Transport
 
     fun send(action: Action) = update(Message.ViewAction(action))
 
-    private fun replace(index: Int, item: Item) {
-        state = state.copy(items = state.items.toMutableList().also { it[index] = item })
-    }
+    /** Pure helper: a copy of [state] with one item swapped. Only [update] assigns the result. */
+    private fun State.withItem(index: Int, item: Item) = copy(items = items.toMutableList().also { it[index] = item })
 
     private fun update(message: Message) {
         when (message) {
@@ -119,20 +119,27 @@ class OutboxViewModel(private val clock: Clock, private val transport: Transport
                     if (action.online) deliver(force = false)
                 }
                 is Action.Retry -> {
+                    // Always offered. Only a failed message can be retried; anything else sets RETRY_ERROR.
                     val index = state.items.indexOfFirst { it.key == action.key && it.status == Status.FAILED }
                     if (index < 0) { state = state.copy(error = RETRY_ERROR); return }
-                    state = state.copy(error = null)
-                    replace(index, state.items[index].copy(status = Status.PENDING, attempts = 0, nextAttemptAt = clock.now, lastError = null))
+                    state = state.copy(error = null).withItem(index,
+                        state.items[index].copy(status = Status.PENDING, attempts = 0, nextAttemptAt = clock.now, lastError = null))
                     if (state.online) deliver(force = false)
                 }
+                // Always offered. With nothing sent this is a no-op.
                 Action.PurgeSent -> state = state.copy(items = state.items.filter { it.status != Status.SENT })
                 Action.Wake -> deliver(force = false)
+            }
+            is Message.Attempting -> {
+                val index = state.items.indexOfFirst { it.key == message.key }
+                if (index < 0) return
+                state = state.withItem(index, state.items[index].let { it.copy(attempts = it.attempts + 1) })
             }
             is Message.Delivered -> {
                 val index = state.items.indexOfFirst { it.key == message.key }
                 if (index < 0) return
                 val item = state.items[index]
-                replace(index, when (val result = message.result) {
+                state = state.withItem(index, when (val result = message.result) {
                     DeliveryResult.Created, DeliveryResult.Duplicate -> item.copy(status = Status.SENT,
                         ack = if (result == DeliveryResult.Created) "created" else "duplicate", nextAttemptAt = null, lastError = null)
                     is DeliveryResult.Rejected -> item.copy(status = Status.FAILED, nextAttemptAt = null, lastError = "http-${result.code}")
@@ -147,7 +154,8 @@ class OutboxViewModel(private val clock: Clock, private val transport: Transport
         }
     }
 
-    /** One pass in queue order. Each waiting item is attempted at most once per pass. */
+    /** One pass in queue order. Each waiting item is attempted at most once per pass.
+     *  Reads state only. Every write goes through [update]. */
     private fun deliver(force: Boolean) {
         if (!state.online) return
         val now = clock.now
@@ -155,10 +163,8 @@ class OutboxViewModel(private val clock: Clock, private val transport: Transport
             (it.status == Status.PENDING || it.status == Status.RETRYING) && (force || (it.nextAttemptAt ?: Long.MAX_VALUE) <= now)
         }.map { it.key }
         for (key in due) {
-            val index = state.items.indexOfFirst { it.key == key }
-            if (index < 0) continue
-            val item = state.items[index].let { it.copy(attempts = it.attempts + 1) }
-            replace(index, item)
+            update(Message.Attempting(key))
+            val item = state.items.firstOrNull { it.key == key } ?: continue
             update(Message.Delivered(key, transport.deliver(item.key, item.body)))
         }
     }

@@ -81,6 +81,7 @@
     "node": {
      "actions": [
       "Enqueue",
+      "PurgeSent",
       "Retry",
       "SetOnline",
       "SyncNow"
@@ -133,6 +134,7 @@
      "actions": [
       "Enqueue",
       "PurgeSent",
+      "Retry",
       "SetOnline",
       "SyncNow"
      ],
