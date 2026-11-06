@@ -1,0 +1,13 @@
+WIRE send={"op":"hello","protocol":1} ok=True node=InventoryList state={"products":[{"id":"shirt","quantity":3,"title":"Cotton shirt"},{"id":"mug","quantity":0,"title":"Ceramic mug"}]}
+UI PASS check=1 want=['Cotton shirt: 3'] absent=[] file=ios-01.png
+WIRE send={"op":"do","action":"OpenProduct","input":{"id":"shirt"}} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":3,"title":"Cotton shirt"},"saved":false}
+UI PASS check=2 want=['Quantity: 3'] absent=['Cotton shirt: 3'] file=ios-02.png
+WIRE send={"op":"do","action":"SetQuantity","input":{"quantity":7}} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":7,"title":"Cotton shirt"},"saved":false}
+UI PASS check=3 want=['Quantity: 7'] absent=['Quantity: 3'] file=ios-03.png
+WIRE send={"op":"do","action":"goBack"} ok=True node=InventoryList state={"products":[{"id":"shirt","quantity":3,"title":"Cotton shirt"},{"id":"mug","quantity":0,"title":"Ceramic mug"}]}
+UI FAIL check=4 missing=['Cotton shirt: 7'] still_present=[] screen=['8:49', 'Inventory', 'Cotton shirt: 3', 'Ceramic mug: 0'] file=ios-04.png
+WIRE send={"op":"do","action":"OpenProduct","input":{"id":"shirt"}} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":3,"title":"Cotton shirt"},"saved":false}
+WIRE send={"op":"do","action":"SetQuantity","input":{"quantity":3}} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":3,"title":"Cotton shirt"},"saved":false}
+WIRE send={"op":"do","action":"goBack"} ok=True node=InventoryList state={"products":[{"id":"shirt","quantity":3,"title":"Cotton shirt"},{"id":"mug","quantity":0,"title":"Ceramic mug"}]}
+UI PASS check=5 want=['Cotton shirt: 3'] absent=['Cotton shirt: 7'] file=ios-05.png
+RESULT LIVE-UI FAIL platform=ios checks=5 failures=1

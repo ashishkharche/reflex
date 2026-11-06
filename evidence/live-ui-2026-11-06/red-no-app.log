@@ -1,0 +1,5 @@
+HOST macOS-26.5.1-arm64-arm-64bit-Mach-O python=3.15.0 runner=reflex_runner protocol=1 sample=inventory platforms=android-emulator journeys=1 files=1
+MATCHER PASS cases=19 source=kit/conformance/strict-decoder.json
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='READY | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+RESULT FAIL socket 127.0.0.1:47815 for platform android-emulator did not accept connections
+exit=2

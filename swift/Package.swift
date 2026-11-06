@@ -2,6 +2,8 @@
 import PackageDescription
 let package = Package(name: "Inventory", platforms: [.macOS(.v13), .iOS(.v17)], products: [
     .library(name: "InventoryCore", targets: ["InventoryCore"]),
+    // For the iOS host's debug socket only. The Release app must not link it.
+    .library(name: "InventoryIntrospection", targets: ["InventoryIntrospection"]),
     .executable(name: "inventory-cli", targets: ["InventoryCLI"])
 ], dependencies: [
     .package(path: "../kit")

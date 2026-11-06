@@ -80,7 +80,7 @@ There is no kit in those languages yet. The wire format is language-agnostic NDJ
 
 **Xcode project with no Swift package**
 
-Supported. Put the Core in a folder or local package with no UIKit/SwiftUI imports, add an Introspection target that depends on ReflexKit and a Command Line Tool for the CLI. Do not link ReflexKit into the phone target. Details: [add-to-your-app.md](add-to-your-app.md) §2.
+Supported. Put the Core in a folder or local package with no UIKit/SwiftUI imports, add an Introspection target that depends on ReflexKit and a Command Line Tool for the CLI. Do not link ReflexKit into the phone target, except in Debug for the optional [socket host](real-build.md). Details: [add-to-your-app.md](add-to-your-app.md) §2.
 
 **Gradle without Android application modules**
 
@@ -136,4 +136,4 @@ Local stdin/stdout on your machine. Anyone who can run the CLI already has local
 
 **Is there a server socket?**
 
-Only if you add one. The optional debug socket host (`ReflexSocketHost` in Swift, `kit/kotlin-socket` in Kotlin) listens on 127.0.0.1 inside a debug build, one client at a time. Any local process can drive it while it runs, so keep it out of release builds. It works with the sample CLIs today. It has not run inside a phone app yet and no check yet proves release builds exclude it. See [real-build.md](real-build.md).
+Only if you add one and opt in at launch. The optional debug socket host (`ReflexSocketHost` in Swift, `kit/kotlin-socket` in Kotlin) listens on 127.0.0.1 inside a debug build, one client at a time. Any local process can drive it while it runs, so keep it out of release builds. The inventory sample apps use it on an iOS simulator and an Android emulator. `scripts/check_release_exclusion.sh` proves their release builds leave out the code, the dependency and on Android the network permission. It has not run on a physical phone. See [real-build.md](real-build.md).

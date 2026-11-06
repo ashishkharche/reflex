@@ -6,14 +6,27 @@ options:
 packages:
   Inventory:
     path: ../../swift
+  Kit:
+    path: ../../kit
 targets:
   InventoryMobile:
     type: application
     platform: iOS
-    sources: [InventoryMobile.swift]
+    sources: [InventoryMobile.swift, DebugSocket.swift]
     dependencies:
       - package: Inventory
         product: InventoryCore
+      # Debug socket host only. Built for every configuration but never linked by the
+      # target. Only the Debug configuration links them, through OTHER_LDFLAGS below.
+      - package: Inventory
+        product: InventoryIntrospection
+        link: false
+      - package: Kit
+        product: ReflexKit
+        link: false
+      - package: Kit
+        product: ReflexSocketHost
+        link: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ashishkharche.reflex.inventory
@@ -21,3 +34,8 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         SWIFT_VERSION: "5.0"
         CODE_SIGNING_ALLOWED: NO
+      configs:
+        Debug:
+          OTHER_LDFLAGS: $(inherited) $(BUILT_PRODUCTS_DIR)/InventoryIntrospection.o $(BUILT_PRODUCTS_DIR)/ReflexKit.o $(BUILT_PRODUCTS_DIR)/ReflexSocketHost.o
+        Release:
+          EXCLUDED_SOURCE_FILE_NAMES: DebugSocket.swift

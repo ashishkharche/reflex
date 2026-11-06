@@ -1,0 +1,16 @@
+WIRE send={"op":"hello","protocol":1} ok=True node=InventoryList state={"products":[{"id":"shirt","quantity":3,"title":"Cotton shirt"},{"id":"mug","quantity":0,"title":"Ceramic mug"}]}
+UI PASS check=1 want=['Cotton shirt: 3'] absent=[] file=android-01.xml
+WIRE send={"op":"do","action":"OpenProduct","input":{"id":"shirt"}} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":3,"title":"Cotton shirt"},"saved":false}
+UI PASS check=2 want=['Quantity: 3'] absent=['Cotton shirt: 3'] file=android-02.xml
+WIRE send={"op":"do","action":"SetQuantity","input":{"quantity":7}} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":7,"title":"Cotton shirt"},"saved":false}
+UI PASS check=3 want=['Quantity: 7'] absent=['Quantity: 3', 'Stock saved'] file=android-03.xml
+WIRE send={"op":"do","action":"Save"} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":7,"title":"Cotton shirt"},"saved":true}
+UI PASS check=4 want=['Quantity: 7', 'Stock saved'] absent=[] file=android-04.xml
+WIRE send={"op":"do","action":"goBack"} ok=True node=InventoryList state={"products":[{"id":"shirt","quantity":7,"title":"Cotton shirt"},{"id":"mug","quantity":0,"title":"Ceramic mug"}]}
+UI PASS check=5 want=['Cotton shirt: 7'] absent=['Quantity: 7'] file=android-05.xml
+WIRE send={"op":"do","action":"OpenProduct","input":{"id":"shirt"}} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":7,"title":"Cotton shirt"},"saved":false}
+WIRE send={"op":"do","action":"SetQuantity","input":{"quantity":3}} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":3,"title":"Cotton shirt"},"saved":false}
+WIRE send={"op":"do","action":"Save"} ok=True node=InventoryDetail state={"product":{"id":"shirt","quantity":3,"title":"Cotton shirt"},"saved":true}
+WIRE send={"op":"do","action":"goBack"} ok=True node=InventoryList state={"products":[{"id":"shirt","quantity":3,"title":"Cotton shirt"},{"id":"mug","quantity":0,"title":"Ceramic mug"}]}
+UI PASS check=6 want=['Cotton shirt: 3'] absent=['Cotton shirt: 7'] file=android-06.xml
+RESULT LIVE-UI PASS platform=android checks=6 failures=0

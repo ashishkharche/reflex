@@ -11,19 +11,28 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 
+/** Owns the real Core for the screen. In debug builds the socket host drives this same object. */
+class InventoryModel {
+    val network = NetworkGuard()
+    val app = InventoryApp(FixtureInventoryService(guardrail = network))
+    var revision by mutableIntStateOf(0)
+    fun dispatch(block: () -> Unit) { block(); revision++ }
+}
+
 class MainActivity : ComponentActivity() {
+    private val model = InventoryModel()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme { InventoryScreen() } }
+        // Debug: starts the loopback socket host when launched with --ei reflexPort PORT. Release: does nothing.
+        DebugSocket.startIfRequested(intent.getIntExtra("reflexPort", -1), model)
+        setContent { MaterialTheme { InventoryScreen(model) } }
     }
 }
-@Composable private fun InventoryScreen() {
-    val app = remember { InventoryApp(FixtureInventoryService(guardrail = NetworkGuard())) }
-    var revision by remember { mutableIntStateOf(0) }
-    fun dispatch(block: () -> Unit) { block(); revision++ }
+@Composable private fun InventoryScreen(model: InventoryModel) {
+    fun dispatch(block: () -> Unit) = model.dispatch(block)
     // Core is synchronous. This revision bridge re-reads immutable state after send.
-    key(revision) {
-        val nav = app.navigator
+    key(model.revision) {
+        val nav = model.app.navigator
         val detail = nav.state.detail
         Column(
             Modifier

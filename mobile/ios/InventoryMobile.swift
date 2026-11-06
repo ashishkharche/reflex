@@ -1,17 +1,34 @@
 import SwiftUI
 import InventoryCore
 
-@main struct InventoryMobile: App {
-    var body: some Scene { WindowGroup { InventoryScreen() } }
+/// Owns the real Core for the screen. In Debug builds the socket host drives this same object.
+final class InventoryModel: ObservableObject {
+    let network = NetworkGuard()
+    let app: InventoryApp
+    @Published var revision = 0
+    init() { app = InventoryApp(service: FixtureInventoryService(guardrail: network)) }
+    func dispatch(_ action: () -> Void) { action(); revision += 1 }
 }
+
+@main struct InventoryMobile: App {
+    @StateObject private var model = InventoryModel()
+    var body: some Scene {
+        WindowGroup {
+            InventoryScreen(model: model)
+            #if DEBUG
+                .onAppear { DebugSocket.startIfRequested(model) }
+            #endif
+        }
+    }
+}
+
 private struct InventoryScreen: View {
-    @State private var app = InventoryApp(service: FixtureInventoryService(guardrail: NetworkGuard()))
-    @State private var revision = 0
+    @ObservedObject var model: InventoryModel
     @State private var quantity = ""
-    private func dispatch(_ action: () -> Void) { action(); revision += 1 }
+    private func dispatch(_ action: () -> Void) { model.dispatch(action) }
     var body: some View {
-        let nav = app.navigator
-        let _ = revision
+        let nav = model.app.navigator
+        let _ = model.revision
         VStack(spacing: 16) {
             Text("Inventory").font(.title).accessibilityIdentifier("inventory.title")
             if let detail = nav.state.detail {
