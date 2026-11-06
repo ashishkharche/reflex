@@ -55,8 +55,13 @@ Follow docs/add-to-your-app.md in the Reflex repo step by step.
 Keep my app’s code and behaviour unchanged. Only add new files and targets. If a screen keeps its state in the views, tell me before you refactor anything.
 Start with my main screen: add one adapter that lists its state and actions, plus a small Swift and Kotlin CLI.
 Write a reflex.json manifest and one journey for that screen.
-Run the runner with --platform both and show me the RESULT line.
-If a step fails, fix it and tell me what you changed.
+Run the runner with --platform both. If a step fails, fix it and rerun.
+When you finish, reply with only this report, short and in plain words:
+1. Result: the RESULT line.
+2. Needs your decision: anything I must choose, such as a refactor or a difference between iOS and Android. Write "None" if empty.
+3. What I added: files and where they live, one line each.
+4. Where it is: branch, commit and whether it is pushed.
+5. Try it: the one command to rerun the tests.
 ```
 
 Reflex stays a separate folder next to your app. Your app only points at it by a relative path. Your phone targets never link it.

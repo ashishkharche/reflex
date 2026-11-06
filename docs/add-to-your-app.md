@@ -289,6 +289,26 @@ FAIL platform=swift journey=… step=1 action=ls send={"op":"ls"} $.node.state.c
 RESULT FAIL mode=xfail-tracked unexpected_failures=1 xfail=0 platforms=swift repeat=1 sample=counter guard=canary-pass
 ```
 
+## What you get back
+
+If you used the AI prompt from the README, the assistant ends with a five-part report:
+
+1. **Result:** the RESULT line.
+2. **Needs your decision:** anything you must choose, such as a refactor or a difference between iOS and Android. “None” if empty.
+3. **What I added:** files and where they live, one line each.
+4. **Where it is:** branch, commit and whether it is pushed.
+5. **Try it:** the one command to rerun the tests.
+
+Example:
+
+```text
+Result: RESULT PASS platforms=swift,kotlin
+Needs your decision: Android starts on a different default item than iOS. I used the iOS value in both CLIs.
+What I added: tests/reflex.json, tests/journeys/home.json, HomeNode (Swift, Kotlin), home-cli (Swift, Kotlin)
+Where it is: branch reflex/home, commit abc1234, not pushed
+Try it: python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
+```
+
 ## 9. Troubleshooting
 
 | Symptom | What to check |
