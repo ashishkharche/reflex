@@ -2,6 +2,7 @@ import OutboxCore
 import ReflexKit
 
 // Adapter only: every closure dispatches through send. No delivery rules here.
+// The action set never depends on state. The ViewModel’s update decides if an action is valid.
 private let enqueueInput = Schema([.required("key", .string), .required("body", .string)])
 private let onlineInput = Schema([.required("online", .bool)])
 private let keyInput = Schema([.required("key", .string)])
@@ -29,18 +30,13 @@ public struct OutboxNode: Node {
         return .object(fields)
     }
     public var actions: [String: NodeAction] {
-        var actions: [String: NodeAction] = [
+        [
             "Enqueue": NodeAction(input: enqueueInput) { vm.send(.enqueue(key: $0.string("key"), body: $0.string("body"))) },
             "SyncNow": NodeAction { _ in vm.send(.syncNow) },
-            "SetOnline": NodeAction(input: onlineInput) { vm.send(.setOnline($0.bool("online"))) }
+            "SetOnline": NodeAction(input: onlineInput) { vm.send(.setOnline($0.bool("online"))) },
+            "Retry": NodeAction(input: keyInput) { vm.send(.retry(key: $0.string("key"))) },
+            "PurgeSent": NodeAction { _ in vm.send(.purgeSent) }
         ]
-        if vm.state.items.contains(where: { $0.status == .failed }) {
-            actions["Retry"] = NodeAction(input: keyInput) { vm.send(.retry(key: $0.string("key"))) }
-        }
-        if vm.state.items.contains(where: { $0.status == .sent }) {
-            actions["PurgeSent"] = NodeAction { _ in vm.send(.purgeSent) }
-        }
-        return actions
     }
 }
 

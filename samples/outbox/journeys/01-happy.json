@@ -10,6 +10,8 @@
      "name": "Outbox",
      "actions": [
       "Enqueue",
+      "PurgeSent",
+      "Retry",
       "SetOnline",
       "SyncNow"
      ],
@@ -80,6 +82,7 @@
      "actions": [
       "Enqueue",
       "PurgeSent",
+      "Retry",
       "SetOnline",
       "SyncNow"
      ],
@@ -121,6 +124,8 @@
     "node": {
      "actions": [
       "Enqueue",
+      "PurgeSent",
+      "Retry",
       "SetOnline",
       "SyncNow"
      ],

@@ -17,15 +17,17 @@ The Kotlin build reuses the wrapper in `kotlin/`. Both builds include the shared
 
 ## Core
 
-`OutboxViewModel` takes a `Clock` and a `Transport` at construction. Actions go in through `send` and one `update` owns every state write.
+`OutboxViewModel` takes a `Clock` and a `Transport` at construction. Actions go in through `send` and one `update` owns every state write, including the attempt count and each delivery result.
+
+The adapter always lists all five actions, whatever the state. `update` decides whether an action is valid. An action that does not apply sets a visible error or changes nothing.
 
 | Action | Effect |
 | --- | --- |
 | `Enqueue(key, body)` | Queues a message due now. A key already in the queue is dropped and counted in `deduped`. Keys are 1 to 64 ASCII letters, digits, dots, dashes or underscores. Bodies hold at most 280 Unicode code points. |
 | `SyncNow` | Attempts every waiting message at once and ignores backoff. Offline it sets a visible error. |
 | `SetOnline(online)` | Offline holds every message and clears the wake time. Back online it attempts what is due and keeps future backoff. |
-| `Retry(key)` | Offered while a message has failed. Resets attempts and delivers when online. |
-| `PurgeSent` | Offered while a message is sent. Removes sent messages. |
+| `Retry(key)` | Resets attempts on a failed message and delivers when online. Any other key sets the error “Only failed messages can be retried.” |
+| `PurgeSent` | Removes sent messages. With nothing sent it changes nothing. |
 | `Wake` | The host timer fired. Attempts messages whose `nextAttemptAt` has passed. |
 
 Delivery results: `created` and `duplicate` (HTTP 409) mark a message sent with that `ack`. `timeout` and HTTP 500 retry after 1, 2, 4, 8 and 16 seconds, then every 30 seconds, with no jitter. The seventh failed attempt marks the message failed. HTTP 422 fails at once. Each message keeps its own schedule, so one slow message never blocks the queue.
@@ -58,4 +60,4 @@ The CLI speaks Reflex protocol v1 ([docs/protocol/v1.md](../../docs/protocol/v1.
 
 ## Journeys
 
-`journeys/` covers delivery, backoff timing, the 30 second cap and giving up, lost replies, 409 conflicts, client and server dedup, offline holds, 422 rejection and Retry, queue order, SyncNow, business validation, wire rejects, Int64 time and the network tripwire. `warm.json` is the repeatable warm-timing journey.
+`journeys/` covers delivery, backoff timing, the 30 second cap and giving up, lost replies, 409 conflicts, client and server dedup, offline holds, 422 rejection and Retry, queue order, SyncNow, business validation, wire rejects, Int64 time, the network tripwire and a stable action set across states. `warm.json` is the repeatable warm-timing journey.

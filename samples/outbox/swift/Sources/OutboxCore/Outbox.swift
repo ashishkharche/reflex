@@ -66,6 +66,7 @@ public final class OutboxViewModel {
 
     private enum Message {
         case viewAction(Action)
+        case attempting(key: String)
         case delivered(key: String, DeliveryResult)
     }
 
@@ -114,6 +115,7 @@ public final class OutboxViewModel {
             state.error = nil
             if online { deliver(force: false) }
         case .viewAction(.retry(let key)):
+            // Always offered. Only a failed message can be retried; anything else sets retryError.
             guard let index = state.items.firstIndex(where: { $0.key == key && $0.status == .failed }) else {
                 state.error = OutboxViewModel.retryError; return
             }
@@ -124,9 +126,13 @@ public final class OutboxViewModel {
             state.items[index].lastError = nil
             if state.online { deliver(force: false) }
         case .viewAction(.purgeSent):
+            // Always offered. With nothing sent this is a no-op.
             state.items.removeAll { $0.status == .sent }
         case .viewAction(.wake):
             deliver(force: false)
+        case .attempting(let key):
+            guard let index = state.items.firstIndex(where: { $0.key == key }) else { return }
+            state.items[index].attempts += 1
         case .delivered(let key, let result):
             guard let index = state.items.firstIndex(where: { $0.key == key }) else { return }
             var item = state.items[index]
@@ -155,6 +161,7 @@ public final class OutboxViewModel {
     }
 
     /// One pass in queue order. Each waiting item is attempted at most once per pass.
+    /// Reads state only. Every write goes through `update`.
     private func deliver(force: Bool) {
         guard state.online else { return }
         let now = clock.now
@@ -162,9 +169,8 @@ public final class OutboxViewModel {
             ($0.status == .pending || $0.status == .retrying) && (force || ($0.nextAttemptAt ?? .max) <= now)
         }.map(\.key)
         for key in due {
-            guard let index = state.items.firstIndex(where: { $0.key == key }) else { continue }
-            state.items[index].attempts += 1
-            let item = state.items[index]
+            update(.attempting(key: key))
+            guard let item = state.items.first(where: { $0.key == key }) else { continue }
             update(.delivered(key: key, transport.deliver(key: item.key, body: item.body)))
         }
     }
