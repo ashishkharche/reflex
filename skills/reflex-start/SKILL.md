@@ -42,7 +42,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 - Never turn the network guard off to get a run through.
 - Platforms come from `tests/reflex.json`. A Kotlin Multiplatform or Compose Multiplatform app with only a Kotlin host is complete. Do not ask for a Swift harness. Write the Result as “on kotlin (shared code)”.
 - Dry run or plan: change nothing. Reading and the tool check are fine. Report INCOMPLETE with the reason “dry run”.
-- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`.
+- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Use your own read and search tools. Keep build and test logs in the app repo’s `.build/` and ensure it is gitignored, never `/tmp`.
 
 ## Report
 
@@ -68,7 +68,9 @@ Next: merge reflex/home, then /reflex-cover <next screen>
 ```
 
 - Result is one line: the Result word, the platforms and the build and unit test outcome.
+- PASS requires every platform in `tests/reflex.json` to pass in this session, every app to build and pass its unit tests in this session and no uncommitted changes. Otherwise report INCOMPLETE and name each platform or check that did not run.
+- Commit changed code on `reflex/<screen>` before reporting. Never include unrelated changes or push unless asked. Where it is names the committed work, never “uncommitted”. If the commit cannot be made, report BLOCKED and say why under Needs your decision.
 - Needs your decision is a numbered list with one short line each. Write “None” if empty. Every reason the Result is not PASS goes here.
 - The Next line follows the Result word. PASS: “Next: merge reflex/<screen>, then /reflex-cover <next screen>”. Anything else: “Next: answer 1, then /reflex-check”. Never say merge before PASS.
 - At most three decisions. Join related ones into one line. Nothing goes outside the block.
-- Write “Safe to merge” after the Next line only on PASS. No logs unless asked.
+- No extra merge claim or logs. The Next line is the last line.

@@ -24,10 +24,12 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 7. **Check** the app’s own build files never name `../reflex`, apart from the guarded Kotlin block.
 8. **Check each journey runs its screen’s main action.** One that only touches a minor control makes that screen INCOMPLETE.
 9. **Count** commits behind the main branch after `git fetch`.
+10. **Commit** any fixes on the Reflex branch before reporting. Do not push unless asked.
 
 ## Rules
 
-- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`.
+- When a step fails, run `python3 ../reflex/runner/explore.py tests/reflex.json` with the failing step first and read its STDERR before reading code.
+- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Use your own read and search tools. Keep build and test logs in the app repo’s `.build/` and ensure it is gitignored, never `/tmp`.
 
 ## Result
 
@@ -64,7 +66,9 @@ Next: merge reflex/home, then /reflex-cover <next screen>
 ```
 
 - Result is one line: the Result word, the platforms and the build and unit test outcome.
+- PASS requires every platform in `tests/reflex.json` to pass in this session, every app to build and pass its unit tests in this session and no uncommitted changes. Otherwise report INCOMPLETE and name each platform or check that did not run.
+- Commit changed code on `reflex/<screen>` before reporting. Never include unrelated changes or push unless asked. Where it is names the committed work, never “uncommitted”. If the commit cannot be made, report BLOCKED and say why under Needs your decision.
 - Needs your decision is a numbered list with one short line each. Write “None” if empty. Every reason the Result is not PASS goes here.
 - The Next line follows the Result word. PASS: “Next: merge reflex/<screen>, then /reflex-cover <next screen>”. Anything else: “Next: answer 1, then /reflex-check”. Never say merge before PASS.
 - At most three decisions. Join related ones into one line. Nothing goes outside the block.
-- Fixes count as added files. Write “Safe to merge” after the Next line only on PASS. No logs unless asked.
+- Fixes count as added files. No extra merge claim or logs. The Next line is the last line.

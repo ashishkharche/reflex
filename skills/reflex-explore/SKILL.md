@@ -26,12 +26,13 @@ It builds and proves the network guard, runs every line in one process per platf
 
 ## Rules
 
+- When a step fails, run `python3 ../reflex/runner/explore.py tests/reflex.json` with the failing step first and read its STDERR before reading code.
 - Read only. Do not change app code to explore.
 - Never launch a CLI yourself, never write your own script around the runner and never explore without the guard. If the helper can’t do something, say so in the reply. If the helper prints `BLOCKED`, stop and report that line. Never claim “no network calls” without its `network=clean` line.
 - An action the screen does not offer returns `action.unknown`. Use the actions `ls` lists.
 - Work only in the app repo and `../reflex`.
-- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`.
+- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Use your own read and search tools. Keep build and test logs in the app repo’s `.build/` and ensure it is gitignored, never `/tmp`.
 
 ## Reply
 
-A few lines: the screen, the state fields that matter, what changed after each action, the network line and any difference between iOS and Android. No five-part report unless you changed files. End with one next step, for example `Next: /reflex-cover cart to keep this as a test`.
+A few lines: the screen, the state fields that matter, what changed after each action, the network line and any difference between iOS and Android. No five-part report unless you changed files. If you changed files, commit them on `reflex/<screen>` before reporting and use the `reflex-check` report rules. End with one next step, for example `Next: /reflex-cover cart to keep this as a test`.

@@ -33,6 +33,7 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 **Branch**
 
 - Start the branch from the latest main branch.
+- Commit changed code on the `reflex/<screen>` branch before reporting. Never include unrelated changes or push unless asked. If the commit cannot be made, report BLOCKED and say why under Needs your decision.
 - Before you report, run `git fetch` and count how far behind you are: `git rev-list --count HEAD..origin/main`.
 - If the count is above 0, rebase onto the main branch and run every check again. Say the count in Where it is.
 
@@ -50,6 +51,8 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 
 **Rules**
 
+- Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Use your own read and search tools. Keep build and test logs in the app repo’s `.build/` and ensure it is gitignored, never `/tmp`.
+- When a step fails, run `python3 ../reflex/runner/explore.py tests/reflex.json` with the failing step first and read its STDERR before reading code.
 - Keep the app’s code and behaviour unchanged. Only add new files and targets. Registering a Reflex module in `settings.gradle.kts` as [3. Kotlin](#3-kotlin) shows is part of adding it. List each such edit in the report.
 - Files Reflex added earlier (adapters, CLIs, `reflex.json`, journeys) may be updated to follow this guide or the CHANGELOG. Ask before editing any other existing file.
 - If a screen keeps its state in its views, ask before refactoring.
@@ -440,10 +443,12 @@ If you used the AI prompt or the skills, the assistant ends with a five-part rep
 | Result | One line: the result word, the platforms and whether both apps built and passed their unit tests, for example “PASS on swift and kotlin. Both apps build and pass unit tests.” |
 | Needs your decision | A numbered list with one decision per item, at most two short lines each. “None” if empty. Every reason for FAIL, BLOCKED or INCOMPLETE appears here. So does every product change. |
 | What I added | One bullet per file or folder, including files updated on an update and each edit to an existing build file. |
-| Where it is | One line: branch, commit, pushed or not and how many commits it is behind the main branch. |
-| Try it | The runner command on its own line, then one next step, for example `Next: /reflex-check before you merge`. Write “Safe to merge” only on PASS. |
+| Where it is | One line: branch, commit, pushed or not and how many commits it is behind the main branch. Name committed work, never “uncommitted”. |
+| Try it | The runner command on its own line, then `Next: merge reflex/<screen>, then /reflex-cover <next screen>` on PASS. Otherwise `Next: answer 1, then /reflex-check`. No extra merge claim. The Next line is the last line. |
 
-Keep it under 20 lines in total, with no long sentences.
+Keep it to 19 lines at most, with at most three decisions and nothing outside the block. Join related decisions into one short line.
+
+PASS requires every platform in `tests/reflex.json` to pass in this session, every app to build and pass its unit tests in this session and no uncommitted changes. Otherwise report INCOMPLETE and name each platform or check that did not run.
 
 ### Result words
 
@@ -460,7 +465,8 @@ INCOMPLETE covers these cases:
 
 - An adapter wraps a copy of the rules.
 - A screen’s view still does the real work. The model only mirrors it or the tests drive a copy of its logic. Name the screen under Needs your decision.
-- A platform the app has was not run.
+- A platform in `tests/reflex.json` did not run in this session. Name it under Needs your decision.
+- Changes remain uncommitted.
 - A step is marked `parity` or `xfail`.
 - The runner printed `PASS-UNGUARDED`.
 - An app build or its unit tests could not be run.
@@ -491,7 +497,7 @@ reflex/home at abc1234, not pushed, 0 behind main
 
 Try it
 python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
-Next: answer 1 and 2, then /reflex-check
+Next: answer 1, then /reflex-check
 ```
 
 ## 10. Troubleshooting

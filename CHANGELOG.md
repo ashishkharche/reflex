@@ -4,6 +4,11 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- Skills diagnose a failing step with `explore.py` and read its STDERR before reading code.
+- Skills forbid all custom scripts, including inline Python and heredocs. Build and test logs stay in the app repo’s gitignored `.build/`, never `/tmp`.
+- Changed code is committed on the Reflex branch before reporting. PASS requires every manifest platform and each app’s build and unit tests to pass in the current session with no uncommitted changes. A skipped platform is named with INCOMPLETE.
+- Reports end with the Next line. The extra merge claim is gone. Only PASS permits a merge next step.
+
 - New `scripts/guide.py` prints only the guide sections a step needs, for example `guide.py 3 4 5 7`. The skills use it instead of opening the whole guide.
 - New `runner/explore.py` runs `ls` and `do` lines on every platform under the network guard in one process each, then prints the network status and parity. It stops with `BLOCKED` when the guard can’t run. `reflex-explore` uses only this.
 - `reflex-start` and `reflex-cover` now name the screen’s main action, check its state is outside the views and prove it runs offline before writing the journey. A journey that skips the main action is INCOMPLETE.
