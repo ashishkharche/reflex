@@ -258,6 +258,32 @@ def poll(host, expected, every_response, within_ms, every_ms):
         time.sleep(every_ms / 1000)
 
 
+_JVM_PREFS = {}
+
+
+def build_jvm_prefs(out_dir):
+    """Compiles the in-memory java.util.prefs factory once. Returns its class folder, or None with no javac."""
+    out_dir = Path(out_dir)
+    if out_dir in _JVM_PREFS:
+        return _JVM_PREFS[out_dir]
+    src = Path(__file__).resolve().parent / "jvm" / "MemoryPreferences.java"
+    built = out_dir / "reflex" / "prefs" / "MemoryPreferences$Factory.class"
+    java_home = os.environ.get("JAVA_HOME")
+    javac = str(Path(java_home) / "bin/javac") if java_home else shutil.which("javac")
+    result = out_dir
+    if not built.exists() or built.stat().st_mtime < src.stat().st_mtime:
+        if not javac or not os.access(javac, os.X_OK):
+            result = None
+        else:
+            out_dir.mkdir(parents=True, exist_ok=True)
+            done = subprocess.run([javac, "--release", "11", "-d", str(out_dir), str(src)], capture_output=True, text=True)
+            if done.returncode != 0:
+                print(f"WARN in-memory Java preferences did not build: {done.stderr.strip()[:200]}", file=sys.stderr)
+                result = None
+    _JVM_PREFS[out_dir] = result
+    return result
+
+
 class Host:
     def __init__(self, manifest, target, fixture, guard):
         self.target = target
@@ -266,8 +292,14 @@ class Host:
         self.home = tempfile.mkdtemp(prefix="reflex-home-")
         env = dict(os.environ, HOME=self.home, TMPDIR=self.home, XDG_CONFIG_HOME=self.home + "/.config",
                    XDG_DATA_HOME=self.home + "/.local/share", XDG_CACHE_HOME=self.home + "/.cache")
-        # The JVM takes user.home from the account, not HOME, so pass it as well.
-        env["JAVA_TOOL_OPTIONS"] = (env.get("JAVA_TOOL_OPTIONS", "") + f" -Duser.home={self.home} -Djava.io.tmpdir={self.home}").strip()
+        env["CFFIXED_USER_HOME"] = self.home  # Apple frameworks resolve the home folder from this, not HOME.
+        # The JVM takes user.home from the account, not HOME. On macOS java.util.prefs also ignores user.home
+        # and writes the account's plist, so swap in an in-memory store.
+        java = f" -Duser.home={self.home} -Djava.io.tmpdir={self.home}"
+        prefs = build_jvm_prefs(Path(manifest.guard_library).parent / "jvm-prefs")
+        if prefs:
+            java += f" -Xbootclasspath/a:{prefs} -Djava.util.prefs.PreferencesFactory=reflex.prefs.MemoryPreferences$Factory"
+        env["JAVA_TOOL_OPTIONS"] = (env.get("JAVA_TOOL_OPTIONS", "") + java).strip()
         if guard:
             handle = tempfile.NamedTemporaryFile(prefix="reflex-net-", delete=False)
             handle.close()
@@ -347,6 +379,8 @@ class Host:
             self.proc.kill(); self.proc.wait(); code = "timeout"
         rest = self.buffer + self.proc.stdout.read()
         self.proc.stdout.close()
+        self.stderr.seek(0)
+        self.stderr_tail = self.stderr.read()[-4000:].decode("utf-8", "replace")
         self.stderr.close()
         status = self.network()
         if self.audit:

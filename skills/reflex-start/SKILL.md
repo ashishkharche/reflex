@@ -42,6 +42,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 - Never turn the network guard off to get a run through.
 - Platforms come from `tests/reflex.json`. A Kotlin Multiplatform or Compose Multiplatform app with only a Kotlin host is complete. Do not ask for a Swift harness. Write the Result as “on kotlin (shared code)”.
 - Dry run or plan: change nothing. Reading and the tool check are fine. Report INCOMPLETE with the reason “dry run”.
+- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`.
 
 ## Report
 

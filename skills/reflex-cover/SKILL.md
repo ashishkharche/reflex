@@ -33,6 +33,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 - A CLI loads the same state the app shows. An empty or made-up start state makes the screen INCOMPLETE.
 - A journey that skips the main action makes the screen INCOMPLETE.
 - Platforms come from `tests/reflex.json`. A Kotlin Multiplatform or Compose Multiplatform app with only a Kotlin host is complete. Do not ask for a Swift harness. Write the Result as “on kotlin (shared code)”.
+- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`.
 
 ## Report
 

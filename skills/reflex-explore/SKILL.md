@@ -30,6 +30,7 @@ It builds and proves the network guard, runs every line in one process per platf
 - Never launch a CLI yourself, never write your own script around the runner and never explore without the guard. If the helper can’t do something, say so in the reply. If the helper prints `BLOCKED`, stop and report that line. Never claim “no network calls” without its `network=clean` line.
 - An action the screen does not offer returns `action.unknown`. Use the actions `ls` lists.
 - Work only in the app repo and `../reflex`.
+- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`.
 
 ## Reply
 

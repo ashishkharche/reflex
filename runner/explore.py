@@ -52,6 +52,13 @@ def to_request(line):
     raise ValueError(f"not a line: {line!r}. Use ls, do Action {{json}}, op name {{json}} or a JSON object")
 
 
+def ok_reply(reply):
+    try:
+        return rr.parse(reply).get("ok") is True
+    except Exception:
+        return False
+
+
 def brief(reply):
     """Drops node.inputs after the first reply, so a long session costs fewer tokens. --full keeps them."""
     try:
@@ -77,7 +84,7 @@ def run(manifest, target, fixture, guard, requests):
         if dead:
             break
     code, network, _ = host.close()
-    return replies, code, network
+    return replies, code, network, host.stderr_tail
 
 
 def main():
@@ -112,7 +119,7 @@ def main():
         if not os.access(manifest.command(target, fixture)[0], os.X_OK):
             print(f"BLOCKED {target} CLI is not built: {manifest.command(target, fixture)[0]}")
             return 2
-        replies, code, network = run(manifest, target, fixture, guard, requests)
+        replies, code, network, stderr = run(manifest, target, fixture, guard, requests)
         results[target] = replies
         print(f"== {target} fixture={fixture} exit={code} network={network}")
         for index, (request, reply) in enumerate(zip([{"op": "hello"}] + requests, replies)):
@@ -122,6 +129,10 @@ def main():
                 failed |= rr.parse(reply).get("ok") is not True
             except Exception:
                 failed = True
+        lines = [l for l in stderr.splitlines() if l.strip() and not l.startswith("Picked up JAVA_TOOL_OPTIONS")]
+        if lines and (code != 0 or any(not ok_reply(r) for r in replies)):
+            print("STDERR (last 20 lines). Debug from this, never by launching the CLI yourself:")
+            print("\n".join("! " + l for l in lines[-20:]))
         if network != "clean":
             failed = True
             print(f"NETWORK {network}: the CLI tried the network. Add a fixture before testing this action.")

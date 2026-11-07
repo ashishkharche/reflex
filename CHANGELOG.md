@@ -9,7 +9,8 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 - `reflex-start` and `reflex-cover` now name the screen’s main action, check its state is outside the views and prove it runs offline before writing the journey. A journey that skips the main action is INCOMPLETE.
 - Every skill carries a literal report shape under 20 lines. Result and Where it is are one line each.
 - `explore.py` takes `wait Name [ms]` and `wait {json} [ms]` lines for actions that load. The explore skill forbids writing your own script around the runner.
-- Every CLI process gets a fresh empty home folder, including the JVM’s `user.home`, so saved data can’t leak between runs or app copies.
+- Every CLI process gets a fresh empty home folder, including the JVM’s `user.home` and `CFFIXED_USER_HOME`. JVM CLIs also get an in-memory `java.util.prefs` store, because on macOS Java Preferences ignore `user.home` and write the account’s own settings. Saved data can’t leak between runs or app copies or touch the user’s settings.
+- `explore.py` prints a failing CLI’s last error lines. Every skill forbids launching a CLI or probe script by hand and touching the user’s own settings.
 - Kotlin Multiplatform apps with one Kotlin host are complete. The skills no longer ask for a Swift harness.
 - The readiness check also opens the view file. State a user sees that lives there, such as a pager position, is a readiness gap and makes the Result INCOMPLETE.
 - The Next line follows the Result word, so nothing says merge before PASS. Reports are 19 lines at most with three decisions at most and nothing outside the block.
