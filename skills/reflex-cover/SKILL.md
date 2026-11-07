@@ -6,7 +6,7 @@ license: MIT
 
 # Cover a screen
 
-One screen per run, one branch per screen. The app needs `tests/reflex.json` first. No manifest: use `reflex-start` instead. Merge the last Reflex branch before you start a new one.
+One screen per run, one branch per screen. The app needs `tests/reflex.json` first. No manifest: use `reflex-start` instead. The last Reflex branch must already be merged. This skill does not merge branches.
 
 Work only in the app repo and `../reflex`. Do not search home folders, other skills or other repos.
 
@@ -15,9 +15,9 @@ Before launching a Swift CLI that uses UserDefaults, require an injected in-memo
 ## Steps
 
 1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
-2. **Pick the screen.** If the user named one, use it. Otherwise list the screens with their ViewModel on iOS and Android side by side. Mark one-platform screens and screens that keep state in their views. Ask which to do. “The whole app” means this list, one screen at a time.
+2. **Check setup and pick the screen.** Confirm the last Reflex branch is already merged into main. If not, stop with INCOMPLETE and name that prerequisite. A cover request is not merge approval. Never merge an INCOMPLETE branch. If the user named a screen, use it. Otherwise list the screens with their ViewModel on iOS and Android side by side. Mark one-platform screens and screens that keep state in their views. Ask which to do. “The whole app” means this list, one screen at a time.
 3. **Check it is ready.** Name its main action, the one the screen exists for.
-   - State in the views or no ViewModel: stop and ask. Do not refactor unasked.
+   - State in the views or no ViewModel: stop and ask. Do not refactor unasked. A harness-owned copy of view state, even a second instance of a real helper, does not make it ready.
    - Open the screen’s view file too. A value a user sees or changes that lives there (`remember`, `rememberPagerState`, `@State`, a local variable) is a readiness gap even when the main action is in the ViewModel. Name it under Needs your decision and make the Result INCOMPLETE. Do not refactor unasked.
    - Every network call that action makes needs a fixture. If one can’t be faked without changing app code, stop with BLOCKED and say which call.
 4. **Branch** from the latest main branch (`git symbolic-ref --short refs/remotes/origin/HEAD`), for example `reflex/settings`.

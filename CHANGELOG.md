@@ -4,6 +4,8 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- `reflex-cover` now stops when the previous Reflex branch is not merged instead of merging it implicitly. A second helper instance in the harness cannot stand in for view-owned state.
+
 - Swift UserDefaults harnesses now require an injected in-memory store before the first launch. Named suites can survive a temporary home on macOS, so the runner guide no longer promises isolation for every persistent store.
 
 - The failure-first step now starts with a runnable `explore.py ... ls` command before any helper code read. Native build and test attempts remain mandatory when a request only names one failure.

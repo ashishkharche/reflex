@@ -54,7 +54,8 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 - Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Read and search files with your own tools instead of inline Python or heredocs. Write commit messages with `git commit -m`. Keep build and test logs in the app repo’s gitignored `.build/`, never `/tmp`. Find build output there or at the repo-local path the build prints, never by searching `~/Library`.
 - Keep the app’s code and behaviour unchanged. Only add new files and targets. Registering a Reflex module in `settings.gradle.kts` as [3. Kotlin](#3-kotlin) shows is part of adding it. List each such edit in the report.
 - Files Reflex added earlier (adapters, CLIs, `reflex.json`, journeys) may be updated to follow this guide or the CHANGELOG. Ask before editing any other existing file.
-- If a screen keeps its state in its views, ask before refactoring.
+- If a screen keeps its state in its views, ask before refactoring. A harness-owned copy of that state, even a second instance of a real helper, does not drive the app’s state. Stop with INCOMPLETE instead.
+- Before covering the next screen, the last Reflex branch must already be merged into main. The cover skill does not merge branches. A cover request is not merge approval. Never merge an INCOMPLETE branch.
 - If iOS and Android are separate repos, ask where the other one is first.
 - Every adapter wraps the app’s real Core, the same object the screen uses. Never copy its rules into the adapter or the CLI to get a test to pass.
 - Never hide a platform difference. Do not make one CLI copy the other platform’s value. Keep each platform’s real behaviour and mark the step with a `parity` id so the run shows `PARITY KNOWN`.
