@@ -11,7 +11,7 @@ The Reflex clone sits next to the app, usually `../reflex`. Runner flags are in 
 ## Steps
 
 1. Rebuild each CLI the manifest points at: the Swift executable and the Kotlin `installDist` task, as the guide shows.
-2. Run `python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both`, with the app’s manifest path. If the app has one platform, pass just that one.
+2. Run `python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both`, with the app’s manifest path. If the app has one platform or a Kotlin Multiplatform host, pass just that one.
 3. For each `FAIL` line, say in plain words which journey and step failed, which action was sent, what was expected and what came back.
 4. Decide which of these it is and say why:
    - The app changed on purpose. Only the user can confirm this. A change they asked for in this session also counts.
@@ -21,7 +21,7 @@ The Reflex clone sits next to the app, usually `../reflex`. Runner flags are in 
 6. Rerun after each fix until the run passes or only decisions are left.
 7. Build each app and run its existing unit tests, for example `xcodebuild test` and `./gradlew test`. Do not start an emulator for instrumented tests unless the user asks.
 8. Check that the app’s own build files never name `../reflex`, apart from the guarded Kotlin block. Use the `git grep` lines in the guide.
-9. Run `git fetch` and `git rev-list --count HEAD..origin/main` for Where it is.
+9. Run `git fetch` and count the commits behind the main branch for Where it is. The main branch is whatever `git symbolic-ref --short refs/remotes/origin/HEAD` names, not always `main`.
 
 ## Result
 
@@ -34,6 +34,7 @@ Use the guide’s Result words. A green runner line is not enough for PASS.
 | A screen’s view still does the real work | INCOMPLETE |
 | `PASS-UNGUARDED`, a skipped platform or a step marked `parity` or `xfail` | INCOMPLETE |
 | A CLI starts from an empty or made-up state the app fills in elsewhere | INCOMPLETE |
+| A tool the run needs is missing, such as Xcode, a JDK or Python 3 | BLOCKED |
 
 ## Report
 

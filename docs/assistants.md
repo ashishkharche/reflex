@@ -28,12 +28,15 @@ Grok Build asks for `--trust` before it loads a plugin’s skills. Run the insta
 
 | Rule | Why |
 | --- | --- |
+| Checks the stack and the tools first and stops with BLOCKED if one is missing | You hear what to install before anything changes. |
 | Builds both apps and runs their unit tests before it reports | A green runner does not prove the app still builds. |
 | Keeps Reflex in a separate harness package | The app builds without the Reflex clone. |
 | Marks a screen INCOMPLETE when its view still does the real work | The test would only drive a copy. |
 | Puts a product change on its own branch, after asking | Coverage and behaviour changes are reviewed apart. |
 | Does one screen per branch and stops after each screen or refactor | Each branch stays small enough to review. |
 | Says how far the branch is behind the main branch and rebases first | The result matches what you would merge. |
+| Finds the main branch, whether it is `main`, `master` or another name | It works with any repo. |
+| Commits on the branch but never pushes unless you ask | You decide what leaves your computer. |
 | Ends with exactly five headings: Result, Needs your decision, What I added, Where it is, Try it | Reports look the same every time. |
 
 No skills support? Paste the prompt from the [README](../README.md). It points at the same guide.
