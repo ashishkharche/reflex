@@ -457,6 +457,11 @@ INCOMPLETE covers these cases:
 - A step is marked `parity` or `xfail`.
 - The runner printed `PASS-UNGUARDED`.
 - An app build or its unit tests could not be run.
+- A CLI starts from an empty or made-up state while the app fills that state in somewhere else, such as a planner or a view.
+
+A `parity` or `xfail` mark covers one known difference between the platforms. It must not hide state the CLI is missing.
+
+When the Result is FAIL or BLOCKED, still name every screen that would be INCOMPLETE, with its reason, under Needs your decision.
 
 A green runner line is not enough for PASS. A test that passes because an adapter copies the rules or because both CLIs use one platform’s value proves nothing about the app.
 

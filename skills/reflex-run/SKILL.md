@@ -33,6 +33,7 @@ Use the guide’s Result words. A green runner line is not enough for PASS.
 | An app build or its unit tests could not run | INCOMPLETE |
 | A screen’s view still does the real work | INCOMPLETE |
 | `PASS-UNGUARDED`, a skipped platform or a step marked `parity` or `xfail` | INCOMPLETE |
+| A CLI starts from an empty or made-up state the app fills in elsewhere | INCOMPLETE |
 
 ## Report
 
