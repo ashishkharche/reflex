@@ -284,15 +284,47 @@ def build_jvm_prefs(out_dir):
     return result
 
 
+def guarded_command(command, guard, env):
+    """Confine before exec, so a SIP or hardened target cannot bypass storage isolation."""
+    if sys.platform != "darwin":
+        return command
+    source = Path(__file__).resolve().parent / "macos/preferences_exec.c"
+    launcher = Path(guard).parent / "preferences-exec"
+    if not launcher.exists() or launcher.stat().st_mtime < source.stat().st_mtime:
+        built = subprocess.run(["clang", "-O2", "-Wall", "-Werror", str(source), "-o", str(launcher)],
+                               capture_output=True, text=True)
+        if built.returncode:
+            raise RuntimeError("BLOCKED preferences launcher did not build: " + built.stderr.strip())
+    env["REFLEX_NATIVE_GUARD"] = env.pop(GUARD_ENV)
+    return [str(launcher), *command]
+
+
+def isolated_env(home):
+    """One private home plus a kernel-enforced macOS preferences boundary."""
+    home = str(Path(home).resolve())
+    env = dict(os.environ, HOME=home, TMPDIR=home, CFFIXED_USER_HOME=home,
+               XDG_CONFIG_HOME=home + "/.config", XDG_DATA_HOME=home + "/.local/share",
+               XDG_CACHE_HOME=home + "/.cache")
+    if sys.platform == "darwin":
+        # cfprefsd ignores HOME. Deny its IPC and preferences operations, then
+        # deny direct writes outside the process home, including container stores.
+        env["REFLEX_STORAGE_PROFILE"] = (
+            '(version 1)(allow default)'
+            '(deny user-preference-read user-preference-write)'
+            '(deny mach-lookup (global-name-regex #"^com[.]apple[.]cfprefsd")'
+            ' (local-name "com.apple.cfprefsd.agent"))'
+            '(deny ipc-posix-shm* (ipc-posix-name-prefix "apple.cfprefs."))'
+            '(deny file-write* (require-not (subpath ' + json.dumps(home, ensure_ascii=False) + ')))'
+        )
+    return env
+
+
 class Host:
     def __init__(self, manifest, target, fixture, guard):
         self.target = target
         self.audit = None
-        # A fresh home per process, so saved settings, caches or databases never leak between runs or app copies.
         self.home = tempfile.mkdtemp(prefix="reflex-home-")
-        env = dict(os.environ, HOME=self.home, TMPDIR=self.home, XDG_CONFIG_HOME=self.home + "/.config",
-                   XDG_DATA_HOME=self.home + "/.local/share", XDG_CACHE_HOME=self.home + "/.cache")
-        env["CFFIXED_USER_HOME"] = self.home  # Apple frameworks resolve the home folder from this, not HOME.
+        env = isolated_env(self.home)
         # The JVM takes user.home from the account, not HOME. On macOS java.util.prefs also ignores user.home
         # and writes the account's plist, so swap in an in-memory store.
         java = f" -Duser.home={self.home} -Djava.io.tmpdir={self.home}"
@@ -301,12 +333,14 @@ class Host:
             java += f" -Xbootclasspath/a:{prefs} -Djava.util.prefs.PreferencesFactory=reflex.prefs.MemoryPreferences$Factory"
         env["JAVA_TOOL_OPTIONS"] = (env.get("JAVA_TOOL_OPTIONS", "") + java).strip()
         if guard:
-            handle = tempfile.NamedTemporaryFile(prefix="reflex-net-", delete=False)
-            handle.close()
-            self.audit = handle.name
+            self.audit = str(Path(self.home) / "network.log")
+            Path(self.audit).touch()
             env.update({GUARD_ENV: str(guard), "REFLEX_NETWORK_LOG": self.audit})
+        command = manifest.command(target, fixture)
+        if guard:
+            command = guarded_command(command, guard, env)
         self.stderr = tempfile.TemporaryFile()
-        self.proc = subprocess.Popen(manifest.command(target, fixture), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        self.proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                      stderr=self.stderr, env=env, bufsize=0)
         self.buffer = b""
         self.dead = None
@@ -503,17 +537,24 @@ def build_guard(manifest):
 
 def guard_canary(guard):
     """Positive control: a non-SIP Python under the guard must be denied an Internet connect."""
-    handle = tempfile.NamedTemporaryFile(prefix="reflex-canary-", delete=False)
-    handle.close()
-    env = dict(os.environ, REFLEX_NETWORK_LOG=handle.name)
-    env[GUARD_ENV] = str(guard)
-    code = ("import socket\ns=socket.socket()\ns.settimeout(2)\ntry:\n s.connect(('192.0.2.1',443));print('CONNECTED')\n"
-            "except OSError as e:\n print('ERR',e.errno)")
-    out = subprocess.run([os.path.realpath(sys.executable), "-c", code], env=env, capture_output=True, text=True, timeout=10)
-    audit = Path(handle.name).read_text()
-    Path(handle.name).unlink()
-    ok = "READY" in audit and "DENIED" in audit and "CONNECTED" not in out.stdout
-    return ok, audit.strip().replace("\n", " | "), out.stdout.strip()
+    with tempfile.TemporaryDirectory(prefix="reflex-canary-") as home:
+        audit_path = Path(home) / "network.log"
+        audit_path.touch()
+        env = isolated_env(home)
+        env.update(REFLEX_NETWORK_LOG=str(audit_path))
+        env[GUARD_ENV] = str(guard)
+        code = ("import socket\ns=socket.socket()\ns.settimeout(2)\ntry:\n s.connect(('192.0.2.1',443));print('CONNECTED')\n"
+                "except OSError as e:\n print('ERR',e.errno)")
+        try:
+            command = guarded_command([os.path.realpath(sys.executable), "-c", code], guard, env)
+        except RuntimeError as error:
+            return False, str(error), ""
+        out = subprocess.run(command, env=env, capture_output=True, text=True, timeout=10)
+        audit = audit_path.read_text()
+        ok = "READY" in audit and "DENIED" in audit and "CONNECTED" not in out.stdout and out.returncode == 0
+        if sys.platform == "darwin":
+            ok = ok and "STORAGE seatbelt" in audit and "STORAGE launcher" in audit
+        return ok, audit.strip().replace("\n", " | "), out.stdout.strip()
 
 
 def matcher_self_test(manifest):

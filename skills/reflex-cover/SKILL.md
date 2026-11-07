@@ -10,7 +10,7 @@ One screen per run, one branch per screen. The app needs `tests/reflex.json` fir
 
 Work only in the app repo and `../reflex`. Do not search home folders, other skills or other repos.
 
-Before launching a Swift CLI that uses UserDefaults, require an injected in-memory store. A named suite can survive the runner’s temporary home on macOS. If injection needs app changes, stop with BLOCKED. These journeys do not test real persistence.
+Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’s real defaults binding, not an in-memory subclass added for isolation. A failed storage sandbox blocks the run. These journeys do not test real persistence between processes. Run Swift package unit tests with `python3 ../reflex/runner/swift_tests.py <package>`; plain `swift test` is not guarded.
 
 ## Steps
 

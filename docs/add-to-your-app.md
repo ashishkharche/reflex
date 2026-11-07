@@ -74,7 +74,7 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 
 **Storage fixtures**
 
-Before launching a Swift CLI that uses UserDefaults, require an injected in-memory store. A named suite can survive the runner’s temporary home on macOS. If injection needs app changes, stop with BLOCKED. These journeys do not test real persistence. Keep this fixture in the harness, not the app.
+Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’s real defaults binding, not an in-memory subclass added for isolation. A failed storage sandbox blocks the run. These journeys do not test real persistence between processes. The runner applies the kernel policy before exec, blocks preferences services and denies writes outside a fresh private home. `UserDefaults.synchronize()` returns false because nothing is saved to the account.
 
 **Run and check**
 
@@ -83,7 +83,7 @@ Do all of these before you report, even when the user only names one failure. Na
 1. If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before any app or helper code read. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. Rebuild the CLIs and run the runner with `--platform both`. If the app has one platform, pass just that one. Fix any failure and rerun.
 3. Build each native app, including the iOS app in KMP projects, the way its team does, for example `xcodebuild build` and `./gradlew assembleDebug`.
-4. Run each native app’s existing tests, for example `xcodebuild test` and `./gradlew test`. Unit tests only: do not start an emulator for instrumented tests unless the user asks.
+4. Run each native app’s existing tests, for example `xcodebuild test` and `./gradlew test`. For Swift package tests, use `python3 ../reflex/runner/swift_tests.py <package>` so their UserDefaults suites are guarded too. Unit tests only: do not start an emulator for instrumented tests unless the user asks.
 5. Check that the app’s own build files never name `../reflex`, apart from the guarded Kotlin block.
 6. Reopen each covered screen’s view and adapter. Carry forward known view-state and navigation gaps until real code and a journey prove them resolved. A recorded callback does not prove the destination loaded. Name unresolved gaps under Needs your decision and make the screen INCOMPLETE. Do not refactor unasked.
 

@@ -21,7 +21,23 @@ static void audit(const char *message) {
     if (write(fd, message, strlen(message)) < 0) _exit(78);
     close(fd);
 }
-__attribute__((constructor)) static void ready(void) { audit("READY\n"); }
+#ifdef __APPLE__
+// This read-only query proves the launcher installed a kernel policy before exec.
+extern int sandbox_check(pid_t pid, const char *operation, int filter_type, ...);
+static void isolate_preferences(void) {
+    if (!getenv("REFLEX_STORAGE_PROFILE") || sandbox_check(getpid(), "user-preference-write", 0) != 1) {
+        audit("BLOCKED preferences sandbox unavailable\n");
+        _exit(78);
+    }
+    audit("STORAGE seatbelt\n");
+}
+#endif
+__attribute__((constructor)) static void ready(void) {
+#ifdef __APPLE__
+    isolate_preferences();
+#endif
+    audit("READY\n");
+}
 static int internet(const struct sockaddr *address) {
     return address && (address->sa_family == AF_INET || address->sa_family == AF_INET6);
 }

@@ -16,7 +16,7 @@ python3 ../reflex/runner/explore.py tests/reflex.json ls 'do Name {"key":"value"
 
 It builds and proves the network guard, runs every line in one process per platform, prints each reply, the network status and whether iOS and Android agree. Add `--platform swift` or `--platform kotlin` for one side and `--fixture <name>` for another start state.
 
-Before launching a Swift CLI that uses UserDefaults, require an injected in-memory store. A named suite can survive the runner’s temporary home on macOS. If injection needs app changes, stop with BLOCKED. These journeys do not test real persistence.
+Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’s real defaults binding, not an in-memory subclass added for isolation. A failed storage sandbox blocks the run. These journeys do not test real persistence between processes. Run Swift package unit tests with `python3 ../reflex/runner/swift_tests.py <package>`; plain `swift test` is not guarded.
 
 ## Steps
 
