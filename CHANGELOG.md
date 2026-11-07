@@ -4,6 +4,8 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- Native result counting now uses suite headers and the agent’s own arithmetic, not a custom script. Executed, skipped and failed cases are kept separate.
+
 - Grok headless setup now checks skill discovery before a run. A copied but unlisted skill is not an active command; stop and use the plugin install instead of searching global folders.
 - Skills keep SDK diagnostics repo-local and forbid Spotlight searches or stopping shared build daemons. Use SDK list commands, `JAVA_HOME` and `--no-daemon` instead.
 

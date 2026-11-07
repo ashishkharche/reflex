@@ -433,7 +433,7 @@ A green runner proves the adapters agree. It does not prove the app still builds
 | Its unit tests pass | `xcodebuild test -scheme YourApp -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath .build/ios` | `./gradlew --no-daemon :app:testDebugUnitTest --rerun --no-build-cache` |
 | No Reflex in its build files | `git grep -n "\.\./reflex" -- '*.swift' '*.pbxproj'` lists only `ReflexHarness/` | `git grep -n "\.\./reflex" -- '*.kts'` lists only the guarded block |
 
-Record each native app’s build and test commands, exit codes and log paths in `.build/` for this session. A Kotlin shared-code suite does not count as iOS evidence. Verify that tests executed now, not that old results were restored. [Gradle’s task option](https://docs.gradle.org/current/userguide/command_line_interface.html#sec:rerun_tasks) reruns just the named test task.
+Record each native app’s build and test commands, exit codes and log paths in `.build/` for this session. Read suite headers with your own tools and total the counts yourself. Keep executed, skipped and failed cases separate; never run code to count results. A Kotlin shared-code suite does not count as iOS evidence. Verify that tests executed now, not that old results were restored. [Gradle’s task option](https://docs.gradle.org/current/userguide/command_line_interface.html#sec:rerun_tasks) reruns just the named test task.
 
 Use the app’s own scheme, tasks and simulator names. Unit tests run on the JVM or a simulator. Instrumented tests on an emulator are not needed.
 
