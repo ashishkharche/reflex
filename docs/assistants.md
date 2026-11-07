@@ -1,26 +1,31 @@
 # Reflex skills for AI assistants
 
-Three skills in [`skills/`](../skills) in the [Agent Skills](https://agentskills.io/specification) format. They hold the steps and the rules. The details stay in [add-to-your-app.md](add-to-your-app.md).
+Four skills in [`skills/`](../skills) in the [Agent Skills](https://agentskills.io/specification) format, one per job. Each loads only the part of [add-to-your-app.md](add-to-your-app.md) it needs. Shopify’s idea behind them: share the test, not the code.
 
 | Skill | Use it to |
 | --- | --- |
-| `reflex-setup` | Set Reflex up in an app for the first time or update it. Ask for a dry run to see the plan without any change. |
-| `reflex-add-screens` | List the app’s screens, flag the ones that need a refactor and cover them one screen per branch, stopping after each. |
-| `reflex-run` | Rebuild, rerun, build the apps and run their unit tests, explain each FAIL and update expected values only for intentional changes. |
+| `reflex-start` | Add Reflex to your app and get your first screen under test. Run it again to update. Ask for a dry run to see the plan first. |
+| `reflex-cover` | Cover a screen or feature with one test for iOS and Android, one screen per branch. |
+| `reflex-check` | Check iOS and Android still match and fix what doesn’t. Builds both apps, runs their unit tests and explains each failure. Run it before you merge. |
+| `reflex-explore` | Let your agent read any screen’s state and run its actions through the CLI while it builds, with no simulator. |
+
+Every skill ends with one next step, so you always know what to run.
 
 The repo root is also a plugin for Claude Code and Grok Build (`.claude-plugin/`) and for Cursor (`.cursor-plugin/`). The plugin is named `reflex`. Its marketplace is named `ashishkharche-reflex`.
 
 ## Install
 
+Any assistant: `npx skills add ashishkharche/reflex` from your app’s repo. It asks which assistants to install into. Add `-g` to install for your user instead of one project.
+
 | Assistant | Install | Run |
 | --- | --- | --- |
-| Claude Code | `/plugin marketplace add ashishkharche/reflex`, then `/plugin install reflex@ashishkharche-reflex` | `/reflex:reflex-setup` |
-| Grok Build | `grok plugin install ashishkharche/reflex --trust` | `/reflex-setup` |
-| Codex | `codex plugin marketplace add ashishkharche/reflex`, then `codex plugin add reflex@ashishkharche-reflex` | `/skills`, then pick `reflex-setup` |
-| Cursor | Customize, then import this repository from GitHub. It has a `.cursor-plugin/marketplace.json`. | Type `/` and pick `reflex-setup` |
-| Other assistants | Copy the three folders in `skills/` into the assistant’s skills folder, for example `~/.agents/skills/` | Ask for `reflex-setup` |
+| Claude Code | `/plugin marketplace add ashishkharche/reflex`, then `/plugin install reflex@ashishkharche-reflex` | `/reflex:reflex-start` |
+| Grok Build | `grok plugin install ashishkharche/reflex --trust` | `/reflex-start` |
+| Codex | `codex plugin marketplace add ashishkharche/reflex`, then `codex plugin add reflex@ashishkharche-reflex` | `/skills`, then pick `reflex-start` |
+| Cursor | Customize, then import this repository from GitHub. It has a `.cursor-plugin/marketplace.json`. | Type `/` and pick `reflex-start` |
+| Other assistants | Copy the four folders in `skills/` into the assistant’s skills folder, for example `~/.agents/skills/` | Ask for `reflex-start` |
 
-Claude Code puts the plugin name in front of each skill, so the command is `/reflex:reflex-setup`. The shell forms are `claude plugin marketplace add ashishkharche/reflex` and `claude plugin install reflex@ashishkharche-reflex`.
+Claude Code puts the plugin name in front of each skill, so the command is `/reflex:reflex-start`. The shell forms are `claude plugin marketplace add ashishkharche/reflex` and `claude plugin install reflex@ashishkharche-reflex`.
 
 Grok Build asks for `--trust` before it loads a plugin’s skills. Run the install without it first to see what it activates. Grok Build does not list a plugin from this repo through `grok plugin marketplace add`, so install it directly as shown.
 
@@ -47,7 +52,7 @@ On 6 Nov 2026 with this repo’s skills and manifests. Nothing was cloned from G
 
 | Assistant | Version | Checked | Not checked |
 | --- | --- | --- | --- |
-| Grok Build | 1.0.69 | `grok plugin validate` passed. Installed from a clean export of this repo, it listed the 3 skills as `plugin: reflex`. Headless sessions in a small toy app ran all 3 skills end to end: first setup, add the whole app, rerun and an update from a local upstream with a new CHANGELOG entry. Each ended with a five-part report that matched the runner. A dry run changed nothing. | Install from GitHub, an interactive session |
+| Grok Build | 1.0.69 | `grok plugin validate` passed. Installed from a clean export of this repo, it listed the 3 skills (before the rename to 4) as `plugin: reflex`. Headless sessions in a small toy app ran all 3 skills end to end: first setup, add the whole app, rerun and an update from a local upstream with a new CHANGELOG entry. Each ended with a five-part report that matched the runner. A dry run changed nothing. | Install from GitHub, an interactive session |
 | Claude Code | 2.1.319 | `claude plugin validate` passed with one warning: no listing icon. Marketplace add, install and `plugin details` showed the 3 skills. | A session, which needs a sign-in |
 | Codex | 0.167.0 | `codex plugin marketplace add` read `.claude-plugin/marketplace.json`. `codex plugin add` installed the 3 skills. | A session, which needs a sign-in |
 | Cursor | none | Both manifests pass Cursor’s published JSON schemas. | Cursor was not installed |
@@ -56,7 +61,7 @@ Raw notes: [evidence/assistants-2026-11-06](../evidence/assistants-2026-11-06/RE
 
 ## Update
 
-Claude Code: `claude plugin marketplace update ashishkharche-reflex`, then `claude plugin update reflex@ashishkharche-reflex` and a restart. Grok Build: `grok plugin update reflex`. Codex: `codex plugin marketplace upgrade ashishkharche-reflex`. Then run `reflex-setup` again in the app to pull the Reflex clone and apply the CHANGELOG.
+Claude Code: `claude plugin marketplace update ashishkharche-reflex`, then `claude plugin update reflex@ashishkharche-reflex` and a restart. Grok Build: `grok plugin update reflex`. Codex: `codex plugin marketplace upgrade ashishkharche-reflex`. Then run `reflex-start` again in the app to pull the Reflex clone and apply the CHANGELOG.
 
 ## Sources
 

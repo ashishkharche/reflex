@@ -98,7 +98,7 @@ Next to your app (for example `../reflex`), not inside it. A git submodule is op
 
 **How do I set it up or update with an AI assistant?**
 
-Install the Reflex skills and run `reflex-setup` ([assistants.md](assistants.md)). Without skills, paste the single prompt in the [README](../README.md). If no clone or submodule exists next to the repo, the assistant clones and sets up. If one exists, it pulls latest, reads `CHANGELOG.md` and applies changes. Both paths rebuild, run the runner, build both apps, run their unit tests and finish with the five-part report.
+Install the Reflex skills and run `reflex-start` ([assistants.md](assistants.md)). Without skills, paste the single prompt in the [README](../README.md). If no clone or submodule exists next to the repo, the assistant clones and sets up. If one exists, it pulls latest, reads `CHANGELOG.md` and applies changes. Both paths rebuild, run the runner, build both apps, run their unit tests and finish with the five-part report.
 
 **Which assistants have Reflex skills?**
 

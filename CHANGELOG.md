@@ -6,6 +6,7 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 No protocol change and no kit API change.
 
+- Skills: renamed and regrouped by job. `reflex-setup` is now `reflex-start`, `reflex-add-screens` is now `reflex-cover` and `reflex-run` is now `reflex-check`, which also fixes what it finds. New `reflex-explore` lets an agent read and drive any screen through the CLI. Each skill loads only the guide sections it needs and ends with one next step. Install into any assistant with `npx skills add ashishkharche/reflex`. Reinstall to pick up the new names.
 - Skills: `reflex-setup` checks the stack and the tools before any change. Flutter, React Native and other stacks without a kit, or a missing tool such as Xcode, a JDK or Python 3, stop with BLOCKED and say what is needed. Kotlin Multiplatform runs with `--platform kotlin`. All three skills find the main branch instead of assuming `main`, ask before touching uncommitted changes and commit on the branch without pushing.
 - AI setup: a CLI that starts from an empty or made-up state the app fills in elsewhere makes that screen INCOMPLETE, and a `parity` or `xfail` mark can’t hide it. When the Result is FAIL or BLOCKED, the report still names each INCOMPLETE screen and its reason.
 - Outbox sample: the adapter always lists Enqueue, PurgeSent, Retry, SetOnline and SyncNow. `update` decides validity and is the only state writer, including attempt counts. New journey `16-stable-actions.json`.

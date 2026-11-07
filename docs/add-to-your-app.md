@@ -434,7 +434,7 @@ If you used the AI prompt or the skills, the assistant ends with a five-part rep
 | Needs your decision | A numbered list with one decision per item, at most two short lines each. “None” if empty. Every reason for FAIL, BLOCKED or INCOMPLETE appears here. So does every product change. |
 | What I added | One bullet per file or folder, including files updated on an update and each edit to an existing build file. |
 | Where it is | Branch, commit, pushed or not and how many commits it is behind the main branch, one line each. |
-| Try it | The runner command alone on its own line. |
+| Try it | The runner command on its own line, then one next step, for example `Next: /reflex-check before you merge`. Write “Safe to merge” only on PASS. |
 
 Keep it under 20 lines in total, with no long sentences.
 
@@ -489,6 +489,7 @@ Behind main: 0 commits
 
 Try it
 python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
+Next: answer 1 and 2, then /reflex-check
 ```
 
 ## 10. Troubleshooting

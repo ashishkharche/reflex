@@ -1,7 +1,7 @@
 {
   "name": "reflex",
   "displayName": "Reflex",
-  "description": "Skills to set up Reflex in an iOS and Android app, add screens and run its journeys.",
+  "description": "One test file for your iOS and Android apps. Start, cover screens, check parity and explore the app without a simulator.",
   "author": {
     "name": "Ashish Kharche"
   },

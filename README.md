@@ -47,15 +47,22 @@ You should see `RESULT PASS`.
 
 ## Set it up with your AI assistant
 
-Install the Reflex skills, then run `reflex-setup` in your app’s repo:
+Install the skills into any assistant from your app’s repo:
 
-| Assistant | Install | Run |
-| --- | --- | --- |
-| Claude Code | `/plugin marketplace add ashishkharche/reflex`, then `/plugin install reflex@ashishkharche-reflex` | `/reflex:reflex-setup` |
-| Grok Build | `grok plugin install ashishkharche/reflex --trust` | `/reflex-setup` |
-| Codex, Cursor and others | See [docs/assistants.md](docs/assistants.md) | `reflex-setup` |
+```bash
+npx skills add ashishkharche/reflex
+```
 
-Ask for a dry run first to see the plan without any change. `reflex-add-screens` covers more screens and `reflex-run` reruns the tests.
+Then run `/reflex-start`. Plugin installs for Claude Code, Grok Build, Codex and Cursor: [docs/assistants.md](docs/assistants.md).
+
+| Skill | When |
+| --- | --- |
+| `/reflex-start` | Add Reflex to your app and get your first screen under test. Run it again to update. |
+| `/reflex-cover` | Cover a screen or feature with one test for iOS and Android. |
+| `/reflex-check` | Check iOS and Android still match and fix what doesn’t. Run it before you merge. |
+| `/reflex-explore` | Let your agent use the app while it builds, no simulator. |
+
+Ask for a dry run first to see the plan without any change.
 
 No skills? Paste this into Grok Bot or any coding assistant:
 
@@ -66,7 +73,7 @@ Follow docs/add-to-your-app.md, For AI assistants first. Do my main screen only,
 Run the Reflex tests, build both apps and run their unit tests, then reply with only the five-part report from that guide.
 ```
 
-Reflex stays a separate folder next to your app. Only a separate test package points at it, so your app still builds without it. To update later, run `reflex-setup` or paste the prompt again.
+Reflex stays a separate folder next to your app. Only a separate test package points at it, so your app still builds without it. To update later, run `/reflex-start` or paste the prompt again.
 
 ## More
 
