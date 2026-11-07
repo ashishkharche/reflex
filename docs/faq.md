@@ -80,7 +80,7 @@ There is no kit in those languages yet. The wire format is language-agnostic NDJ
 
 **Xcode project with no Swift package**
 
-Supported. Put the Core in a folder or local package with no UIKit/SwiftUI imports, add an Introspection target that depends on ReflexKit and a Command Line Tool for the CLI. Do not link ReflexKit into the phone target, except in Debug for the optional [socket host](real-build.md). Details: [add-to-your-app.md](add-to-your-app.md) §2.
+Supported. Put the Core in a local Swift package with no UIKit/SwiftUI imports. The Introspection target and the CLI go in a separate harness package that depends on the Core and ReflexKit. The Xcode project never references the harness or the Reflex clone, except in Debug for the optional [socket host](real-build.md). Details: [2. Swift](add-to-your-app.md#2-swift).
 
 **Gradle without Android application modules**
 
@@ -94,11 +94,11 @@ Both work. The runner never needs the two apps in one tree; it only needs each p
 
 **Where does the Reflex clone live?**
 
-Next to your app (for example `../reflex`), not inside it. A git submodule is optional. Your app points at `reflex/kit` by a relative path. Phone targets never link it.
+Next to your app (for example `../reflex`), not inside it. A git submodule is optional. Only the Reflex harness package and a guarded block in `settings.gradle.kts` point at it, so the app builds without the clone.
 
 **How do I set it up or update with an AI assistant?**
 
-Install the Reflex skills and run `reflex-setup` ([assistants.md](assistants.md)). Without skills, paste the single prompt in the [README](../README.md). If no clone or submodule exists next to the repo, the assistant clones and sets up. If one exists, it pulls latest, reads `CHANGELOG.md` and applies changes. Both paths rebuild, run the runner and finish with the five-part report.
+Install the Reflex skills and run `reflex-setup` ([assistants.md](assistants.md)). Without skills, paste the single prompt in the [README](../README.md). If no clone or submodule exists next to the repo, the assistant clones and sets up. If one exists, it pulls latest, reads `CHANGELOG.md` and applies changes. Both paths rebuild, run the runner, build both apps, run their unit tests and finish with the five-part report.
 
 **Which assistants have Reflex skills?**
 
@@ -106,7 +106,15 @@ Claude Code, Grok Build and Codex install the `reflex` plugin from this repo. Cu
 
 **Why does the report say INCOMPLETE when the runner passed?**
 
-PASS means the tests drove your real Core on every platform with nothing hidden. If an adapter uses a copy of the rules, a platform was skipped, a difference is marked known or the guard did not run, the report says INCOMPLETE or BLOCKED and lists why under Needs your decision. See [Result words](add-to-your-app.md#result-words).
+PASS means the tests drove your real Core on every platform with nothing hidden. If an adapter uses a copy of the rules, a screen’s view still does the real work, a platform was skipped, a difference is marked known or the guard did not run, the report says INCOMPLETE or BLOCKED and lists why under Needs your decision. See [Result words](add-to-your-app.md#result-words).
+
+**Why does the report say FAIL when the runner passed?**
+
+An app failed to build or one of its unit tests failed. The runner only proves the adapters agree, so the report also checks the apps themselves. See [9. Check the app still works](add-to-your-app.md#9-check-the-app-still-works).
+
+**Can I say “add Reflex to the whole app”?**
+
+Yes. The assistant lists every screen first, flags the ones that need a refactor and then does one screen per branch. It stops after each screen or refactor and waits for your yes. If the two apps behave differently, it asks before changing either and puts that fix on its own branch.
 
 **How do I update by hand?**
 
