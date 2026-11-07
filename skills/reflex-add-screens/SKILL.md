@@ -29,6 +29,8 @@ The how-to lives in the Reflex clone next to the app, usually `../reflex`. Read 
 - Never report PASS for a screen the runner did not run on every platform the app has.
 - A screen whose view still does the real work is INCOMPLETE. So is a screen whose tests drive a copy of its logic. Name it under Needs your decision.
 - A step marked `parity` or `xfail` makes the Result INCOMPLETE. Put the difference under Needs your decision.
+- A CLI must load the same state the app shows. If it starts from an empty or made-up state the app fills in elsewhere, the screen is INCOMPLETE. A `parity` or `xfail` mark must not hide that.
+- When the Result is FAIL or BLOCKED, still name each INCOMPLETE screen and its reason under Needs your decision.
 - If parity shows the platforms differ, do not make one match the other here. That is a product change. Ask first. If the user says yes, put it on its own branch in its own commit and name that branch in the report.
 
 ## Report

@@ -31,6 +31,8 @@ Reflex is a kit, not a dependency you vendor. The full instructions live in the 
 - Ask before any refactor, for example a screen that keeps its state in its views. After a refactor, stop and report before anything else.
 - Every adapter wraps the app’s real Core, the same object the screen uses. Never copy its rules into an adapter or a CLI.
 - A screen whose view still does the real work is INCOMPLETE, not PASS. Name it under Needs your decision.
+- A CLI must load the same state the app shows. If it starts from an empty or made-up state the app fills in elsewhere, the screen is INCOMPLETE. A `parity` or `xfail` mark must not hide that.
+- When the Result is FAIL or BLOCKED, still name each INCOMPLETE screen and its reason under Needs your decision.
 - Never hide a platform difference. Keep each platform’s real value and mark it as the guide says.
 - Never make one platform match the other on this branch. That is a product change. Ask first. If the user says yes, do it on its own branch in its own commit.
 - Never report PASS unless the guide’s Result words allow it. A failed app build or unit test is FAIL even when the runner passed.
