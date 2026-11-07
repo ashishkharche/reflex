@@ -25,21 +25,25 @@ The kit has no dependencies. Kotlin needs only the Kotlin standard library.
 
 Keep the Core free of the kit. Write one adapter node per ViewModel in a separate introspection target and one small CLI. Step-by-step: [docs/add-to-your-app.md](../docs/add-to-your-app.md).
 
-Swift package sketch:
+Swift package sketch, in its own harness package so the app never resolves the kit:
 
 ```swift
-dependencies: [.package(path: "../reflex/kit")],
+// ReflexHarness/Package.swift
+dependencies: [.package(path: "../OvenTimerCore"), .package(path: "../../reflex/kit")],
 targets: [
     .target(name: "OvenTimerIntrospection", dependencies: ["OvenTimerCore", .product(name: "ReflexKit", package: "kit")]),
     .executableTarget(name: "oven-timer-cli", dependencies: ["OvenTimerIntrospection", .product(name: "ReflexKit", package: "kit")])
 ]
 ```
 
-Kotlin settings sketch:
+Kotlin settings sketch, included only when the clone exists:
 
 ```kotlin
-include(":reflex-kit")
-project(":reflex-kit").projectDir = file("../reflex/kit/kotlin")
+val reflexKit = file("../reflex/kit/kotlin")
+if (reflexKit.isDirectory) {
+    include(":reflex-kit")
+    project(":reflex-kit").projectDir = reflexKit
+}
 ```
 
 Longer Swift and Kotlin examples remain in this package’s tests (`AdoptionExampleTests` / `AdoptionExampleTest`) and in [docs/how-you-use-it.md](../docs/how-you-use-it.md).

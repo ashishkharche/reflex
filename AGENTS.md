@@ -12,3 +12,5 @@ Read `TEST_PLAN.md` and `docs/architecture.md` before edits. Scope is inventory 
 8. Recheck a fresh clone from README after command changes. Build Mobile hosts one at a time.
 
 Follow `docs/project/ux-writing.md`. No secrets or production inventory belong in fixtures.
+
+Adding Reflex to another app is a different job. Follow For AI assistants in `docs/add-to-your-app.md` and the skills in `skills/`.

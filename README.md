@@ -62,11 +62,11 @@ No skills? Paste this into Grok Bot or any coding assistant:
 ```text
 Set up or update Reflex in this app using https://github.com/ashishkharche/reflex.
 Keep Reflex in its own clone next to this repo, never inside it. If it’s already there, pull the latest and apply CHANGELOG.md.
-Follow docs/add-to-your-app.md, starting with my main screen. Only add new files and targets. Ask me before any refactor, or if my iOS and Android apps are in separate repos.
-Run the tests until they pass, then reply with only the five-part report from that guide.
+Follow docs/add-to-your-app.md, For AI assistants first. Do my main screen only, on its own branch, and keep Reflex out of my app’s build. Only add new files and targets. Ask me before any refactor or product change, or if my iOS and Android apps are in separate repos.
+Run the Reflex tests, build both apps and run their unit tests, then reply with only the five-part report from that guide.
 ```
 
-Reflex stays a separate folder next to your app. Your app only points at it by a relative path. Your phone targets never link it. To update later, run `reflex-setup` or paste the prompt again.
+Reflex stays a separate folder next to your app. Only a separate test package points at it, so your app still builds without it. To update later, run `reflex-setup` or paste the prompt again.
 
 ## More
 

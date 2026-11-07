@@ -8,26 +8,29 @@ license: MIT
 
 Use this after `reflex-setup` has covered the main screen. If the app has no `reflex.json` yet, run `reflex-setup` first.
 
-The how-to lives in the Reflex clone next to the app, usually `../reflex`. Read `docs/add-to-your-app.md` there, sections 4 (One adapter node per ViewModel) and 7 (Manifest and journey), before you write anything.
+The how-to lives in the Reflex clone next to the app, usually `../reflex`. Read `docs/add-to-your-app.md` there, For AI assistants and sections 4 (One adapter node per ViewModel), 7 (Manifest and journey) and 9 (Check the app still works), before you write anything.
 
 ## Steps
 
 1. List the screens. For each one name its ViewModel or state holder on iOS and on Android, side by side. Mark screens that exist on one platform only.
-2. Flag every screen that keeps its state in its views or has no clear ViewModel. It needs a refactor before it can be tested. Do not refactor it. Ask the user.
-3. Show the list and ask which screens to do, unless the user already named them. “The whole app” means every screen that is not flagged.
-4. Do one screen at a time:
+2. Flag every screen that keeps its state in its views, has no clear ViewModel or whose view still does the real work while the model only mirrors it. It needs a refactor before it can be tested. Do not refactor it. Ask the user.
+3. Show the list and ask which screen to do first, unless the user already named one. “The whole app” means this list, then one screen at a time. It never means all screens in one go.
+4. Do one screen, on its own branch from the latest main branch, for example `reflex/settings`:
    - An adapter node on each platform the app has, with the same node name, state keys and action names on both.
    - The CLI wiring so the node is reachable.
    - One journey in the existing `reflex.json` journeys folder.
-   - Run it with the `reflex-run` skill. Move on only when it passes or the report says why not.
-5. Stop and ask when a screen needs a decision. Carry on with the others.
+   - Run it with the `reflex-run` skill, which also builds both apps and runs their unit tests.
+5. Run `git fetch` and `git rev-list --count HEAD..origin/main`. If you are behind, rebase and run step 4 again.
+6. Stop and report. Wait for a yes before the next screen. Do the same after any refactor the user approved.
 
 ## Rules
 
-- Same rules as `reflex-setup`: add new files, ask before editing other existing files or refactoring, wrap the real Core, never copy rules and never hide a platform difference.
+- Same rules as `reflex-setup`: add new files, keep Reflex out of the app build, ask before editing other existing files or refactoring, wrap the real Core, never copy rules and never hide a platform difference.
 - Never report PASS for a screen the runner did not run on every platform the app has.
+- A screen whose view still does the real work is INCOMPLETE. So is a screen whose tests drive a copy of its logic. Name it under Needs your decision.
 - A step marked `parity` or `xfail` makes the Result INCOMPLETE. Put the difference under Needs your decision.
+- If parity shows the platforms differ, do not make one match the other here. That is a product change. Ask first. If the user says yes, put it on its own branch in its own commit and name that branch in the report.
 
 ## Report
 
-Reply with the five-part report from the guide, in one fenced `text` block. List each screen under What I added. Put every flagged or skipped screen under Needs your decision.
+Reply with the report from the guide, in one fenced `text` block, with exactly these five headings in this order: Result, Needs your decision, What I added, Where it is, Try it. Never rename one. List the screen under What I added. Put every flagged, skipped or remaining screen under Needs your decision. Where it is says how many commits the branch is behind the main branch.

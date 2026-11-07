@@ -16,10 +16,29 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 - Its own clone next to the app repo, for example `../reflex`. A git submodule also works.
 - Never copy Reflex files into the app repo.
 
+**Keep Reflex out of the app build**
+
+- Put the Swift Introspection target and CLI in their own package, for example `ReflexHarness/Package.swift`. Only that package points at the Reflex clone. See [2. Swift](#2-swift).
+- Never add a `../reflex` dependency to the app’s own `Package.swift`, its shared Core package or its Xcode project.
+- On Kotlin, include the Reflex modules only when the clone exists, as [3. Kotlin](#3-kotlin) shows. No app module depends on them.
+- The app must still build after you move `../reflex` away. The optional [debug socket host](real-build.md) is the one exception. Ask before adding it.
+
+**Scope**
+
+- One screen per branch, for example `reflex/home`.
+- Start a first setup with the main screen.
+- “Every screen” or “the whole app” means: list the screens first, then do one at a time.
+- After each refactor and after each screen, stop and report. Wait for a yes before the next one.
+
+**Branch**
+
+- Start the branch from the latest main branch.
+- Before you report, run `git fetch` and count how far behind you are: `git rev-list --count HEAD..origin/main`.
+- If the count is above 0, rebase onto the main branch and run every check again. Say the count in Where it is.
+
 **First setup**
 
-- Start with the main screen.
-- Add one adapter that lists its state and actions.
+- Add one adapter that lists the main screen’s state and actions.
 - Add one small CLI per platform the app has: Swift and Kotlin when both exist.
 - Write a `reflex.json` manifest and one journey for that screen.
 
@@ -31,29 +50,42 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 
 **Rules**
 
-- Keep the app’s code and behaviour unchanged. Only add new files and targets. Registering a new target in an existing build file (`Package.swift`, `settings.gradle.kts`, an Xcode project) is part of adding it. List each such edit in the report.
+- Keep the app’s code and behaviour unchanged. Only add new files and targets. Registering a Reflex module in `settings.gradle.kts` as [3. Kotlin](#3-kotlin) shows is part of adding it. List each such edit in the report.
 - Files Reflex added earlier (adapters, CLIs, `reflex.json`, journeys) may be updated to follow this guide or the CHANGELOG. Ask before editing any other existing file.
 - If a screen keeps its state in its views, ask before refactoring.
 - If iOS and Android are separate repos, ask where the other one is first.
-- Every adapter wraps the app’s real Core. Never copy its rules into the adapter or the CLI to get a test to pass.
+- Every adapter wraps the app’s real Core, the same object the screen uses. Never copy its rules into the adapter or the CLI to get a test to pass.
 - Never hide a platform difference. Do not make one CLI copy the other platform’s value. Keep each platform’s real behaviour and mark the step with a `parity` id so the run shows `PARITY KNOWN`.
+
+**Product changes**
+
+- Parity often shows that the two apps behave differently. Making one match the other changes the product, not the tests.
+- Never fix it on the Reflex branch. Name it under Needs your decision and ask.
+- If the user says yes, make the fix on its own branch, for example `fix/home-default-tab`, in its own commit. Name that branch in the report.
+- The Reflex branch keeps the `parity` mark until the fix is merged.
 
 **Dry run**
 
 - If the user asks for a dry run or a plan, change nothing: no clone, no writes, no installs, no builds. Reading is fine.
 - Name the platforms and the main screen, say what each step would add and report INCOMPLETE with the reason “dry run”.
 
-**Run**
+**Run and check**
 
-- Rebuild the CLIs.
-- Run the runner with `--platform both`. If the app has one platform, pass just that one.
-- Fix any failure and rerun.
+Do all of these before you report. The runner alone is not enough.
+
+1. Rebuild the CLIs and run the runner with `--platform both`. If the app has one platform, pass just that one. Fix any failure and rerun.
+2. Build each app the way its team does, for example `xcodebuild build` and `./gradlew assembleDebug`.
+3. Run each app’s existing unit tests, for example `xcodebuild test` and `./gradlew test`. Unit tests only: do not start an emulator for instrumented tests unless the user asks.
+4. Check that the app’s own build files never name `../reflex`, apart from the guarded Kotlin block.
+
+See [9. Check the app still works](#9-check-the-app-still-works).
 
 **Report**
 
-- Reply with the five-part report in [What you get back](#what-you-get-back): Result, Needs your decision, What I added or changed, Where it is, Try it.
-- Result is PASS only when nothing is copied, skipped or hidden. Otherwise it is FAIL, BLOCKED or INCOMPLETE. See [Result words](#result-words).
-- Put the whole report in one fenced `text` block with a heading per part and a blank line between parts. Follow the rules in that section and keep it under 20 lines.
+- Reply with the five-part report in [What you get back](#what-you-get-back).
+- Use exactly these five headings in this order: Result, Needs your decision, What I added, Where it is, Try it. Never rename one, for example to “What I changed” or “Summary”.
+- Result is PASS only when nothing is copied, skipped or hidden and both apps build and pass their unit tests. Otherwise it is FAIL, BLOCKED or INCOMPLETE. See [Result words](#result-words).
+- Put the whole report in one fenced `text` block with a blank line between parts. Keep it under 20 lines.
 
 Layout used below: your app and a clone of this repo sit next to each other.
 
@@ -77,7 +109,7 @@ your-workspace/
   my-app-android/   # its own repo, builds the Kotlin CLI
 ```
 
-Put `tests/reflex.json` and `tests/journeys/` in either repo or in a small third tests repo. Each platform command in the manifest points at its own repo with a relative path, for example `"../my-app-ios/.build/debug/your-cli"` and `"-cp", "../my-app-android/cli/build/install/cli/lib/*"`. Both CLIs must use the same node names, state keys and action names.
+Put `tests/reflex.json` and `tests/journeys/` in either repo or in a small third tests repo. Each platform command in the manifest points at its own repo with a relative path, for example `"../my-app-ios/ReflexHarness/.build/debug/your-cli"` and `"-cp", "../my-app-android/cli/build/install/cli/lib/*"`. Both CLIs must use the same node names, state keys and action names.
 
 ## 0. Prerequisites
 
@@ -103,37 +135,62 @@ You will point Swift and Kotlin at `reflex/kit`.
 
 ## 2. Swift
 
-Keep your Core free of UI and free of ReflexKit. Add a separate Introspection target and a small CLI.
+Keep your Core free of UI and free of ReflexKit. Put the Introspection target and a small CLI in their own Swift package. Your app never resolves that package, so it builds without the Reflex clone.
 
-In a Swift package next to the kit (paths match the layout above):
-
-```swift
-// Package.swift
-dependencies: [
-    .package(path: "../reflex/kit")
-],
-targets: [
-    .target(name: "YourCore"),
-    .target(name: "YourIntrospection", dependencies: [
-        "YourCore", .product(name: "ReflexKit", package: "kit")
-    ]),
-    .executableTarget(name: "your-cli", dependencies: [
-        "YourCore", "YourIntrospection", .product(name: "ReflexKit", package: "kit")
-    ])
-]
+```text
+your-app/
+  YourCore/          # the app’s Core package, unchanged
+  ReflexHarness/     # new: Introspection and CLI, the only package that names ../reflex
+  ios/YourApp.xcodeproj
 ```
 
-If your app is an Xcode project: put the Core in a Swift package or a folder with no UIKit or SwiftUI imports. Add a second target or local package for Introspection that depends on the Core and ReflexKit. Add a Command Line Tool target for the CLI. Do not link ReflexKit into the UI target. The one exception is the optional debug [socket host](real-build.md), linked only in Debug.
+```swift
+// ReflexHarness/Package.swift
+// swift-tools-version: 6.0
+import PackageDescription
+
+let package = Package(
+    name: "ReflexHarness",
+    platforms: [.macOS(.v13)],
+    dependencies: [
+        .package(path: "../YourCore"),
+        .package(path: "../../reflex/kit")
+    ],
+    targets: [
+        .target(name: "YourIntrospection", dependencies: [
+            "YourCore", .product(name: "ReflexKit", package: "kit")
+        ]),
+        .executableTarget(name: "your-cli", dependencies: [
+            "YourCore", "YourIntrospection", .product(name: "ReflexKit", package: "kit")
+        ])
+    ]
+)
+```
+
+Rules for the Swift side:
+
+| Do | Don’t |
+| --- | --- |
+| Point at the Reflex clone only from `ReflexHarness/Package.swift`. | Add `../reflex` to `YourCore/Package.swift` or the app’s Xcode project. |
+| Depend on the Core package by path. | Copy Core files into the harness. |
+| Keep `.build/` of the harness out of git. | Link ReflexKit into the phone target. |
+
+If the Core lives only inside the Xcode project, it has to move into a local package first. That is a refactor, so ask. The optional debug [socket host](real-build.md) is the one case where the app links ReflexKit. It does so only in Debug.
 
 ## 3. Kotlin
 
-Keep the Core as a JVM module with no Android imports. Include the kit from the clone.
+Keep the Core as a JVM module with no Android imports. Include the kit and the Reflex modules only when the clone exists, so the app builds without it.
 
 ```kotlin
-// settings.gradle.kts
-include(":core", ":introspection", ":cli", ":reflex-kit")
-project(":reflex-kit").projectDir = file("../reflex/kit/kotlin")
+// settings.gradle.kts: add this block, leave the rest as it is
+val reflexKit = file("../reflex/kit/kotlin")
+if (reflexKit.isDirectory) {
+    include(":introspection", ":cli", ":reflex-kit")
+    project(":reflex-kit").projectDir = reflexKit
+}
 ```
+
+The path is relative to the folder that holds `settings.gradle.kts`. No app module depends on `:introspection`, `:cli` or `:reflex-kit`. The exception is `debugImplementation` for the optional [socket host](real-build.md).
 
 ```kotlin
 // introspection/build.gradle.kts
@@ -242,7 +299,7 @@ fun main() {
 Build Swift with two jobs:
 
 ```bash
-swift build --package-path swift -j 2
+swift build --package-path ReflexHarness -j 2
 ```
 
 ## 6. Try it by hand
@@ -254,7 +311,7 @@ printf '%s\n' \
   '{"op":"hello","protocol":1}' \
   '{"op":"ls"}' \
   '{"op":"do","action":"Increment"}' \
-  | swift/.build/debug/counter-cli
+  | ReflexHarness/.build/debug/your-cli
 ```
 
 You should see `"ok":true` and `"state":{"count":1}` after Increment.
@@ -275,7 +332,7 @@ Create `tests/reflex.json`. `root` is your app directory (relative to the manife
   },
   "platforms": {
     "swift": {
-      "command": ["{root}/swift/.build/debug/counter-cli"]
+      "command": ["{root}/ReflexHarness/.build/debug/your-cli"]
     },
     "kotlin": {
       "command": [
@@ -350,18 +407,36 @@ FAIL platform=swift journey=… step=1 action=ls send={"op":"ls"} $.node.state.c
 RESULT FAIL mode=xfail-tracked unexpected_failures=1 xfail=0 platforms=swift repeat=1 sample=counter guard=canary-pass
 ```
 
+## 9. Check the app still works
+
+A green runner proves the adapters agree. It does not prove the app still builds. Run these too before you call it done.
+
+| Check | iOS example | Android example |
+| --- | --- | --- |
+| The app builds | `xcodebuild -scheme YourApp -destination 'generic/platform=iOS Simulator' build` | `./gradlew --no-daemon :app:assembleDebug` |
+| Its unit tests pass | `xcodebuild test -scheme YourApp -destination 'platform=iOS Simulator,name=iPhone 16'` | `./gradlew --no-daemon test` |
+| No Reflex in its build files | `git grep -n "\.\./reflex" -- '*.swift' '*.pbxproj'` lists only `ReflexHarness/` | `git grep -n "\.\./reflex" -- '*.kts'` lists only the guarded block |
+
+Use the app’s own scheme, tasks and simulator names. Unit tests run on the JVM or a simulator. Instrumented tests on an emulator are not needed.
+
+If the app fails to build or a unit test fails, the result is FAIL, even when the runner passed. If a check can’t run on this machine, the result is INCOMPLETE and the reason goes under Needs your decision.
+
 ## What you get back
 
-If you used the AI prompt from the README, the assistant ends with a five-part report. It follows these rules so it stays readable in a terminal:
+If you used the AI prompt or the skills, the assistant ends with a five-part report. It follows these rules so it stays readable in a terminal:
 
 - The whole report sits in one fenced `text` block so the line breaks survive.
-- Each part starts with a short heading on its own line. A blank line separates the parts.
-- **Result:** one result word plus the platforms, for example “PASS on swift and kotlin”. Not the full RESULT line.
-- **Needs your decision:** a numbered list with one decision per item. Each item is at most two short lines that say what differs and the options. “None” if empty. Every reason for BLOCKED or INCOMPLETE appears here.
-- **What I added** (or **What I changed** on an update): one bullet per file or folder.
-- **Where it is:** branch, commit and pushed or not, one line each.
-- **Try it:** the command alone on its own line.
-- Under 20 lines in total. No long sentences.
+- It has exactly five headings in this order, spelled as below, each on its own line. A blank line separates the parts. Add no other heading and never rename one, for example to “What I changed”.
+
+| Heading | What goes under it |
+| --- | --- |
+| Result | One result word plus the platforms, for example “PASS on swift and kotlin”. A second line says whether both apps built and passed their unit tests. |
+| Needs your decision | A numbered list with one decision per item, at most two short lines each. “None” if empty. Every reason for FAIL, BLOCKED or INCOMPLETE appears here. So does every product change. |
+| What I added | One bullet per file or folder, including files updated on an update and each edit to an existing build file. |
+| Where it is | Branch, commit, pushed or not and how many commits it is behind the main branch, one line each. |
+| Try it | The runner command alone on its own line. |
+
+Keep it under 20 lines in total, with no long sentences.
 
 ### Result words
 
@@ -369,10 +444,19 @@ Use the first word that applies.
 
 | Word | When |
 | --- | --- |
-| FAIL | The runner printed `RESULT FAIL` or stopped with an error. |
+| FAIL | The runner printed `RESULT FAIL` or stopped with an error. An app failed to build or one of its unit tests failed. |
 | BLOCKED | You can’t finish without the user. For example a screen needs a refactor before an adapter can wrap its real Core. |
-| INCOMPLETE | The runner passed but something is not covered. An adapter wraps a copy of the rules, a platform the app has was not run, a step is marked `parity` or `xfail` or the runner printed `PASS-UNGUARDED`. |
-| PASS | The runner printed `RESULT PASS`, every adapter wraps the real Core and no platform difference is marked or hidden. |
+| INCOMPLETE | The runner passed but something is not covered. See the list below. |
+| PASS | The runner printed `RESULT PASS`, both apps build and pass their unit tests, every adapter wraps the real Core the screen uses and no platform difference is marked or hidden. |
+
+INCOMPLETE covers these cases:
+
+- An adapter wraps a copy of the rules.
+- A screen’s view still does the real work. The model only mirrors it or the tests drive a copy of its logic. Name the screen under Needs your decision.
+- A platform the app has was not run.
+- A step is marked `parity` or `xfail`.
+- The runner printed `PASS-UNGUARDED`.
+- An app build or its unit tests could not be run.
 
 A green runner line is not enough for PASS. A test that passes because an adapter copies the rules or because both CLIs use one platform’s value proves nothing about the app.
 
@@ -381,10 +465,11 @@ Example:
 ```text
 Result
 INCOMPLETE on swift and kotlin
+Both apps build. Unit tests pass on both.
 
 Needs your decision
 1. Home opens on Inbox on iOS and Today on Android.
-   The journey keeps both and marks it known. Pick one to fix.
+   Marked known here. Say yes and I fix it on its own branch.
 2. Search keeps its state in the views, so it has no test yet.
    Say yes to move Search onto a shared Core.
 
@@ -395,12 +480,13 @@ What I added
 Where it is
 Branch: reflex/home
 Commit: abc1234, not pushed
+Behind main: 0 commits
 
 Try it
 python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
 ```
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
@@ -421,5 +507,6 @@ Paste the same README AI prompt again; it pulls the latest clone (or updates the
 2. Read [CHANGELOG.md](../CHANGELOG.md) for protocol or kit API changes since your version and apply them to your adapters, CLIs and `reflex.json`.
 3. Rebuild both CLIs: the Swift executable and Gradle `:cli:installDist`.
 4. Rerun the runner: `python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both`.
+5. Build both apps and run their unit tests as in [9. Check the app still works](#9-check-the-app-still-works).
 
 Environments, other stacks and CI notes: [faq.md](faq.md).

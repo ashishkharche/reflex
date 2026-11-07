@@ -5,8 +5,8 @@ Three skills in [`skills/`](../skills) in the [Agent Skills](https://agentskills
 | Skill | Use it to |
 | --- | --- |
 | `reflex-setup` | Set Reflex up in an app for the first time or update it. Ask for a dry run to see the plan without any change. |
-| `reflex-add-screens` | List the app’s screens, flag the ones that need a refactor and cover one, several or all of them. |
-| `reflex-run` | Rebuild, rerun, explain each FAIL and update expected values only for intentional changes. |
+| `reflex-add-screens` | List the app’s screens, flag the ones that need a refactor and cover them one screen per branch, stopping after each. |
+| `reflex-run` | Rebuild, rerun, build the apps and run their unit tests, explain each FAIL and update expected values only for intentional changes. |
 
 The repo root is also a plugin for Claude Code and Grok Build (`.claude-plugin/`) and for Cursor (`.cursor-plugin/`). The plugin is named `reflex`. Its marketplace is named `ashishkharche-reflex`.
 
@@ -23,6 +23,18 @@ The repo root is also a plugin for Claude Code and Grok Build (`.claude-plugin/`
 Claude Code puts the plugin name in front of each skill, so the command is `/reflex:reflex-setup`. The shell forms are `claude plugin marketplace add ashishkharche/reflex` and `claude plugin install reflex@ashishkharche-reflex`.
 
 Grok Build asks for `--trust` before it loads a plugin’s skills. Run the install without it first to see what it activates. Grok Build does not list a plugin from this repo through `grok plugin marketplace add`, so install it directly as shown.
+
+## What every skill does
+
+| Rule | Why |
+| --- | --- |
+| Builds both apps and runs their unit tests before it reports | A green runner does not prove the app still builds. |
+| Keeps Reflex in a separate harness package | The app builds without the Reflex clone. |
+| Marks a screen INCOMPLETE when its view still does the real work | The test would only drive a copy. |
+| Puts a product change on its own branch, after asking | Coverage and behaviour changes are reviewed apart. |
+| Does one screen per branch and stops after each screen or refactor | Each branch stays small enough to review. |
+| Says how far the branch is behind the main branch and rebases first | The result matches what you would merge. |
+| Ends with exactly five headings: Result, Needs your decision, What I added, Where it is, Try it | Reports look the same every time. |
 
 No skills support? Paste the prompt from the [README](../README.md). It points at the same guide.
 
