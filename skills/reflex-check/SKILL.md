@@ -6,7 +6,9 @@ license: MIT
 
 # Check iOS and Android match
 
-Run this before every merge. Runner flags: `../reflex/runner/README.md`. Result words: `../reflex/docs/add-to-your-app.md` under What you get back. Read nothing else unless a step fails.
+Run this before every merge. Everything you need is here. Only if a step fails, read `../reflex/runner/README.md` for runner flags or `python3 ../reflex/scripts/guide.py results` for the Result words.
+
+Work only in the app repo and `../reflex`. Do not search home folders, other skills or other repos.
 
 ## Steps
 
@@ -17,10 +19,11 @@ Run this before every merge. Runner flags: `../reflex/runner/README.md`. Result 
    - The app changed on purpose. Only the user can confirm this. Then update the expected value.
    - The adapter or CLI is wrong. Fix it so it reads the real Core.
    - The app has a bug or the platforms differ. Do not change the app. Report it.
-5. **Rerun** after each fix until it passes or only decisions are left. Never edit an expectation, add `parity` or `xfail` or pass `--allow-unguarded` just to go green.
+5. **Rerun** after each fix until it passes or only decisions are left. Never edit an expectation, add `parity` or `xfail`, pass `--no-guard` or `--allow-unguarded` just to go green.
 6. **Build both apps and run their unit tests**, for example `xcodebuild test` and `./gradlew test`. No emulator unless asked.
 7. **Check** the app’s own build files never name `../reflex`, apart from the guarded Kotlin block.
-8. **Count** commits behind the main branch after `git fetch`.
+8. **Check each journey runs its screen’s main action.** One that only touches a minor control makes that screen INCOMPLETE.
+9. **Count** commits behind the main branch after `git fetch`.
 
 ## Result
 
@@ -31,8 +34,31 @@ Run this before every merge. Runner flags: `../reflex/runner/README.md`. Result 
 | A build or unit tests could not run | INCOMPLETE |
 | `PASS-UNGUARDED`, a skipped platform or a `parity` or `xfail` step | INCOMPLETE |
 | A view still does the real work or a CLI starts from a made-up state | INCOMPLETE |
+| A journey skips its screen’s main action | INCOMPLETE |
 | Everything above passed | PASS |
 
 ## Report
 
-One fenced `text` block with exactly these headings: Result, Needs your decision, What I added, Where it is, Try it. Result is one plain line, for example “iOS and Android match on 6 of 7 journeys.” No logs unless asked. Write “Nothing” under What I added if you added nothing. Try it holds the runner command and one next step. Write “Safe to merge” only on PASS.
+Copy this shape. One fenced `text` block, five headings in this order, under 20 lines. Count them before you send.
+
+```text
+Result
+PASS on swift and kotlin. Both apps build and pass unit tests.
+
+Needs your decision
+None
+
+What I added
+- Nothing
+
+Where it is
+reflex/home at abc1234, not pushed, 0 behind main
+
+Try it
+python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both
+Next: merge reflex/home, then /reflex-cover <next screen>
+```
+
+- Result is one line: the Result word, the platforms and the build and unit test outcome.
+- Needs your decision is a numbered list with one short line each. Write “None” if empty. Every reason the Result is not PASS goes here.
+- Fixes count as added files. Write “Safe to merge” after the Next line only on PASS. No logs unless asked.

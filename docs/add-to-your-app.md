@@ -86,6 +86,7 @@ See [9. Check the app still works](#9-check-the-app-still-works).
 - Use exactly these five headings in this order: Result, Needs your decision, What I added, Where it is, Try it. Never rename one, for example to “What I changed” or “Summary”.
 - Result is PASS only when nothing is copied, skipped or hidden and both apps build and pass their unit tests. Otherwise it is FAIL, BLOCKED or INCOMPLETE. See [Result words](#result-words).
 - Put the whole report in one fenced `text` block with a blank line between parts. Keep it under 20 lines.
+- Before writing a journey, prove the screen’s main action runs offline with `python3 ../reflex/runner/explore.py tests/reflex.json 'do <Action> {...}'`. `NETWORK denied` means it needs a fixture. A journey that skips the main action is INCOMPLETE.
 
 Layout used below: your app and a clone of this repo sit next to each other.
 
@@ -316,6 +317,12 @@ printf '%s\n' \
 
 You should see `"ok":true` and `"state":{"count":1}` after Increment.
 
+Once `tests/reflex.json` exists, use the explore helper instead. It runs the same lines on every platform under the network guard and says whether they agree:
+
+```bash
+python3 ../reflex/runner/explore.py tests/reflex.json ls 'do Increment' ls
+```
+
 ## 7. Manifest and journey
 
 Create `tests/reflex.json`. `root` is your app directory (relative to the manifest). Point conformance and the network guard at the reflex clone. Do not set `warm` until a journey restores starting state; warm timings reuse one process.
@@ -430,10 +437,10 @@ If you used the AI prompt or the skills, the assistant ends with a five-part rep
 
 | Heading | What goes under it |
 | --- | --- |
-| Result | One result word plus the platforms, for example “PASS on swift and kotlin”. A second line says whether both apps built and passed their unit tests. |
+| Result | One line: the result word, the platforms and whether both apps built and passed their unit tests, for example “PASS on swift and kotlin. Both apps build and pass unit tests.” |
 | Needs your decision | A numbered list with one decision per item, at most two short lines each. “None” if empty. Every reason for FAIL, BLOCKED or INCOMPLETE appears here. So does every product change. |
 | What I added | One bullet per file or folder, including files updated on an update and each edit to an existing build file. |
-| Where it is | Branch, commit, pushed or not and how many commits it is behind the main branch, one line each. |
+| Where it is | One line: branch, commit, pushed or not and how many commits it is behind the main branch. |
 | Try it | The runner command on its own line, then one next step, for example `Next: /reflex-check before you merge`. Write “Safe to merge” only on PASS. |
 
 Keep it under 20 lines in total, with no long sentences.
@@ -469,23 +476,18 @@ Example:
 
 ```text
 Result
-INCOMPLETE on swift and kotlin
-Both apps build. Unit tests pass on both.
+INCOMPLETE on swift and kotlin. Both apps build and pass unit tests.
 
 Needs your decision
-1. Home opens on Inbox on iOS and Today on Android.
-   Marked known here. Say yes and I fix it on its own branch.
-2. Search keeps its state in the views, so it has no test yet.
-   Say yes to move Search onto a shared Core.
+1. Home opens on Inbox on iOS and Today on Android. Say yes and I fix it on its own branch.
+2. Search keeps its state in the views. Say yes to move it onto a shared Core.
 
 What I added
 - tests/reflex.json and tests/journeys/home.json
 - HomeNode and home-cli (Swift and Kotlin)
 
 Where it is
-Branch: reflex/home
-Commit: abc1234, not pushed
-Behind main: 0 commits
+reflex/home at abc1234, not pushed, 0 behind main
 
 Try it
 python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both

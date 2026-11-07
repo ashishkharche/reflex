@@ -103,4 +103,12 @@ Send the action once, then wait with `eventually`:
 
 Only the matching reply goes into the transcript and parity. On failure the last reply does. The number of polls never makes a run flaky. `--evidence` records `polls` for each polling step. Each poll still has the usual 6 second reply timeout. The warm journey may not poll.
 
+## Explore
+
+`runner/explore.py` sends `ls`, `do` and `op` lines to every platform CLI in one process each, under the same guard and canary. It prints each reply without `node.inputs` after the first (`--full` keeps them), then `network=` per platform and a `PARITY` line. It exits 2 with `BLOCKED` when the guard can’t run, so nobody explores unguarded.
+
+```bash
+python3 runner/explore.py tests/inventory/reflex.json --fixture http-caught 'do OpenProduct {"id":"shirt"}' 'do Save'
+```
+
 Adoption guide: [docs/add-to-your-app.md](../docs/add-to-your-app.md).

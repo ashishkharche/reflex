@@ -4,6 +4,12 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- New `scripts/guide.py` prints only the guide sections a step needs, for example `guide.py 3 4 5 7`. The skills use it instead of opening the whole guide.
+- New `runner/explore.py` runs `ls` and `do` lines on every platform under the network guard in one process each, then prints the network status and parity. It stops with `BLOCKED` when the guard can’t run. `reflex-explore` uses only this.
+- `reflex-start` and `reflex-cover` now name the screen’s main action, check its state is outside the views and prove it runs offline before writing the journey. A journey that skips the main action is INCOMPLETE.
+- Every skill carries a literal report shape under 20 lines. Result and Where it is are one line each.
+- Merge each Reflex branch before covering the next screen. The skills stay inside the app repo and `../reflex`.
+
 No protocol change and no kit API change.
 
 - Skills: renamed and regrouped by job. `reflex-setup` is now `reflex-start`, `reflex-add-screens` is now `reflex-cover` and `reflex-run` is now `reflex-check`, which also fixes what it finds. New `reflex-explore` lets an agent read and drive any screen through the CLI. Each skill loads only the guide sections it needs and ends with one next step. Install into any assistant with `npx skills add ashishkharche/reflex`. Reinstall to pick up the new names.
