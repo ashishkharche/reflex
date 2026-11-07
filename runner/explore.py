@@ -2,7 +2,9 @@
 """Explore an app through its Reflex CLIs with the network guard always on.
 
 Use: explore.py tests/reflex.json [--platform both] [--fixture NAME] LINE...
-Each LINE is `ls`, `do Action {json}`, `op name {json}` or one raw JSON object. With no LINE, lines come from stdin.
+Each LINE is `ls`, `do Action {json}`, `op name {json}`, `wait Name [ms]`, `wait {json} [ms]` or one raw JSON object.
+`wait` sends only `ls` until the screen is Name or the reply contains {json}, for up to ms (default 5000). Use it after an action that loads.
+With no LINE, lines come from stdin.
 All lines run in one process per platform. It prints each reply, the network status and whether the platforms agree.
 Exit 0 when every reply is ok and the network stayed clean, 1 otherwise, 2 when the guard cannot run (BLOCKED).
 """
@@ -16,8 +18,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reflex_runner as rr  # noqa: E402
 
 
+WAIT_DEFAULT_MS = 5000
+
+
+def to_wait(rest):
+    rest = rest.strip()
+    within = WAIT_DEFAULT_MS
+    head, _, tail = rest.rpartition(" ")
+    if head and tail.isdigit():
+        rest, within = head.strip(), int(tail)
+    if not 0 < within <= rr.POLL_MAX_MS:
+        raise ValueError(f"wait ms must be from 1 to {rr.POLL_MAX_MS}")
+    expected = json.loads(rest) if rest.startswith("{") else {"node": {"name": rest}}
+    if not rest or not isinstance(expected, dict):
+        raise ValueError("wait needs a screen name or a JSON object")
+    return {"wait": expected, "within_ms": within}
+
+
 def to_request(line):
     line = line.strip()
+    if line.startswith("wait ") or line == "wait":
+        return to_wait(line[4:])
     if line.startswith("{"):
         return json.loads(line)
     parts = line.split(" ", 2)
@@ -46,7 +67,12 @@ def run(manifest, target, fixture, guard, requests):
     host = rr.Host(manifest, target, fixture, guard)
     replies = []
     for request in [{"op": "hello", "protocol": manifest.protocol}] + requests:
-        [(line, dead)] = host.send((json.dumps(request, ensure_ascii=False) + "\n").encode("utf-8"))
+        if "wait" in request:
+            line, dead, _, problem, polls, waited = rr.poll(host, request["wait"], None, request["within_ms"], rr.POLL_EVERY_MS)
+            if problem and not dead:
+                line = json.dumps({"ok": False, "error": f"wait not met within {request['within_ms']} ms: {problem}"})
+        else:
+            [(line, dead)] = host.send((json.dumps(request, ensure_ascii=False) + "\n").encode("utf-8"))
         replies.append(line if line is not None else json.dumps({"ok": False, "error": dead}))
         if dead:
             break

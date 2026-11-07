@@ -15,6 +15,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 1. **Pick the screen.** If the user named one, use it. Otherwise list the screens with their ViewModel on iOS and Android side by side. Mark one-platform screens and screens that keep state in their views. Ask which to do. “The whole app” means this list, one screen at a time.
 2. **Check it is ready.** Name its main action, the one the screen exists for.
    - State in the views or no ViewModel: stop and ask. Do not refactor unasked.
+   - Open the screen’s view file too. A value a user sees or changes that lives there (`remember`, `rememberPagerState`, `@State`, a local variable) is a readiness gap even when the main action is in the ViewModel. Name it under Needs your decision and make the Result INCOMPLETE. Do not refactor unasked.
    - Every network call that action makes needs a fixture. If one can’t be faked without changing app code, stop with BLOCKED and say which call.
 3. **Branch** from the latest main branch (`git symbolic-ref --short refs/remotes/origin/HEAD`), for example `reflex/settings`.
 4. **Read** `python3 ../reflex/scripts/guide.py 4 5 7`, never the whole guide. Copy the shape of the adapters the app already has.
@@ -31,10 +32,11 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 - If a user can see it, it is in state. If a user can do it, it is an action. The node lists every action every time, with no conditionals.
 - A CLI loads the same state the app shows. An empty or made-up start state makes the screen INCOMPLETE.
 - A journey that skips the main action makes the screen INCOMPLETE.
+- Platforms come from `tests/reflex.json`. A Kotlin Multiplatform or Compose Multiplatform app with only a Kotlin host is complete. Do not ask for a Swift harness. Write the Result as “on kotlin (shared code)”.
 
 ## Report
 
-Copy this shape. One fenced `text` block, five headings in this order, under 20 lines. Count them before you send.
+Copy this shape. One fenced `text` block, five headings in this order, 19 lines at most counting blank lines. Count them before you send.
 
 ```text
 Result
@@ -57,4 +59,6 @@ Next: merge reflex/settings, then /reflex-cover <next screen>
 
 - Result is one line: the Result word, the platforms and the build and unit test outcome.
 - Needs your decision is a numbered list with one short line each. Write “None” if empty. Every reason the Result is not PASS goes here.
+- The Next line follows the Result word. PASS: “Next: merge reflex/<screen>, then /reflex-cover <next screen>”. Anything else: “Next: answer 1, then /reflex-check”. Never say merge before PASS.
+- At most three decisions. Join related ones into one line. Nothing goes outside the block.
 - Write “Safe to merge” after the Next line only on PASS. No logs unless asked.

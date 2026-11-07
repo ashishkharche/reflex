@@ -262,7 +262,12 @@ class Host:
     def __init__(self, manifest, target, fixture, guard):
         self.target = target
         self.audit = None
-        env = dict(os.environ)
+        # A fresh home per process, so saved settings, caches or databases never leak between runs or app copies.
+        self.home = tempfile.mkdtemp(prefix="reflex-home-")
+        env = dict(os.environ, HOME=self.home, TMPDIR=self.home, XDG_CONFIG_HOME=self.home + "/.config",
+                   XDG_DATA_HOME=self.home + "/.local/share", XDG_CACHE_HOME=self.home + "/.cache")
+        # The JVM takes user.home from the account, not HOME, so pass it as well.
+        env["JAVA_TOOL_OPTIONS"] = (env.get("JAVA_TOOL_OPTIONS", "") + f" -Duser.home={self.home} -Djava.io.tmpdir={self.home}").strip()
         if guard:
             handle = tempfile.NamedTemporaryFile(prefix="reflex-net-", delete=False)
             handle.close()
@@ -346,6 +351,7 @@ class Host:
         status = self.network()
         if self.audit:
             Path(self.audit).unlink(missing_ok=True)
+        shutil.rmtree(self.home, ignore_errors=True)
         return code, status, rest
 
 

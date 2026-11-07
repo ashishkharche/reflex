@@ -13,7 +13,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 ## Steps
 
 1. **Rebuild** each CLI the manifest points at, for example `swift build` in the harness package and the Kotlin `installDist` task.
-2. **Run** `python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both`. One platform or Kotlin Multiplatform: pass just that one.
+2. **Run** `python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both`. Platforms come from `tests/reflex.json`. A Kotlin Multiplatform or Compose Multiplatform app with only a Kotlin host is complete. Do not ask for a Swift harness. Write the Result as “on kotlin (shared code)”.
 3. **Explain** each `FAIL` in one plain line: the screen, the action, what each platform showed. For example “Cart: Android shows 2 items, iOS shows 3, after RemoveItem.”
 4. **Find the cause** and say which one it is. Label a guess as a guess.
    - The app changed on purpose. Only the user can confirm this. Then update the expected value.
@@ -32,14 +32,14 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 | An app fails to build or a unit test fails | FAIL |
 | A tool is missing or the run needs the user | BLOCKED |
 | A build or unit tests could not run | INCOMPLETE |
-| `PASS-UNGUARDED`, a skipped platform or a `parity` or `xfail` step | INCOMPLETE |
-| A view still does the real work or a CLI starts from a made-up state | INCOMPLETE |
+| `PASS-UNGUARDED`, a `parity` or `xfail` step or a listed platform the run skipped | INCOMPLETE |
+| A view does the real work or holds state a user sees. Or a CLI starts from a made-up state | INCOMPLETE |
 | A journey skips its screen’s main action | INCOMPLETE |
 | Everything above passed | PASS |
 
 ## Report
 
-Copy this shape. One fenced `text` block, five headings in this order, under 20 lines. Count them before you send.
+Copy this shape. One fenced `text` block, five headings in this order, 19 lines at most counting blank lines. Count them before you send.
 
 ```text
 Result
@@ -61,4 +61,6 @@ Next: merge reflex/home, then /reflex-cover <next screen>
 
 - Result is one line: the Result word, the platforms and the build and unit test outcome.
 - Needs your decision is a numbered list with one short line each. Write “None” if empty. Every reason the Result is not PASS goes here.
+- The Next line follows the Result word. PASS: “Next: merge reflex/<screen>, then /reflex-cover <next screen>”. Anything else: “Next: answer 1, then /reflex-check”. Never say merge before PASS.
+- At most three decisions. Join related ones into one line. Nothing goes outside the block.
 - Fixes count as added files. Write “Safe to merge” after the Next line only on PASS. No logs unless asked.

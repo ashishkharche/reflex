@@ -105,7 +105,9 @@ Only the matching reply goes into the transcript and parity. On failure the last
 
 ## Explore
 
-`runner/explore.py` sends `ls`, `do` and `op` lines to every platform CLI in one process each, under the same guard and canary. It prints each reply without `node.inputs` after the first (`--full` keeps them), then `network=` per platform and a `PARITY` line. It exits 2 with `BLOCKED` when the guard can’t run, so nobody explores unguarded.
+`runner/explore.py` sends `ls`, `do` and `op` lines to every platform CLI in one process each, under the same guard and canary. It prints each reply without `node.inputs` after the first (`--full` keeps them), then `network=` per platform and a `PARITY` line. A `wait Name [ms]` or `wait {json} [ms]` line sends only `ls` until the screen or reply matches, for actions that load. It exits 2 with `BLOCKED` when the guard can’t run, so nobody explores unguarded.
+
+Every CLI process the runner or the explore helper starts gets a fresh empty home folder (`HOME`, `TMPDIR`, the XDG folders and the JVM’s `user.home`). Saved settings, caches and databases can’t leak from one run or app copy into the next.
 
 ```bash
 python3 runner/explore.py tests/inventory/reflex.json --fixture http-caught 'do OpenProduct {"id":"shirt"}' 'do Save'
