@@ -4,6 +4,11 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- Error handling is the first numbered skill step: run the failing step through `explore.py` and read STDERR before any app or helper code.
+- PASS needs separate current-session build and test evidence for each native app, including iOS in KMP projects. A Kotlin shared-code suite is not iOS evidence. Missing native checks mean INCOMPLETE with no merge next step.
+- `reflex-check` reopens views and adapters and carries forward unresolved view-state and navigation gaps. Recording a callback does not prove the destination loaded.
+- Skills use native read and search tools, `git commit -m` for messages and repo-local build output paths. No inline Python, heredocs or `~/Library` searches.
+
 - Skills diagnose a failing step with `explore.py` and read its STDERR before reading code.
 - Skills forbid all custom scripts, including inline Python and heredocs. Build and test logs stay in the app repo’s gitignored `.build/`, never `/tmp`.
 - Changed code is committed on the Reflex branch before reporting. PASS requires every manifest platform and each app’s build and unit tests to pass in the current session with no uncommitted changes. A skipped platform is named with INCOMPLETE.
@@ -16,7 +21,7 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 - `explore.py` takes `wait Name [ms]` and `wait {json} [ms]` lines for actions that load. The explore skill forbids writing your own script around the runner.
 - Every CLI process gets a fresh empty home folder, including the JVM’s `user.home` and `CFFIXED_USER_HOME`. JVM CLIs also get an in-memory `java.util.prefs` store, because on macOS Java Preferences ignore `user.home` and write the account’s own settings. Saved data can’t leak between runs or app copies or touch the user’s settings.
 - `explore.py` prints a failing CLI’s last error lines. Every skill forbids launching a CLI or probe script by hand and touching the user’s own settings.
-- Kotlin Multiplatform apps with one Kotlin host are complete. The skills no longer ask for a Swift harness.
+- One Kotlin host covers Kotlin Multiplatform shared logic without a Swift harness. Native app build and test checks are still required.
 - The readiness check also opens the view file. State a user sees that lives there, such as a pager position, is a readiness gap and makes the Result INCOMPLETE.
 - The Next line follows the Result word, so nothing says merge before PASS. Reports are 19 lines at most with three decisions at most and nothing outside the block.
 - Merge each Reflex branch before covering the next screen. The skills stay inside the app repo and `../reflex`.

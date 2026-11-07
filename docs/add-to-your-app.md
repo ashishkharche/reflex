@@ -51,8 +51,7 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 
 **Rules**
 
-- Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Use your own read and search tools. Keep build and test logs in the app repo’s `.build/` and ensure it is gitignored, never `/tmp`.
-- When a step fails, run `python3 ../reflex/runner/explore.py tests/reflex.json` with the failing step first and read its STDERR before reading code.
+- Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Read and search files with your own tools instead of inline Python or heredocs. Write commit messages with `git commit -m`. Keep build and test logs in the app repo’s gitignored `.build/`, never `/tmp`. Find build output there or at the repo-local path the build prints, never by searching `~/Library`.
 - Keep the app’s code and behaviour unchanged. Only add new files and targets. Registering a Reflex module in `settings.gradle.kts` as [3. Kotlin](#3-kotlin) shows is part of adding it. List each such edit in the report.
 - Files Reflex added earlier (adapters, CLIs, `reflex.json`, journeys) may be updated to follow this guide or the CHANGELOG. Ask before editing any other existing file.
 - If a screen keeps its state in its views, ask before refactoring.
@@ -76,10 +75,12 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 
 Do all of these before you report. The runner alone is not enough.
 
-1. Rebuild the CLIs and run the runner with `--platform both`. If the app has one platform, pass just that one. Fix any failure and rerun.
-2. Build each app the way its team does, for example `xcodebuild build` and `./gradlew assembleDebug`.
-3. Run each app’s existing unit tests, for example `xcodebuild test` and `./gradlew test`. Unit tests only: do not start an emulator for instrumented tests unless the user asks.
-4. Check that the app’s own build files never name `../reflex`, apart from the guarded Kotlin block.
+1. If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json` with that step (`ls` for startup) and read its STDERR before any app or helper code. Return here immediately when a later step fails.
+2. Rebuild the CLIs and run the runner with `--platform both`. If the app has one platform, pass just that one. Fix any failure and rerun.
+3. Build each native app, including the iOS app in KMP projects, the way its team does, for example `xcodebuild build` and `./gradlew assembleDebug`.
+4. Run each native app’s existing tests, for example `xcodebuild test` and `./gradlew test`. Unit tests only: do not start an emulator for instrumented tests unless the user asks.
+5. Check that the app’s own build files never name `../reflex`, apart from the guarded Kotlin block.
+6. Reopen each covered screen’s view and adapter. Carry forward known view-state and navigation gaps until real code and a journey prove them resolved. A recorded callback does not prove the destination loaded. Name unresolved gaps under Needs your decision and make the screen INCOMPLETE. Do not refactor unasked.
 
 See [9. Check the app still works](#9-check-the-app-still-works).
 
@@ -427,6 +428,8 @@ A green runner proves the adapters agree. It does not prove the app still builds
 | Its unit tests pass | `xcodebuild test -scheme YourApp -destination 'platform=iOS Simulator,name=iPhone 16'` | `./gradlew --no-daemon test` |
 | No Reflex in its build files | `git grep -n "\.\./reflex" -- '*.swift' '*.pbxproj'` lists only `ReflexHarness/` | `git grep -n "\.\./reflex" -- '*.kts'` lists only the guarded block |
 
+Record each native app’s build and test commands, exit codes and log paths in `.build/` for this session. A Kotlin shared-code suite does not count as iOS evidence.
+
 Use the app’s own scheme, tasks and simulator names. Unit tests run on the JVM or a simulator. Instrumented tests on an emulator are not needed.
 
 If the app fails to build or a unit test fails, the result is FAIL, even when the runner passed. If a check can’t run on this machine, the result is INCOMPLETE and the reason goes under Needs your decision.
@@ -448,7 +451,7 @@ If you used the AI prompt or the skills, the assistant ends with a five-part rep
 
 Keep it to 19 lines at most, with at most three decisions and nothing outside the block. Join related decisions into one short line.
 
-PASS requires every platform in `tests/reflex.json` to pass in this session, every app to build and pass its unit tests in this session and no uncommitted changes. Otherwise report INCOMPLETE and name each platform or check that did not run.
+PASS requires current-session evidence that every platform in `tests/reflex.json` passed and each native app separately built and passed its tests, with no uncommitted changes. This includes the iOS app in KMP projects. A Kotlin shared-code suite is not iOS evidence. A missing native app build or test run makes the Result INCOMPLETE: name the app under Needs your decision and never say merge in Next.
 
 ### Result words
 
@@ -469,7 +472,7 @@ INCOMPLETE covers these cases:
 - Changes remain uncommitted.
 - A step is marked `parity` or `xfail`.
 - The runner printed `PASS-UNGUARDED`.
-- An app build or its unit tests could not be run.
+- A native app build or its tests could not be run in this session, including iOS in a KMP project. Name the app under Needs your decision.
 - A CLI starts from an empty or made-up state while the app fills that state in somewhere else, such as a planner or a view.
 
 A `parity` or `xfail` mark covers one known difference between the platforms. It must not hide state the CLI is missing.

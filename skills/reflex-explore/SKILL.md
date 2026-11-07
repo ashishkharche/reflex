@@ -18,20 +18,20 @@ It builds and proves the network guard, runs every line in one process per platf
 
 ## Steps
 
-1. **Build** the CLIs only if their source changed since the last build. `BLOCKED ... CLI is not built` tells you which.
-2. **Look first:** run it with `ls`. It shows the screen, its state and the actions it accepts.
-3. **Act in one batch:** put every `do`, `wait` and `ls` you need in one call. Do not run one call per step and do not read app source to find what `ls` already lists.
-4. **Read the end lines.** `NETWORK denied` means the action tried the network and needs a fixture. `PARITY ... differs at line N` names the first step where the platforms disagree. Report a difference as a fact, not a fix.
-5. **Keep what you learn.** A sequence worth keeping becomes a journey with `reflex-cover`.
+1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json` with that step (`ls` for a startup failure) and read its STDERR before any app or helper code. Return here immediately when a later step fails.
+2. **Build** the CLIs only if their source changed since the last build. `BLOCKED ... CLI is not built` tells you which.
+3. **Look first:** run it with `ls`. It shows the screen, its state and the actions it accepts.
+4. **Act in one batch:** put every `do`, `wait` and `ls` you need in one call. Do not run one call per step and do not read app source to find what `ls` already lists.
+5. **Read the end lines.** `NETWORK denied` means the action tried the network and needs a fixture. `PARITY ... differs at line N` names the first step where the platforms disagree. Report a difference as a fact, not a fix.
+6. **Keep what you learn.** A sequence worth keeping becomes a journey with `reflex-cover`.
 
 ## Rules
 
-- When a step fails, run `python3 ../reflex/runner/explore.py tests/reflex.json` with the failing step first and read its STDERR before reading code.
 - Read only. Do not change app code to explore.
 - Never launch a CLI yourself, never write your own script around the runner and never explore without the guard. If the helper can’t do something, say so in the reply. If the helper prints `BLOCKED`, stop and report that line. Never claim “no network calls” without its `network=clean` line.
 - An action the screen does not offer returns `action.unknown`. Use the actions `ls` lists.
 - Work only in the app repo and `../reflex`.
-- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Use your own read and search tools. Keep build and test logs in the app repo’s `.build/` and ensure it is gitignored, never `/tmp`.
+- Debug a CLI only through `explore.py`, which prints its error output when something fails. Never launch the CLI, `java` or a probe script yourself. Never read or write the user’s own settings (Java Preferences, UserDefaults or anything in `~/Library`). Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Read and search files with your own tools instead of inline Python or heredocs. Write commit messages with `git commit -m`. Keep build and test logs in the app repo’s gitignored `.build/`, never `/tmp`. Find build output there or at the repo-local path the build prints, never by searching `~/Library`.
 
 ## Reply
 
