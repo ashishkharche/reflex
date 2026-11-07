@@ -16,6 +16,8 @@ python3 ../reflex/runner/explore.py tests/reflex.json ls 'do Name {"key":"value"
 
 It builds and proves the network guard, runs every line in one process per platform, prints each reply, the network status and whether iOS and Android agree. Add `--platform swift` or `--platform kotlin` for one side and `--fixture <name>` for another start state.
 
+Before launching a Swift CLI that uses UserDefaults, require an injected in-memory store. A named suite can survive the runner’s temporary home on macOS. If injection needs app changes, stop with BLOCKED. These journeys do not test real persistence.
+
 ## Steps
 
 1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.

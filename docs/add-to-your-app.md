@@ -71,6 +71,10 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 - If the user asks for a dry run or a plan, change nothing: no clone, no writes, no installs, no builds. Reading is fine.
 - Name the platforms and the main screen, say what each step would add and report INCOMPLETE with the reason “dry run”.
 
+**Storage fixtures**
+
+Before launching a Swift CLI that uses UserDefaults, require an injected in-memory store. A named suite can survive the runner’s temporary home on macOS. If injection needs app changes, stop with BLOCKED. These journeys do not test real persistence. Keep this fixture in the harness, not the app.
+
 **Run and check**
 
 Do all of these before you report, even when the user only names one failure. Native build and test checks are not optional: list the native app targets and attempt each without asking whether to run them. The runner alone is not enough.

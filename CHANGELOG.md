@@ -4,6 +4,8 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- Swift UserDefaults harnesses now require an injected in-memory store before the first launch. Named suites can survive a temporary home on macOS, so the runner guide no longer promises isolation for every persistent store.
+
 - The failure-first step now starts with a runnable `explore.py ... ls` command before any helper code read. Native build and test attempts remain mandatory when a request only names one failure.
 - Install guidance names Claude Code 2.0.20 as the first version with Skills support and checks the executable the shell selects. Empty headless replies are not successful runs.
 - Report rules now state the prose style explicitly: curly apostrophes with no Oxford commas or em dashes.
