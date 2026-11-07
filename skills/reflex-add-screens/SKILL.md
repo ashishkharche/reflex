@@ -15,13 +15,14 @@ The how-to lives in the Reflex clone next to the app, usually `../reflex`. Read 
 1. List the screens. For each one name its ViewModel or state holder on iOS and on Android, side by side. Mark screens that exist on one platform only.
 2. Flag every screen that keeps its state in its views, has no clear ViewModel or whose view still does the real work while the model only mirrors it. It needs a refactor before it can be tested. Do not refactor it. Ask the user.
 3. Show the list and ask which screen to do first, unless the user already named one. “The whole app” means this list, then one screen at a time. It never means all screens in one go.
-4. Do one screen, on its own branch from the latest main branch, for example `reflex/settings`:
+4. Do one screen, on its own branch from the latest main branch (`main`, `master` or whatever `git symbolic-ref --short refs/remotes/origin/HEAD` names), for example `reflex/settings`:
    - An adapter node on each platform the app has, with the same node name, state keys and action names on both.
    - The CLI wiring so the node is reachable.
    - One journey in the existing `reflex.json` journeys folder.
    - Run it with the `reflex-run` skill, which also builds both apps and runs their unit tests.
-5. Run `git fetch` and `git rev-list --count HEAD..origin/main`. If you are behind, rebase and run step 4 again.
-6. Stop and report. Wait for a yes before the next screen. Do the same after any refactor the user approved.
+5. Run `git fetch` and count the commits behind the main branch. If you are behind, rebase and run step 4 again.
+6. Commit on the branch. Do not push or open a pull request unless the user asks.
+7. Stop and report. Wait for a yes before the next screen. Do the same after any refactor the user approved.
 
 ## Rules
 
