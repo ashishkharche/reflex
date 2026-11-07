@@ -4,6 +4,10 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- The failure-first step now starts with a runnable `explore.py ... ls` command before any helper code read. Native build and test attempts remain mandatory when a request only names one failure.
+- Install guidance names Claude Code 2.0.20 as the first version with Skills support and checks the executable the shell selects. Empty headless replies are not successful runs.
+- Report rules now state the prose style explicitly: curly apostrophes with no Oxford commas or em dashes.
+
 - Error handling is the first numbered skill step: run the failing step through `explore.py` and read STDERR before any app or helper code.
 - PASS needs separate current-session build and test evidence for each native app, including iOS in KMP projects. A Kotlin shared-code suite is not iOS evidence. Missing native checks mean INCOMPLETE with no merge next step.
 - `reflex-check` reopens views and adapters and carries forward unresolved view-state and navigation gaps. Recording a callback does not prove the destination loaded.

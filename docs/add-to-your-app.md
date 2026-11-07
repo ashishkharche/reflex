@@ -73,9 +73,9 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 
 **Run and check**
 
-Do all of these before you report. The runner alone is not enough.
+Do all of these before you report, even when the user only names one failure. Native build and test checks are not optional: list the native app targets and attempt each without asking whether to run them. The runner alone is not enough.
 
-1. If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json` with that step (`ls` for startup) and read its STDERR before any app or helper code. Return here immediately when a later step fails.
+1. If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before any app or helper code read. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. Rebuild the CLIs and run the runner with `--platform both`. If the app has one platform, pass just that one. Fix any failure and rerun.
 3. Build each native app, including the iOS app in KMP projects, the way its team does, for example `xcodebuild build` and `./gradlew assembleDebug`.
 4. Run each native app’s existing tests, for example `xcodebuild test` and `./gradlew test`. Unit tests only: do not start an emulator for instrumented tests unless the user asks.
@@ -449,7 +449,7 @@ If you used the AI prompt or the skills, the assistant ends with a five-part rep
 | Where it is | One line: branch, commit, pushed or not and how many commits it is behind the main branch. Name committed work, never “uncommitted”. |
 | Try it | The runner command on its own line, then `Next: merge reflex/<screen>, then /reflex-cover <next screen>` on PASS. Otherwise `Next: answer 1, then /reflex-check`. No extra merge claim. The Next line is the last line. |
 
-Keep it to 19 lines at most, with at most three decisions and nothing outside the block. Join related decisions into one short line.
+Keep it to 19 lines at most, with at most three decisions and nothing outside the block. Use curly apostrophes. No Oxford commas or em dashes. Join related decisions into one short line.
 
 PASS requires current-session evidence that every platform in `tests/reflex.json` passed and each native app separately built and passed its tests, with no uncommitted changes. This includes the iOS app in KMP projects. A Kotlin shared-code suite is not iOS evidence. A missing native app build or test run makes the Result INCOMPLETE: name the app under Needs your decision and never say merge in Next.
 

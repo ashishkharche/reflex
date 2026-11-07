@@ -12,7 +12,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 
 ## Steps
 
-1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json` with that step (`ls` for a startup failure) and read its STDERR before any app or helper code. Return here immediately when a later step fails.
+1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. **Check the repo.** You must be in the app’s repo, not in Reflex. If it has uncommitted changes, ask before you start. Never stash or discard them.
 3. **Check the stack.**
    - Native Swift and Kotlin: carry on.
@@ -47,7 +47,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 
 ## Report
 
-Copy this shape. One fenced `text` block, five headings in this order, 19 lines at most counting blank lines. Count them before you send.
+Copy this shape. One fenced `text` block, five headings in this order, 19 lines at most counting blank lines. Count them before you send. Use curly apostrophes. No Oxford commas or em dashes.
 
 ```text
 Result

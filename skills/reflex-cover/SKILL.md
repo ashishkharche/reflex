@@ -12,7 +12,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 
 ## Steps
 
-1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json` with that step (`ls` for a startup failure) and read its STDERR before any app or helper code. Return here immediately when a later step fails.
+1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. **Pick the screen.** If the user named one, use it. Otherwise list the screens with their ViewModel on iOS and Android side by side. Mark one-platform screens and screens that keep state in their views. Ask which to do. “The whole app” means this list, one screen at a time.
 3. **Check it is ready.** Name its main action, the one the screen exists for.
    - State in the views or no ViewModel: stop and ask. Do not refactor unasked.
@@ -38,7 +38,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 
 ## Report
 
-Copy this shape. One fenced `text` block, five headings in this order, 19 lines at most counting blank lines. Count them before you send.
+Copy this shape. One fenced `text` block, five headings in this order, 19 lines at most counting blank lines. Count them before you send. Use curly apostrophes. No Oxford commas or em dashes.
 
 ```text
 Result

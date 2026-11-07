@@ -18,7 +18,7 @@ It builds and proves the network guard, runs every line in one process per platf
 
 ## Steps
 
-1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json` with that step (`ls` for a startup failure) and read its STDERR before any app or helper code. Return here immediately when a later step fails.
+1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. **Build** the CLIs only if their source changed since the last build. `BLOCKED ... CLI is not built` tells you which.
 3. **Look first:** run it with `ls`. It shows the screen, its state and the actions it accepts.
 4. **Act in one batch:** put every `do`, `wait` and `ls` you need in one call. Do not run one call per step and do not read app source to find what `ls` already lists.

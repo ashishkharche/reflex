@@ -15,6 +15,8 @@ The repo root is also a plugin for Claude Code and Grok Build (`.claude-plugin/`
 
 ## Install
 
+Claude Code skills need version 2.0.20 or newer. Check `claude --version` in the same shell you will use. If several installations are on the path, select a supported executable explicitly. An older CLI can return an empty headless reply to a skill command; that is not a successful run.
+
 Any assistant: `npx skills add ashishkharche/reflex` from your app’s repo. It asks which assistants to install into. Add `-g` to install for your user instead of one project.
 
 | Assistant | Install | Run |
@@ -33,7 +35,7 @@ Grok Build asks for `--trust` before it loads a plugin’s skills. Run the insta
 
 | Rule | Why |
 | --- | --- |
-| Checks the stack and the tools first and stops with BLOCKED if one is missing | You hear what to install before anything changes. |
+| Checks the stack and runner tools first and stops with BLOCKED if one is missing | You hear what to install before anything changes. |
 | Builds both apps and runs their unit tests before it reports | A green runner does not prove the app still builds. |
 | Keeps Reflex in a separate harness package | The app builds without the Reflex clone. |
 | Marks a screen INCOMPLETE when its view still does the real work | The test would only drive a copy. |
@@ -67,6 +69,7 @@ Claude Code: `claude plugin marketplace update ashishkharche-reflex`, then `clau
 
 - Agent Skills: https://agentskills.io/specification
 - Claude Code: https://code.claude.com/docs/en/plugin-marketplaces and https://code.claude.com/docs/en/plugins-reference
+- Claude Code 2.0.20 added Skills: https://github.com/anthropics/claude-code/blob/337cc419c3cfb9a9a5869f1b0bff135d3dd48598/CHANGELOG.md#2020
 - Cursor: https://cursor.com/docs/plugins and https://cursor.com/docs/skills
 - Codex: https://developers.openai.com/codex/skills and https://developers.openai.com/codex/plugins/build
 - Grok Build: `grok plugin --help` and the user guide installed with it

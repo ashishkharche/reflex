@@ -12,7 +12,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 
 ## Steps
 
-1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json` with that step (`ls` for a startup failure) and read its STDERR before any app or helper code. Return here immediately when a later step fails.
+1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. **Rebuild** each CLI the manifest points at, for example `swift build` in the harness package and the Kotlin `installDist` task.
 3. **Run** `python3 ../reflex/runner/reflex_runner.py tests/reflex.json --platform both`. Platforms come from `tests/reflex.json`. One Kotlin host covers Kotlin Multiplatform or Compose Multiplatform shared logic, not the native app build and test checks. Do not ask for a Swift harness. Write the Result as “on kotlin (shared code)”.
 4. **Explain** each `FAIL` in one plain line: the screen, the action, what each platform showed. For example “Cart: Android shows 2 items, iOS shows 3, after RemoveItem.”
@@ -21,7 +21,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
    - The adapter or CLI is wrong. Fix it so it reads the real Core.
    - The app has a bug or the platforms differ. Do not change the app. Report it.
 6. **Rerun** after each fix until it passes or only decisions are left. Never edit an expectation, add `parity` or `xfail`, pass `--no-guard` or `--allow-unguarded` just to go green.
-7. **Build each native app and run its tests**, including the iOS app in KMP projects. Record each app’s build and test commands, exit codes and log paths in `.build/` for this session. A Kotlin shared-code suite does not count as iOS. No emulator unless asked.
+7. **Build each native app and run its tests**, including the iOS app in KMP projects. List the native app targets first. These checks are part of this skill even when the user only names one failure. Attempt them without asking whether to run them. Record each app’s build and test commands, exit codes and log paths in `.build/` for this session. A Kotlin shared-code suite does not count as iOS. No emulator unless asked.
 8. **Check** the app’s own build files never name `../reflex`, apart from the guarded Kotlin block.
 9. **Recheck coverage gaps.** Reopen each covered screen’s view and adapter. Carry forward known view-state and navigation gaps until real code and a journey prove them resolved. Recording a navigation callback does not prove the destination loaded. Check each journey runs its screen’s main action. Unresolved gaps or a journey that only touches a minor control make the screen INCOMPLETE. Name them under Needs your decision. Do not refactor unasked.
 10. **Count** commits behind the main branch after `git fetch`.
@@ -45,7 +45,7 @@ Work only in the app repo and `../reflex`. Do not search home folders, other ski
 
 ## Report
 
-Copy this shape. One fenced `text` block, five headings in this order, 19 lines at most counting blank lines. Count them before you send.
+Copy this shape. One fenced `text` block, five headings in this order, 19 lines at most counting blank lines. Count them before you send. Use curly apostrophes. No Oxford commas or em dashes.
 
 ```text
 Result
