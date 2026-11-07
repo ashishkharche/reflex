@@ -16,7 +16,7 @@ Reflex is a kit, not a dependency you vendor. The full instructions live in the 
    - Kotlin Multiplatform or Compose Multiplatform: one Kotlin host covers the shared logic. Run with `--platform kotlin` unless there is a separate Swift Core.
    - Flutter, React Native, Expo, .NET MAUI, Ionic or another stack: Reflex has no kit for it. Stop with Result BLOCKED and say a host that speaks protocol v1 is needed, as `docs/faq.md` explains. Do not build one unasked.
    - Only iOS or only Android code here: ask whether the app has the other platform and where its repo is. Do not guess.
-3. Check the tools before any change: `git`, `python3`, a C compiler (`clang` or `cc`), `java -version` at 17 or newer for Kotlin, and `xcodebuild -version` with Swift 6.0 or newer for Swift. Swift needs macOS. On Windows use WSL 2. If one is missing, stop with Result BLOCKED and name what to install.
+3. Check the tools before any change: `git`, `python3`, a C compiler (`clang` or `cc`), `java -version` at 17 or newer for Kotlin and `xcodebuild -version` with Swift 6.0 or newer for Swift. Swift needs macOS. On Windows use WSL 2. If one is missing, stop with Result BLOCKED and name what to install.
 4. Find Reflex next to the app, for example `../reflex`. It may also be a git submodule.
    - Not there: clone `https://github.com/ashishkharche/reflex.git` next to the app repo. Never clone or copy it inside the app repo.
    - Already there: this is an update. Note the current commit, then `git -C ../reflex pull`. With a submodule, update the submodule instead.
