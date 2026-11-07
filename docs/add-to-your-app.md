@@ -51,7 +51,7 @@ The README prompt and the [Reflex skills](assistants.md) are short on purpose. T
 
 **Rules**
 
-- Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Read and search files with your own tools instead of inline Python or heredocs. Write commit messages with `git commit -m`. Keep build and test logs in the app repo’s gitignored `.build/`, never `/tmp`. Find build output there or at the repo-local path the build prints, never by searching `~/Library`.
+- Write nothing outside the app repo and `../reflex`. No custom scripts of any kind, including inline `python -c` and heredocs. Read and search files with your own tools instead of inline Python or heredocs. Write commit messages with `git commit -m`. Keep build and test logs in the app repo’s gitignored `.build/`, never `/tmp`. Find build output there or at the repo-local path the build prints, never by searching `~/Library`. Pass `-derivedDataPath .build/ios` to every `xcodebuild` build or test command.
 - Keep the app’s code and behaviour unchanged. Only add new files and targets. Registering a Reflex module in `settings.gradle.kts` as [3. Kotlin](#3-kotlin) shows is part of adding it. List each such edit in the report.
 - Files Reflex added earlier (adapters, CLIs, `reflex.json`, journeys) may be updated to follow this guide or the CHANGELOG. Ask before editing any other existing file.
 - If a screen keeps its state in its views, ask before refactoring. A harness-owned copy of that state, even a second instance of a real helper, does not drive the app’s state. Stop with INCOMPLETE instead.
@@ -429,11 +429,11 @@ A green runner proves the adapters agree. It does not prove the app still builds
 
 | Check | iOS example | Android example |
 | --- | --- | --- |
-| The app builds | `xcodebuild -scheme YourApp -destination 'generic/platform=iOS Simulator' build` | `./gradlew --no-daemon :app:assembleDebug` |
-| Its unit tests pass | `xcodebuild test -scheme YourApp -destination 'platform=iOS Simulator,name=iPhone 16'` | `./gradlew --no-daemon test` |
+| The app builds | `xcodebuild -scheme YourApp -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/ios build` | `./gradlew --no-daemon :app:assembleDebug` |
+| Its unit tests pass | `xcodebuild test -scheme YourApp -destination 'platform=iOS Simulator,name=iPhone 16' -derivedDataPath .build/ios` | `./gradlew --no-daemon :app:testDebugUnitTest --rerun --no-build-cache` |
 | No Reflex in its build files | `git grep -n "\.\./reflex" -- '*.swift' '*.pbxproj'` lists only `ReflexHarness/` | `git grep -n "\.\./reflex" -- '*.kts'` lists only the guarded block |
 
-Record each native app’s build and test commands, exit codes and log paths in `.build/` for this session. A Kotlin shared-code suite does not count as iOS evidence.
+Record each native app’s build and test commands, exit codes and log paths in `.build/` for this session. A Kotlin shared-code suite does not count as iOS evidence. Verify that tests executed now, not that old results were restored. [Gradle’s task option](https://docs.gradle.org/current/userguide/command_line_interface.html#sec:rerun_tasks) reruns just the named test task.
 
 Use the app’s own scheme, tasks and simulator names. Unit tests run on the JVM or a simulator. Instrumented tests on an emulator are not needed.
 
@@ -456,7 +456,7 @@ If you used the AI prompt or the skills, the assistant ends with a five-part rep
 
 Keep it to 19 lines at most, with at most three decisions and nothing outside the block. Use curly apostrophes. No Oxford commas or em dashes. Join related decisions into one short line.
 
-PASS requires current-session evidence that every platform in `tests/reflex.json` passed and each native app separately built and passed its tests, with no uncommitted changes. This includes the iOS app in KMP projects. A Kotlin shared-code suite is not iOS evidence. A missing native app build or test run makes the Result INCOMPLETE: name the app under Needs your decision and never say merge in Next.
+PASS requires current-session evidence that every platform in `tests/reflex.json` passed and each native app separately built and passed its tests, with no uncommitted changes. This includes the iOS app in KMP projects. A Kotlin shared-code suite is not iOS evidence. Tests must execute in this session. `FROM-CACHE`, `UP-TO-DATE`, `NO-SOURCE` or `SKIPPED` test tasks do not count. Use `--rerun --no-build-cache` on each Gradle test task and verify fresh test counts and timestamps. A missing native app build or test run makes the Result INCOMPLETE: name the app under Needs your decision and never say merge in Next.
 
 ### Result words
 

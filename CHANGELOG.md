@@ -4,6 +4,8 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- Native test evidence now excludes cached, skipped or empty test tasks. Gradle test commands force a fresh run and Xcode build and test output stays in repo-local DerivedData.
+
 - macOS guarded hosts now get a kernel preferences boundary before exec. Named and standard UserDefaults remain process-local without app-specific memory stores. A native canary and fail-closed profile checks run in macOS CI.
 
 - CI now checks docs and both guarded sample suites on Linux with Kotlin, in addition to Swift and Kotlin on macOS. Actions are pinned to full commit revisions. No repository secrets are needed.
