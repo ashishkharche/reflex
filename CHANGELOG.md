@@ -4,6 +4,11 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- Error handling is the first numbered skill step: run the failing step through `explore.py` and read STDERR before any app or helper code.
+- PASS needs separate current-session build and test evidence for each native app, including iOS in KMP projects. A Kotlin shared-code suite is not iOS evidence. Missing native checks mean INCOMPLETE with no merge next step.
+- `reflex-check` reopens views and adapters and carries forward unresolved view-state and navigation gaps. Recording a callback does not prove the destination loaded.
+- Skills use native read and search tools, `git commit -m` for messages and repo-local build output paths. No inline Python, heredocs or `~/Library` searches.
+
 - `reflex-cover` now stops when the previous Reflex branch is not merged instead of merging it implicitly. A second helper instance in the harness cannot stand in for view-owned state.
 
 - Swift UserDefaults harnesses now require an injected in-memory store before the first launch. Named suites can survive a temporary home on macOS, so the runner guide no longer promises isolation for every persistent store.
