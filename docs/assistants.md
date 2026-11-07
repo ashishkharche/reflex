@@ -29,6 +29,8 @@ Any assistant: `npx skills add ashishkharche/reflex` from your app’s repo. It 
 
 Claude Code puts the plugin name in front of each skill, so the command is `/reflex:reflex-start`. The shell forms are `claude plugin marketplace add ashishkharche/reflex` and `claude plugin install reflex@ashishkharche-reflex`.
 
+Before a headless Grok Build run, use `grok inspect --json` from the app repo. Its skills list must include `reflex-start`, `reflex-cover`, `reflex-check` and `reflex-explore`. If they are absent, stop and use the plugin install above, then check again. Copying files with `npx skills add` is not proof that the commands loaded. Do not search home folders for the missing skills.
+
 Grok Build asks for `--trust` before it loads a plugin’s skills. Run the install without it first to see what it activates. Grok Build does not list a plugin from this repo through `grok plugin marketplace add`, so install it directly as shown.
 
 ## What every skill does

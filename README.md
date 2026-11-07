@@ -53,7 +53,7 @@ Install the skills into any assistant from your app’s repo:
 npx skills add ashishkharche/reflex
 ```
 
-Then run `/reflex-start`. Plugin installs for Claude Code, Grok Build, Codex and Cursor: [docs/assistants.md](docs/assistants.md).
+Check that your assistant lists the installed skills before running `/reflex-start`. For headless Grok Build, run `grok inspect --json` from the app repo and check that all four Reflex skills are listed. If not, stop and use its plugin install in [docs/assistants.md](docs/assistants.md), then check again.
 
 | Skill | When |
 | --- | --- |

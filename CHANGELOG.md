@@ -4,6 +4,9 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- Grok headless setup now checks skill discovery before a run. A copied but unlisted skill is not an active command; stop and use the plugin install instead of searching global folders.
+- Skills keep SDK diagnostics repo-local and forbid Spotlight searches or stopping shared build daemons. Use SDK list commands, `JAVA_HOME` and `--no-daemon` instead.
+
 - Native test evidence now excludes cached, skipped or empty test tasks. Gradle test commands force a fresh run and Xcode build and test output stays in repo-local DerivedData.
 
 - macOS guarded hosts now get a kernel preferences boundary before exec. Named and standard UserDefaults remain process-local without app-specific memory stores. A native canary and fail-closed profile checks run in macOS CI.
