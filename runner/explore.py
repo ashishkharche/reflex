@@ -116,7 +116,12 @@ def main():
         if target not in manifest.platforms or "command" not in manifest.platforms[target]:
             print(f"BLOCKED platform {target} has no command in {args.manifest}")
             return 2
-        if not os.access(manifest.command(target, fixture)[0], os.X_OK):
+        try:
+            executable = manifest.command(target, fixture)[0]
+        except rr.NoJava as error:
+            print(error)
+            return 2
+        if not os.access(executable, os.X_OK):
             print(f"BLOCKED {target} CLI is not built: {manifest.command(target, fixture)[0]}")
             return 2
         replies, code, network, stderr = run(manifest, target, fixture, guard, requests)
@@ -133,7 +138,10 @@ def main():
         if lines and (code != 0 or any(not ok_reply(r) for r in replies)):
             print("STDERR (last 20 lines). Debug from this, never by launching the CLI yourself:")
             print("\n".join("! " + l for l in lines[-20:]))
-        if network != "clean":
+        if network == "host-did-not-start":
+            failed = True
+            print(f"NETWORK {network}: the CLI exited before its first reply. Fix the STDERR above first.")
+        elif network != "clean":
             failed = True
             print(f"NETWORK {network}: the CLI tried the network. Add a fixture before testing this action.")
     if len(results) > 1:

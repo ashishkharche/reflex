@@ -38,6 +38,54 @@ class DuplicateKey(ValueError):
     pass
 
 
+class NoJava(RuntimeError):
+    pass
+
+
+NO_JAVA = ("no Java runtime found. Install JDK 17 or newer, or set JAVA_HOME to one "
+           "(macOS: /usr/libexec/java_home -V lists them)")
+_JAVA = {}
+
+
+def java_home():
+    """The JDK home for Kotlin hosts, resolved once with the real HOME, or None.
+
+    Order: JAVA_HOME, then java on PATH with symlinks followed. On macOS /usr/bin/java is only a stub that looks
+    up a JDK through the account’s home, which fails inside a host’s private HOME, so ask /usr/libexec/java_home.
+    """
+    if "home" in _JAVA:
+        return _JAVA["home"]
+    exe = "java.exe" if os.name == "nt" else "java"
+    found = None
+    env_home = os.environ.get("JAVA_HOME")
+    if env_home and os.access(Path(env_home) / "bin" / exe, os.X_OK):
+        found = str(Path(env_home).resolve())
+    if not found:
+        on_path = shutil.which("java")
+        real = os.path.realpath(on_path) if on_path else None
+        stub = sys.platform == "darwin" and (not real or real.startswith(("/usr/bin/", "/System/")))
+        if real and not stub:
+            found = str(Path(real).parent.parent)
+        elif sys.platform == "darwin" and os.access("/usr/libexec/java_home", os.X_OK):
+            try:
+                done = subprocess.run(["/usr/libexec/java_home"], capture_output=True, text=True, timeout=10)
+                home = done.stdout.strip()
+                if done.returncode == 0 and home and os.access(Path(home) / "bin/java", os.X_OK):
+                    found = home
+            except (OSError, subprocess.TimeoutExpired):
+                pass
+    _JAVA["home"] = found
+    return found
+
+
+def java_binary(name="java"):
+    home = java_home()
+    if not home:
+        return None
+    path = Path(home) / "bin" / (name + (".exe" if os.name == "nt" else ""))
+    return str(path) if os.access(path, os.X_OK) else None
+
+
 def no_dupes(pairs):
     seen = {}
     for key, value in pairs:
@@ -143,12 +191,16 @@ class Manifest:
         self.conformance = self.root / data["conformance"] if data.get("conformance") else None
 
     def command(self, target, fixture):
-        java = os.environ.get("JAVA_HOME")
-        java = str(Path(java) / "bin/java") if java else shutil.which("java") or "java"
-        # SIP-protected launchers (/usr/bin/java, /bin/sh scripts) drop DYLD variables; use the real binary.
-        java = os.path.realpath(java)
+        parts = self.platforms[target]["command"]
+        java = "java"
+        if any("{java}" in part for part in parts):
+            # SIP-protected launchers (/usr/bin/java, /bin/sh scripts) drop DYLD variables; use the real binary.
+            java = java_binary()
+            if not java:
+                raise NoJava(f"BLOCKED platform={target} {NO_JAVA}")
+            java = os.path.realpath(java)
         values = {"root": str(self.root), "fixture": fixture, "java": java, "python": os.path.realpath(sys.executable)}
-        return [part.format(**values) for part in self.platforms[target]["command"]]
+        return [part.format(**values) for part in parts]
 
     def journey_paths(self, extra):
         if extra:
@@ -268,8 +320,7 @@ def build_jvm_prefs(out_dir):
         return _JVM_PREFS[out_dir]
     src = Path(__file__).resolve().parent / "jvm" / "MemoryPreferences.java"
     built = out_dir / "reflex" / "prefs" / "MemoryPreferences$Factory.class"
-    java_home = os.environ.get("JAVA_HOME")
-    javac = str(Path(java_home) / "bin/javac") if java_home else shutil.which("javac")
+    javac = java_binary("javac")
     result = out_dir
     if not built.exists() or built.stat().st_mtime < src.stat().st_mtime:
         if not javac or not os.access(javac, os.X_OK):
@@ -305,6 +356,11 @@ def isolated_env(home):
     env = dict(os.environ, HOME=home, TMPDIR=home, CFFIXED_USER_HOME=home,
                XDG_CONFIG_HOME=home + "/.config", XDG_DATA_HOME=home + "/.local/share",
                XDG_CACHE_HOME=home + "/.cache")
+    jdk = java_home()
+    if jdk:
+        # Gradle start scripts use JAVA_HOME or java on PATH. The macOS stub cannot find a JDK from a private HOME.
+        env["JAVA_HOME"] = jdk
+        env["PATH"] = str(Path(jdk) / "bin") + os.pathsep + env.get("PATH", "")
     if sys.platform == "darwin":
         # cfprefsd ignores HOME. Deny its IPC and preferences operations, then
         # deny direct writes outside the process home, including container stores.
@@ -345,6 +401,7 @@ class Host:
         self.buffer = b""
         self.dead = None
         self.closed = False
+        self.replied = False
 
     def _read_line(self):
         """One reply line as bytes without its LF, or None at EOF or after the deadline."""
@@ -382,10 +439,14 @@ class Host:
                 except subprocess.TimeoutExpired:
                     self.proc.kill(); self.proc.wait(); code = "timeout"
                 self.stderr.seek(0)
-                err = self.stderr.read().decode("utf-8", "replace").strip()[-200:]
+                err = self.stderr.read().decode("utf-8", "replace").strip()
+                if "Unable to locate a Java Runtime" in err or "No Java runtime present" in err:
+                    err = NO_JAVA
+                err = err[-200:]
                 self.dead = f"EOF exit={code} stderr={err!r}" if ready else f"no response in {TIMEOUT_S}s"
                 out.append((None, self.dead))
                 continue
+            self.replied = True
             try:
                 out.append((raw.decode("utf-8"), None))
             except UnicodeDecodeError:
@@ -397,7 +458,8 @@ class Host:
             return "unguarded"
         text = Path(self.audit).read_text()
         if "READY" not in text:
-            return "guard-not-loaded"
+            # A host that never answered usually failed to start, so the guard had nothing to load into.
+            return "guard-not-loaded" if self.replied else "host-did-not-start"
         return "denied" if "DENIED" in text else "clean"
 
     def close(self):
@@ -757,7 +819,11 @@ def main():
     for target in targets:
         if target in live_targets and "command" not in manifest.platforms[target]:
             continue
-        executable = manifest.command(target, manifest.default_fixture)[0]
+        try:
+            executable = manifest.command(target, manifest.default_fixture)[0]
+        except NoJava as error:
+            out(f"RESULT FAIL {error}")
+            sys.exit(2)
         if not os.access(executable, os.X_OK):
             out(f"RESULT FAIL platform={target} host binary not found: {os.path.relpath(executable, manifest.root)}. "
                 "Build it with the README commands first.")

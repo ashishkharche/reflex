@@ -78,7 +78,7 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
 
 **Run and check**
 
-Do all of these before you report, even when the user only names one failure. Native build and test checks are not optional: list the native app targets and attempt each without asking whether to run them. The runner alone is not enough.
+Do all of these before you report, even when the user only names one failure. Run each build and test in the foreground and wait for it, one native app at a time. Start no background jobs. Native build and test checks are not optional: list the native app targets and attempt each without asking whether to run them. The runner alone is not enough.
 
 1. If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before any app or helper code read. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. Rebuild the CLIs and run the runner with `--platform both`. If the app has one platform, pass just that one. Fix any failure and rerun.
@@ -95,6 +95,7 @@ See [9. Check the app still works](#9-check-the-app-still-works).
 - Use exactly these five headings in this order: Result, Needs your decision, What I added, Where it is, Try it. Never rename one, for example to “What I changed” or “Summary”.
 - Result is PASS only when nothing is copied, skipped or hidden and both apps build and pass their unit tests. Otherwise it is FAIL, BLOCKED or INCOMPLETE. See [Result words](#result-words).
 - Put the whole report in one fenced `text` block with a blank line between parts. Keep it under 20 lines.
+- The report is your final message. Send nothing after it.
 - Before writing a journey, prove the screen’s main action runs offline with `python3 ../reflex/runner/explore.py tests/reflex.json 'do <Action> {...}'`. `NETWORK denied` means it needs a fixture. A journey that skips the main action is INCOMPLETE.
 
 Layout used below: your app and a clone of this repo sit next to each other.

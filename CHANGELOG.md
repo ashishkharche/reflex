@@ -4,6 +4,10 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- The runner finds the JDK for Kotlin hosts once with your real home: `JAVA_HOME`, then `java` on the path, then `/usr/libexec/java_home` on macOS. Hosts get that `JAVA_HOME`, so the macOS `/usr/bin/java` stub no longer fails inside the private home. With no JDK the run stops with a clear “no Java runtime found” line. A host that exits before its first reply now shows `network=host-did-not-start`, not `guard-not-loaded`. No protocol or kit API change.
+- Skills run every build and test in the foreground, one native app at a time. The report is the final message.
+- Grok Build installs with `grok plugin install ashishkharche/reflex --trust`. `npx skills add` uses `-g` so an untrusted folder can’t hide the skills.
+
 - Native result counting now uses suite headers and the agent’s own arithmetic, not a custom script. Executed, skipped and failed cases are kept separate.
 
 - Grok headless setup now checks skill discovery before a run. A copied but unlisted skill is not an active command; stop and use the plugin install instead of searching global folders.

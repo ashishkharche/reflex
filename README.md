@@ -47,13 +47,13 @@ You should see `RESULT PASS`.
 
 ## Set it up with your AI assistant
 
-Install the skills into any assistant from your app’s repo:
+Grok Build:
 
 ```bash
-npx skills add ashishkharche/reflex
+grok plugin install ashishkharche/reflex --trust
 ```
 
-Check that your assistant lists the installed skills before running `/reflex-start`. For headless Grok Build, run `grok inspect --json` from the app repo and check that all four Reflex skills are listed. If not, stop and use its plugin install in [docs/assistants.md](docs/assistants.md), then check again.
+Any other assistant: `npx skills add ashishkharche/reflex -g`. Claude Code, Codex and Cursor plugins: [docs/assistants.md](docs/assistants.md). Then run `/reflex-start` from your app’s repo.
 
 | Skill | When |
 | --- | --- |

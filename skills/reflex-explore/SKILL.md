@@ -30,6 +30,7 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
 ## Rules
 
 - Read only. Do not change app code to explore.
+- Run every command in the foreground. Your reply is your final message.
 - Never launch a CLI yourself, never write your own script around the runner and never explore without the guard. If the helper can’t do something, say so in the reply. If the helper prints `BLOCKED`, stop and report that line. Never claim “no network calls” without its `network=clean` line.
 - An action the screen does not offer returns `action.unknown`. Use the actions `ls` lists.
 - Work only in the app repo and `../reflex`.

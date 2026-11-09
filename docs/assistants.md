@@ -17,7 +17,9 @@ The repo root is also a plugin for Claude Code and Grok Build (`.claude-plugin/`
 
 Claude Code skills need version 2.0.20 or newer. Check `claude --version` in the same shell you will use. If several installations are on the path, select a supported executable explicitly. An older CLI can return an empty headless reply to a skill command; that is not a successful run.
 
-Any assistant: `npx skills add ashishkharche/reflex` from your app’s repo. It asks which assistants to install into. Add `-g` to install for your user instead of one project.
+Grok Build: `grok plugin install ashishkharche/reflex --trust`. That’s all. The four skills load in every repo.
+
+Any assistant: `npx skills add ashishkharche/reflex -g` installs for your user and asks which assistants to use. Pick one without questions with `-a <assistant> -y`, for example `npx skills add ashishkharche/reflex -g -a grok -y`. Without `-g` the skills go into the current repo. Grok Build only loads those after you trust the folder, for example by opening `grok` there once.
 
 | Assistant | Install | Run |
 | --- | --- | --- |
@@ -29,7 +31,7 @@ Any assistant: `npx skills add ashishkharche/reflex` from your app’s repo. It 
 
 Claude Code puts the plugin name in front of each skill, so the command is `/reflex:reflex-start`. The shell forms are `claude plugin marketplace add ashishkharche/reflex` and `claude plugin install reflex@ashishkharche-reflex`.
 
-Before a headless Grok Build run, use `grok inspect --json` from the app repo. Its skills list must include `reflex-start`, `reflex-cover`, `reflex-check` and `reflex-explore`. If they are absent, stop and use the plugin install above, then check again. Copying files with `npx skills add` is not proof that the commands loaded. Do not search home folders for the missing skills.
+Check with `grok inspect --json` from the app repo. Its skills list must include `reflex-start`, `reflex-cover`, `reflex-check` and `reflex-explore`. If they are absent, run the plugin install above and check again. Copied files are not proof that the commands loaded. Do not search home folders for the missing skills.
 
 Grok Build asks for `--trust` before it loads a plugin’s skills. Run the install without it first to see what it activates. Grok Build does not list a plugin from this repo through `grok plugin marketplace add`, so install it directly as shown.
 
