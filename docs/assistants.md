@@ -58,7 +58,7 @@ On 6 Nov 2026 with this repo’s skills and manifests. Nothing was cloned from G
 
 | Assistant | Version | Checked | Not checked |
 | --- | --- | --- | --- |
-| Grok Build | 1.0.69 | `grok plugin validate` passed. Installed from a clean export of this repo, it listed the 3 skills (before the rename to 4) as `plugin: reflex`. Headless sessions in a small toy app ran all 3 skills end to end: first setup, add the whole app, rerun and an update from a local upstream with a new CHANGELOG entry. Each ended with a five-part report that matched the runner. A dry run changed nothing. | Install from GitHub, an interactive session |
+| Grok Build | 1.0.69 | `grok plugin validate` passed. Installed from a clean export of this repo, it listed the 3 skills (before the rename to 4) as `plugin: reflex`. Headless sessions in a small toy app ran all 3 skills end to end: first setup, add the whole app, rerun and an update from a local upstream with a new CHANGELOG entry. Each ended with a five-part report that matched the runner. A dry run changed nothing. On 9 Nov 2026 a GitHub plugin install on a second Mac ran all four skills headless in CodeYam Counter (native) and Confetti (Compose Multiplatform). Every report came last. | An interactive session |
 | Claude Code | 2.1.319 | `claude plugin validate` passed with one warning: no listing icon. Marketplace add, install and `plugin details` showed the 3 skills. | A session, which needs a sign-in |
 | Codex | 0.167.0 | `codex plugin marketplace add` read `.claude-plugin/marketplace.json`. `codex plugin add` installed the 3 skills. | A session, which needs a sign-in |
 | Cursor | none | Both manifests pass Cursor’s published JSON schemas. | Cursor was not installed |
