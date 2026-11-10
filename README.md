@@ -33,6 +33,15 @@ Then ask your assistant:
 - **/reflex-check** checks iOS and Android still match. Run it before you merge.
 - **/reflex-explore** lets your agent use the app with no simulator.
 
+## Works with
+
+- **Tested:** Swift with SwiftUI and Kotlin with Jetpack Compose. The sample apps use them.
+- **Should work, untested:** UIKit, Android Views, Java on Android, Kotlin Multiplatform and Compose Multiplatform. Reflex needs a ViewModel, not a UI toolkit.
+- **Needs your own host:** Flutter, React Native and other stacks have no kit yet. A host that speaks [protocol v1](docs/protocol/v1.md) can work.
+- **Doesn’t work:** state kept only in views, web-only apps and Windows without WSL 2.
+
+[Details for each stack](docs/faq.md#compatibility)
+
 ## Learn more
 
 - [How it works in practice](https://ashishkharche.com/notes/reflex/)
