@@ -9,43 +9,21 @@ Reflex lets a test or an AI agent read your app’s screens as plain text and pr
 
 ## Get started
 
-Run these in your app’s repo.
-
-**Grok**
+Install it in your app’s repo:
 
 ```bash
+# Grok
 grok plugin install \
   ashishkharche/reflex --trust
-```
 
-```text
-/reflex-start
-```
-
-**Claude Code**
-
-```bash
+# Claude Code, Codex, Cursor and more
 npx skills add ashishkharche/reflex -g
 ```
 
+Then ask your assistant:
+
 ```text
 /reflex-start
-```
-
-**ChatGPT, Cursor or any other assistant**
-
-ChatGPT’s chat app can’t run a shell, so use Codex. Paste this:
-
-```text
-Set up or update Reflex in this app.
-Repo: github.com/ashishkharche/reflex
-Follow docs/add-to-your-app.md,
-section For AI assistants.
-Clone it next to this repo, not in it.
-Main screen only, on a new branch.
-Only add files. Ask before refactors.
-Build both apps and run their tests.
-Reply with the five-part report.
 ```
 
 ## Skills
