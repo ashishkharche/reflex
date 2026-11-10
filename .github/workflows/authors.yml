@@ -1,0 +1,12 @@
+name: authors
+on:
+  push:
+  pull_request:
+jobs:
+  only-ashish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: sh scripts/check_authors.sh HEAD

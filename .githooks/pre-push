@@ -1,0 +1,9 @@
+#!/bin/sh
+# Checks every commit about to be pushed.
+root=$(git rev-parse --show-toplevel)
+zero=0000000000000000000000000000000000000000
+while read -r _ local _ remote; do
+  [ "$local" = "$zero" ] && continue
+  if [ "$remote" = "$zero" ]; then range=$local; else range=$remote..$local; fi
+  "$root/scripts/check_authors.sh" "$range" || exit 1
+done

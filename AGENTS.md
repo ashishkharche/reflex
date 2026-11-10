@@ -1,5 +1,7 @@
 # Inventory agent workflow
 
+After cloning, run `git config core.hooksPath .githooks`. Only Ashish Kharche may author commits here. The hooks and the authors check on GitHub block anyone else.
+
 Read `TEST_PLAN.md` and `docs/architecture.md` before edits. Scope is inventory sample A, the outbox sample, ReflexKit and the runner.
 
 1. Run the docs/setup.md commands in a clean clone.
