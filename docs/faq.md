@@ -4,25 +4,27 @@ Short answers for environments, tech stacks, workflows and safety. For setup ste
 
 ## Compatibility
 
-| Stack or OS | Works? | What you need |
+Every stack marked Yes passed the same counter journey under the network guard on 10 Nov 2026, with byte parity against the Swift kit host. Code and build steps: [samples/stacks](../samples/stacks/README.md). Logs: `evidence/stacks-2026-11-10/`.
+
+| Stack or OS | Works? | What was checked |
 | --- | --- | --- |
-| macOS + SwiftUI + Jetpack Compose | Yes, tested | Xcode, JDK 17+, Python 3. Full path including the network guard. The inventory sample apps use SwiftUI and Compose. |
-| UIKit or Android Views | Should work, untested | The Core and adapters never import UI code, so the UI toolkit doesn’t matter to Reflex. No sample uses UIKit or Views yet. |
-| Java on Android | Should work, untested | The Kotlin kit runs on the JVM. Write the adapter and CLI in Kotlin around the Java ViewModel. No sample uses Java. |
-| Linux (desktop, server or CI) | With limits | Python 3 and a JVM host work. The network guard runs through `LD_PRELOAD` when `cc` is installed. Tested on one Debian 13 x86_64 host only. The Swift kit’s `Package.swift` declares macOS and iOS only, so a Swift host on Linux is untested. `scripts/build.sh` builds a `.dylib` and expects macOS. |
-| Windows native | No | The runner uses `select` on process pipes (`runner/reflex_runner.py`), which Python on Windows does not support for pipes. Use WSL 2 instead. |
-| WSL 2 | With limits | Same as Linux. Use Linux paths in the manifest. Not tested yet. |
-| Docker | With limits | Same as Linux inside the container. Mount the repo, install JDK, Python and `cc`, run the Kotlin (or other) host. Not tested yet. |
-| GitHub Actions / CI | Yes on macOS | This repo’s workflow runs on `macos-latest` (`.github/workflows/behavior.yml`). Linux runners need `cc` for the guard. Not tested on a Linux runner yet. |
+| SwiftUI + Jetpack Compose | Yes | The inventory and outbox samples. The inventory apps run on an iOS simulator and an Android emulator through the [debug socket](real-build.md). |
+| UIKit | Yes | A UIKit app builds for the iOS simulator over a Swift Core. The Swift kit host of that Core passes. |
+| Android Views | Yes | A Views app builds as a debug APK over a Kotlin Core. The Kotlin kit host of that Core passes. |
+| Java on Android | Yes | A Java ViewModel and a Java Activity. The adapter and CLI are Kotlin over the Java class. |
+| Kotlin Multiplatform | Yes | One `commonMain` ViewModel. The Android app uses its Android target and a SwiftUI app links its iOS simulator framework. A Kotlin/JVM host (Kotlin kit) and a Kotlin/Native host (Swift kit) both pass with byte parity. |
+| Compose Multiplatform | Yes | One Compose screen in `commonMain` builds for Android and the iOS simulator. Its ViewModel passes on Kotlin/JVM and Kotlin/Native. Android needs compileSdk 37. |
+| Flutter | With a host you write | No Dart kit. [host.dart](../samples/stacks/flutter/lib/reflex/host.dart) is a 361-line protocol v1 host for the plain Dart ViewModel. It passes and every reply after `hello` matches the Swift kit byte for byte. A widget test drives the screen over the same ViewModel. The app builds for the iOS simulator and as a debug APK. |
+| React Native | With a host you write | No JavaScript kit. [reflexHost.js](../samples/stacks/react-native/src/reflexHost.js) is a 262-line Node host for the plain JavaScript ViewModel. It passes the same way. Jest with the React Native preset drives the screen. The iOS and Android app shells were not built. |
+| Linux (desktop, server or CI) | Kotlin hosts | Kotlin hosts pass with the `LD_PRELOAD` guard on Debian 13 and on this repo’s Ubuntu 24.04 CI job. The guard needs `cc`. The Swift kit’s `Package.swift` declares macOS and iOS only. `scripts/build.sh` builds a `.dylib` and expects macOS. |
+| GitHub Actions / CI | Yes | This repo’s workflow runs on `macos-latest` and `ubuntu-24.04` (`.github/workflows/behavior.yml`). |
 | iOS-only or Android-only | Yes | Put one platform in the manifest. Run `--platform swift` or `--platform kotlin` (or that platform’s name). Parity across platforms is skipped when only one runs. |
-| Kotlin Multiplatform (shared Kotlin logic) | Should work, untested | One Kotlin/JVM CLI can cover the shared ViewModel. Run `--platform kotlin`. A second host is optional when there is no separate Swift Core. No KMP sample in this repo yet. |
-| Compose Multiplatform | Should work, untested | Same as KMP when logic lives in Kotlin. |
-| Flutter | Not out of the box | No Dart kit. A Dart process that speaks [protocol v1](protocol/v1.md) over stdin/stdout can work. Prove it with `kit/conformance/strict-decoder.json`. |
-| React Native / Expo | Not out of the box | No JS/TS kit. A Node host that speaks protocol v1 can work. Same conformance file. |
-| .NET MAUI / Xamarin | Not out of the box | No .NET kit. A C# host that speaks protocol v1 can work. Same conformance file. |
-| Ionic / Capacitor | Not out of the box | Same as React Native: build a JS/TS host for protocol v1. |
-| Web-only apps | No | The runner drives CLI processes over stdio, not a browser. Put shared logic in a Node (or other) host if you still want journeys. |
+| Windows native | No | The runner uses `select` on process pipes (`runner/reflex_runner.py`), which Python on Windows does not support for pipes. |
+| State kept only in views | No | Reflex drives a ViewModel. Move the state into one first. |
+| Web-only apps | No | The runner drives CLI processes over stdio, not a browser. |
 | Logic only on a backend | No | Reflex tests the app Core in-process. Point the CLI at fakes, not at production servers. |
+
+The Dart and Node hosts cover the counter’s needs: integer, string and boolean fields, strict JSON and canonical output. They don’t handle object or array fields and don’t run the 142 kit conformance cases. Check your own host against `kit/conformance/strict-decoder.json` before you rely on it.
 
 ## Environments
 
@@ -38,7 +40,7 @@ Not natively. The runner’s `Host._read_line` calls `select.select` on the chil
 
 On Linux, yes. The same `scripts/network_guard.c` builds as a shared library and loads through `LD_PRELOAD`. It denies Internet `connect` and `sendto`. The runner proves that with a canary before any journey. It only sees calls through the C library, so a static binary or a raw system call gets past it.
 
-What was tested on 6 Nov 2026: one Debian 13 x86_64 host with glibc 2.41, Python 3.13 and a Temurin 21 JRE, running the inventory and outbox Kotlin hosts with `--platform kotlin --repeat 3`. Both passed with the guard and both tripwire journeys reported `network=denied`. A guard that never denies failed the canary with exit 2. The Kotlin jars were built on macOS. Swift on Linux, ARM Linux, Alpine (musl), Docker, WSL 2 and Linux CI runners are not tested. Logs: `evidence/linux-guard-2026-11-06/`.
+What was tested on 6 Nov 2026: one Debian 13 x86_64 host with glibc 2.41, Python 3.13 and a Temurin 21 JRE, running the inventory and outbox Kotlin hosts with `--platform kotlin --repeat 3`. Both passed with the guard and both tripwire journeys reported `network=denied`. A guard that never denies failed the canary with exit 2. The Kotlin jars were built on macOS. Logs: `evidence/linux-guard-2026-11-06/`.
 
 Windows has no guard. Any run without the guard, including `--no-guard`, ends `RESULT PASS-UNGUARDED` and exits 3. Pass `--allow-unguarded` to exit 0 when you accept that.
 
@@ -54,7 +56,7 @@ No. A platform entry is just a `command` argv list. `{java}`, `{node}`, `{root}`
 
 **SwiftUI / UIKit with Jetpack Compose / Android Views**
 
-This is the path the samples and [add-to-your-app.md](add-to-your-app.md) document. The sample apps use SwiftUI and Jetpack Compose. UIKit and Android Views should work the same way but are untested. Keep a UI-free Core, add a ReflexKit adapter and a small CLI per platform, then share journeys.
+This is the path the samples and [add-to-your-app.md](add-to-your-app.md) document. The inventory apps use SwiftUI and Jetpack Compose. The UIKit and Android Views checks in [samples/stacks](../samples/stacks/README.md) use the same kits. Keep a UI-free Core, add a ReflexKit adapter and a small CLI per platform, then share journeys.
 
 **My app has no ViewModels and state lives in the views**
 
@@ -76,9 +78,9 @@ Use an `eventually` step. It polls `ls` up to a deadline without sending the act
 
 If iOS and Android share one Kotlin ViewModel, one JVM CLI is enough to test that logic. Add a Swift host only when you also keep a separate Swift Core you care about parity with.
 
-**Flutter, React Native, .NET MAUI and other non-Swift/Kotlin stacks**
+**Flutter and React Native**
 
-There is no kit in those languages yet. The wire format is language-agnostic NDJSON ([protocol/v1.md](protocol/v1.md)). To support one, build a host that implements framing, `hello` / `ls` / `do`, strict decoding and canonical output, then run it under the runner and against `kit/conformance/strict-decoder.json` (142 decoder cases and 19 matcher cases).
+There is no Dart or JavaScript kit. Copy the small host from [samples/stacks/flutter](../samples/stacks/flutter/lib/reflex/host.dart) or [samples/stacks/react-native](../samples/stacks/react-native/src/reflexHost.js), keep the ViewModel free of UI imports and write one adapter for it. The host speaks NDJSON ([protocol/v1.md](protocol/v1.md)) like the kits. Run it under the runner and check it against `kit/conformance/strict-decoder.json` (142 decoder cases and 19 matcher cases).
 
 **Xcode project with no Swift package**
 

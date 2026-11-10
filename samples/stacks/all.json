@@ -1,0 +1,80 @@
+{
+ "sample": "counter",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "default",
+ "note": "Every stack host of the same counter in one run. Parity compares each with uikit. Build each host first (samples/stacks/README.md).",
+ "platforms": {
+  "uikit": {
+   "command": [
+    "{root}/samples/stacks/uikit/Harness/.build/debug/counter-cli"
+   ]
+  },
+  "android-views": {
+   "command": [
+    "{java}",
+    "-Xmx96m",
+    "-cp",
+    "{root}/samples/stacks/android/views-cli/build/install/views-cli/lib/*",
+    "counter.views.cli.MainKt"
+   ]
+  },
+  "android-java": {
+   "command": [
+    "{java}",
+    "-Xmx96m",
+    "-cp",
+    "{root}/samples/stacks/android/java-cli/build/install/java-cli/lib/*",
+    "counter.java.cli.MainKt"
+   ]
+  },
+  "kmp-jvm": {
+   "command": [
+    "{java}",
+    "-Xmx96m",
+    "-cp",
+    "{root}/samples/stacks/kmp/cli/build/install/cli/lib/*",
+    "counter.kmp.cli.MainKt"
+   ]
+  },
+  "kmp-native-swift": {
+   "command": [
+    "{root}/samples/stacks/kmp/SwiftHost/.build/debug/kmp-swift-cli"
+   ]
+  },
+  "cmp-jvm": {
+   "command": [
+    "{java}",
+    "-Xmx96m",
+    "-cp",
+    "{root}/samples/stacks/cmp/cli/build/install/cli/lib/*",
+    "counter.cmp.cli.MainKt"
+   ]
+  },
+  "cmp-native-swift": {
+   "command": [
+    "{root}/samples/stacks/cmp/SwiftHost/.build/debug/cmp-swift-cli"
+   ]
+  },
+  "flutter-dart": {
+   "command": [
+    "{root}/samples/stacks/flutter/build/reflex-host"
+   ]
+  },
+  "react-native-node": {
+   "command": [
+    "{node}",
+    "{root}/samples/stacks/react-native/bin/reflex-host.js"
+   ]
+  }
+ },
+ "journeys": [
+  "samples/stacks/journeys/*.json"
+ ],
+ "everyResponse": {
+  "node": {
+   "name": "Counter"
+  }
+ }
+}

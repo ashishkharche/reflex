@@ -18,6 +18,8 @@ NAMES = [
     "runner/README.md",
     "samples/outbox/README.md",
     "samples/inventory/README.md",
+    "samples/stacks/README.md",
+    "evidence/stacks-2026-11-10/README.md",
     "docs/README.md",
     "docs/architecture.md",
     "docs/cli.md",

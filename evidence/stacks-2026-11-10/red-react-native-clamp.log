@@ -1,0 +1,14 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=counter platforms=uikit,react-native-node journeys=1 files=1
+MATCHER PASS cases=19 source=kit/conformance/strict-decoder.json
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+JOURNEY PASS platform=uikit journey=samples/stacks/journeys/counter.json#counter steps=20 exit=0 network=clean
+SUITE platform=uikit repeat=1/1 journeys=1 steps=20 wall_s=0.02
+FAIL platform=react-native-node journey=samples/stacks/journeys/counter.json#counter step=17 action=Set send={"action":"Set","input":{"value":99},"op":"do"} $.node.state.count expected=99 (integer) actual=98 (integer) response={"node":{"actions":["Decrement","Increment","Reset","Set"],"name":"Counter","state":{"count":98}},"ok":true}
+FAIL platform=react-native-node journey=samples/stacks/journeys/counter.json#counter step=18 action=Increment send={"action":"Increment","op":"do"} $.node.state.count expected=99 (integer) actual=98 (integer) response={"node":{"actions":["Decrement","Increment","Reset","Set"],"name":"Counter","state":{"count":98}},"ok":true}
+JOURNEY FAIL platform=react-native-node journey=samples/stacks/journeys/counter.json#counter steps=20 exit=0 network=clean
+SUITE platform=react-native-node repeat=1/1 journeys=1 steps=20 wall_s=0.06
+PARITY KNOWN journey=samples/stacks/journeys/counter.json#counter step=2 action=hello finding=host-kit $.kit uikit="1.0.1" react-native-node="js-minimal-1"
+PARITY DIFF journey=samples/stacks/journeys/counter.json#counter step=17 action=Set $.node.state.count uikit=99 react-native-node=98
+PARITY DIFF journey=samples/stacks/journeys/counter.json#counter step=18 action=Increment $.node.state.count uikit=99 react-native-node=98
+PARITY FAIL platforms=uikit,react-native-node steps=20 unexpected_diffs=2 byte_diffs=0 known_diffs=1 (raw reply bytes and full parsed JSON, strict types)
+RESULT FAIL mode=xfail-tracked unexpected_failures=4 xfail=0 platforms=uikit,react-native-node repeat=1 sample=counter guard=canary-pass

@@ -35,12 +35,11 @@ Then ask your assistant:
 
 ## Works with
 
-- **Tested:** Swift with SwiftUI and Kotlin with Jetpack Compose. The sample apps use them.
-- **Should work, untested:** UIKit, Android Views, Java on Android, Kotlin Multiplatform and Compose Multiplatform. Reflex needs a ViewModel, not a UI toolkit.
-- **Needs your own host:** Flutter, React Native and other stacks have no kit yet. A host that speaks [protocol v1](docs/protocol/v1.md) can work.
-- **Doesn’t work:** state kept only in views, web-only apps and Windows without WSL 2.
+- **Passed with the kits:** SwiftUI, UIKit, Jetpack Compose, Android Views, Java on Android, Kotlin Multiplatform and Compose Multiplatform.
+- **Passed with a small host you write:** Flutter and React Native. Copy ours from [samples/stacks](samples/stacks/README.md).
+- **Doesn’t work:** state kept only in views, web-only apps and native Windows.
 
-[Details for each stack](docs/faq.md#compatibility)
+[What each check ran](docs/faq.md#compatibility)
 
 ## Learn more
 

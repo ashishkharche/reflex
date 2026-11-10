@@ -19,7 +19,8 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
 3. **Check the stack.**
    - Native Swift and Kotlin: carry on.
    - Kotlin Multiplatform or Compose Multiplatform: one Kotlin host covers the shared logic. List only `kotlin` in `tests/reflex.json`.
-   - Flutter, React Native, Expo, .NET MAUI or another stack: stop with BLOCKED. Reflex has no kit for it yet.
+   - Flutter or React Native: stop with BLOCKED. There is no kit. Say the user can copy the small host in `../reflex/samples/stacks/flutter` or `../reflex/samples/stacks/react-native` and ask before writing one.
+   - Any other stack: stop with BLOCKED. Reflex has no kit or sample host for it.
    - Only one platform here: ask whether the app has the other one and where its repo is.
 4. **Check the tools.** `git`, `python3`, `clang` or `cc`, `java -version` 17 or newer for Kotlin and `xcodebuild -version` with Swift 6.0 or newer for Swift. Swift needs macOS. Windows needs WSL 2. A missing native app build or test tool makes that app INCOMPLETE. So does a Gradle toolchain the build asks for that is not installed, such as JDK 17: name the version to install. Other missing tools: stop with BLOCKED and name what to install.
 5. **Get Reflex** next to the app as `../reflex`. Not there: `git clone https://github.com/ashishkharche/reflex.git ../reflex`. Never put it inside the app repo. Already there: this is an update. Note its commit, then `git -C ../reflex pull`.
