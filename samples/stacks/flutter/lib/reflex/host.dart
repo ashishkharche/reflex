@@ -77,10 +77,11 @@ class Schema {
   }
 }
 
+/// [run] may return a Future, such as a ViewModel command that loads. The reply waits for it.
 class NodeAction {
   const NodeAction(this.run, {this.input});
   final Schema? input;
-  final void Function(Map<String, Object> args) run;
+  final FutureOr<void> Function(Map<String, Object> args) run;
 }
 
 abstract class Node {
@@ -291,7 +292,9 @@ class Session {
     'do': {'op', 'action', 'input'},
   };
 
-  String handle(List<int> line) {
+  /// Answers one request line. It waits for the action's Future and then lets queued
+  /// microtasks and zero-length timers run, so the reply shows settled state.
+  Future<String> handle(List<int> line) async {
     final response = <String, Object>{};
     try {
       final String text;
@@ -300,7 +303,8 @@ class Session {
       } on FormatException {
         throw WireError('json.malformed', r'$');
       }
-      response.addAll(_dispatch(_Parser(text).document()));
+      response.addAll(await _dispatch(_Parser(text).document()));
+      await settle();
       response['ok'] = true;
     } on WireError catch (error) {
       response['ok'] = false;
@@ -311,7 +315,7 @@ class Session {
     return canonical(response);
   }
 
-  Map<String, Object> _dispatch(Object? request) {
+  Future<Map<String, Object>> _dispatch(Object? request) async {
     if (request is! Map<String, Object?>) throw WireError('request.not_object', r'$');
     if (!request.containsKey('op')) throw WireError('field.missing', r'$.op');
     final op = request['op'];
@@ -336,9 +340,17 @@ class Session {
       if (action == null) throw WireError('action.unknown', r'$.action');
       final input = request.containsKey('input') ? request['input'] : <String, Object?>{};
       if (input is! Map<String, Object?>) throw WireError('input.not_object', r'$.input');
-      action.run((action.input ?? const Schema({})).decode(input, r'$.input'));
+      await action.run((action.input ?? const Schema({})).decode(input, r'$.input'));
     }
     return {};
+  }
+
+  /// Lets work the app queued run: microtasks first, then zero-length timers.
+  /// Real delays or I/O still need an `eventually` step in the journey.
+  static Future<void> settle() async {
+    for (var i = 0; i < 3; i++) {
+      await Future<void>.delayed(Duration.zero);
+    }
   }
 
   /// Reads LF-framed requests from stdin and writes one reply line for each until EOF.
@@ -347,15 +359,27 @@ class Session {
     await for (final chunk in stdin) {
       for (final byte in chunk) {
         if (byte == 0x0a) {
-          stdout.add(utf8.encode('${handle(buffer)}\n'));
+          final line = List<int>.of(buffer);
           buffer.clear();
+          stdout.add(utf8.encode('${await handle(line)}\n'));
         } else {
           buffer.add(byte);
         }
       }
       await stdout.flush();
     }
-    if (buffer.isNotEmpty) stdout.add(utf8.encode('${handle(buffer)}\n'));
+    if (buffer.isNotEmpty) stdout.add(utf8.encode('${await handle(buffer)}\n'));
     await stdout.flush();
   }
+}
+
+/// The fixture name. `dart` passes it as the first argument. `flutter_tester` does not pass
+/// arguments to main, so a manifest gives it as `--dart-entrypoint-args=<fixture>` instead.
+String fixture(List<String> args) {
+  if (args.isNotEmpty) return args.first;
+  const flag = '--dart-entrypoint-args=';
+  for (final arg in Platform.executableArguments) {
+    if (arg.startsWith(flag)) return arg.substring(flag.length);
+  }
+  return 'default';
 }

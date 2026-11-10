@@ -26,8 +26,11 @@ swift build --package-path samples/stacks/kmp/SwiftHost -j 2
 kotlin/gradlew -p samples/stacks/cmp --no-daemon :cli:installDist :shared:assembleSharedXCFramework
 swift build --package-path samples/stacks/cmp/SwiftHost -j 2
 (cd samples/stacks/flutter && flutter pub get && dart compile exe bin/reflex_host.dart -o build/reflex-host)
+(cd samples/stacks/flutter && python3 ../../../runner/flutter_kernel.py bin/reflex_host.dart build/reflex-host.dill)
 python3 runner/reflex_runner.py samples/stacks/all.json --platform all --repeat 3 --timings 0
 ```
+
+The Flutter host runs twice: as a `dart` executable and on `flutter_tester`, Flutter’s headless engine, as `flutter-tester`. A real Flutter ViewModel usually imports `package:flutter`, which `dart` can’t load, so apps use the second way ([Flutter apps](../../docs/add-to-your-app.md#flutter-apps)).
 
 The React Native host needs no build. Its screen test needs `npm install` and `npx jest` in `react-native/`. Keep `node_modules` out of the repo.
 

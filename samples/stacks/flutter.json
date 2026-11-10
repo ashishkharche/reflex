@@ -4,11 +4,34 @@
  "root": "../..",
  "conformance": "kit/conformance/strict-decoder.json",
  "defaultFixture": "default",
- "note": "The plain Dart ViewModel behind the Flutter screen, served by the minimal Dart host and compared with the Swift kit host of the same counter.",
+ "note": "The plain Dart ViewModel behind the Flutter screen, served by the minimal Dart host as a dart executable and on flutter_tester, Flutter’s headless engine, and compared with the Swift kit host of the same counter.",
  "platforms": {
-  "uikit": {"command": ["{root}/samples/stacks/uikit/Harness/.build/debug/counter-cli"]},
-  "flutter-dart": {"command": ["{root}/samples/stacks/flutter/build/reflex-host"]}
+  "uikit": {
+   "command": [
+    "{root}/samples/stacks/uikit/Harness/.build/debug/counter-cli"
+   ]
+  },
+  "flutter-dart": {
+   "command": [
+    "{root}/samples/stacks/flutter/build/reflex-host"
+   ]
+  },
+  "flutter-tester": {
+   "command": [
+    "{flutter_tester}",
+    "--non-interactive",
+    "--disable-vm-service",
+    "--dart-entrypoint-args={fixture}",
+    "{root}/samples/stacks/flutter/build/reflex-host.dill"
+   ]
+  }
  },
- "journeys": ["samples/stacks/journeys/*.json"],
- "everyResponse": {"node": {"name": "Counter"}}
+ "journeys": [
+  "samples/stacks/journeys/*.json"
+ ],
+ "everyResponse": {
+  "node": {
+   "name": "Counter"
+  }
+ }
 }
