@@ -1,0 +1,14 @@
+   1 error: the library 'Timeline' requires macos 10.13, but depends on the product 'SwiftUIIntrospect' which requires macos 10.15; consider changing the library 'Timeline' to require macos 10.15 or later, or the product 'SwiftUIIntrospect' to require macos 10.13 or earlier.
+   1 error: the library 'Timeline' requires macos 10.13, but depends on the product 'Bodega' which requires macos 11.0; consider changing the library 'Timeline' to require macos 11.0 or later, or the product 'Bodega' to require macos 10.13 or earlier.
+   1 error: the library 'StatusKit' requires macos 10.13, but depends on the product 'LRUCache' which requires macos 10.15; consider changing the library 'StatusKit' to require macos 10.15 or later, or the product 'LRUCache' to require macos 10.13 or earlier.
+   1 error: the library 'Models' requires macos 10.13, but depends on the product 'SwiftSoup' which requires macos 12.0; consider changing the library 'Models' to require macos 12.0 or later, or the product 'SwiftSoup' to require macos 10.13 or earlier.
+   1 error: the library 'DesignSystem' requires macos 10.13, but depends on the product 'NukeUI' which requires macos 12.0; consider changing the library 'DesignSystem' to require macos 12.0 or later, or the product 'NukeUI' to require macos 10.13 or earlier.
+   1 error: the library 'DesignSystem' requires macos 10.13, but depends on the product 'Nuke' which requires macos 12.0; consider changing the library 'DesignSystem' to require macos 12.0 or later, or the product 'Nuke' to require macos 10.13 or earlier.
+   1 error: the library 'DesignSystem' requires macos 10.13, but depends on the product 'EmojiText' which requires macos 12.0; consider changing the library 'DesignSystem' to require macos 12.0 or later, or the product 'EmojiText' to require macos 10.13 or earlier.
+   1 error: the library 'Bodega' requires macos 11.0, but depends on the product 'SQLite' which requires macos 12.0; consider changing the library 'Bodega' to require macos 12.0 or later, or the product 'SQLite' to require macos 11.0 or earlier.
+swift build --scratch-path /tmp/icecubes-build 2>&1  13.00s user 8.52s system 51% cpu 41.938 total
+grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox,.venv,venv  0.00s user 0.00s system 0% cpu 41.938 total
+sort  0.00s user 0.00s system 0% cpu 41.938 total
+uniq -c  0.00s user 0.00s system 0% cpu 41.938 total
+sort -rn  0.00s user 0.00s system 0% cpu 41.937 total
+head -15  0.00s user 0.00s system 0% cpu 41.937 total

@@ -14,15 +14,18 @@ Every stack marked Yes passed the same counter journey under the network guard o
 | Java on Android | Yes | A Java ViewModel and a Java Activity. The adapter and CLI are Kotlin over the Java class. |
 | Kotlin Multiplatform | Yes | One `commonMain` ViewModel. The Android app uses its Android target and a SwiftUI app links its iOS simulator framework. A Kotlin/JVM host (Kotlin kit) and a Kotlin/Native host (Swift kit) both pass with byte parity. |
 | Compose Multiplatform | Yes | One Compose screen in `commonMain` builds for Android and the iOS simulator. Its ViewModel passes on Kotlin/JVM and Kotlin/Native. Android needs compileSdk 37. |
-| Flutter | With a host you write | No Dart kit. [host.dart](../samples/stacks/flutter/lib/reflex/host.dart) is a 361-line protocol v1 host for the plain Dart ViewModel. It passes and every reply after `hello` matches the Swift kit byte for byte. A widget test drives the screen over the same ViewModel. The app builds for the iOS simulator and as a debug APK. |
+| Flutter | With a host you write | No Dart kit. [host.dart](../samples/stacks/flutter/lib/reflex/host.dart) is a 385-line protocol v1 host. It passes as a `dart` executable and on `flutter_tester`. Every reply after `hello` matches the Swift kit byte for byte. `flutter_tester` has `dart:ui`, so a ViewModel that extends `ChangeNotifier` runs unchanged. A widget test drives the screen over the same ViewModel. The app builds for the iOS simulator and as a debug APK. |
 | React Native | With a host you write | No JavaScript kit. [reflexHost.js](../samples/stacks/react-native/src/reflexHost.js) is a 262-line Node host for the plain JavaScript ViewModel. It passes the same way. Jest with the React Native preset drives the screen. The iOS and Android app shells were not built. |
 | Linux (desktop, server or CI) | Kotlin hosts | Kotlin hosts pass with the `LD_PRELOAD` guard on Debian 13 and on this repo’s Ubuntu 24.04 CI job. The guard needs `cc`. The Swift kit’s `Package.swift` declares macOS and iOS only. `scripts/build.sh` builds a `.dylib` and expects macOS. |
 | GitHub Actions / CI | Yes | This repo’s workflow runs on `macos-latest` and `ubuntu-24.04` (`.github/workflows/behavior.yml`). |
 | iOS-only or Android-only | Yes | Put one platform in the manifest. Run `--platform swift` or `--platform kotlin` (or that platform’s name). Parity across platforms is skipped when only one runs. |
+| Swift packages that declare iOS only | No | The Swift CLI builds for macOS. When a package and its dependencies declare only iOS, it can’t build there without changing them. |
 | Windows native | No | The runner uses `select` on process pipes (`runner/reflex_runner.py`), which Python on Windows does not support for pipes. |
 | State kept only in views | No | Reflex drives a ViewModel. Move the state into one first. |
 | Web-only apps | No | The runner drives CLI processes over stdio, not a browser. |
 | Logic only on a backend | No | Reflex tests the app Core in-process. Point the CLI at fakes, not at production servers. |
+
+Five open-source apps were tried on 10 Nov 2026: Now in Android, the KMP App Template, the Flutter Compass sample, Fossify Calculator and Ice Cubes. Four ran their main screen under the guard with no change to app code. Fossify Calculator shows errors only as a toast, so its error path needs one. Ice Cubes is iOS only and didn’t build for macOS. Notes and logs: `evidence/real-apps-2026-11/`.
 
 The Dart and Node hosts cover the counter’s needs: integer, string and boolean fields, strict JSON and canonical output. They don’t handle object or array fields and don’t run the 142 kit conformance cases. Check your own host against `kit/conformance/strict-decoder.json` before you rely on it.
 

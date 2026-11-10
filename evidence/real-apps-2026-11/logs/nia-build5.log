@@ -1,0 +1,452 @@
+Isolated Projects is an incubating feature.
+Calculating task graph as configuration cache cannot be reused because file 'reflexForYou/build.gradle.kts' has changed.
+Type-safe project accessors is an incubating feature.
+> Task :build-logic:convention:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :build-logic:convention:compileKotlin UP-TO-DATE
+> Task :build-logic:convention:compileJava NO-SOURCE
+> Task :build-logic:convention:pluginDescriptors UP-TO-DATE
+> Task :build-logic:convention:processResources UP-TO-DATE
+> Task :build-logic:convention:classes UP-TO-DATE
+> Task :build-logic:convention:jar UP-TO-DATE
+
+> Configure project :ui-test-hilt-manifest
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:analytics
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:data
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:data-test
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:datastore
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:datastore-test
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:designsystem
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:domain
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:navigation
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:network
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:notifications
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:screenshot-testing
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :core:testing
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :sync:sync-test
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :feature:bookmarks:api
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :feature:foryou:api
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :feature:interests:api
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :feature:search:api
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :feature:topic:api
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Configure project :reflexForYou
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+WARNING: androidTestImplementation dependencies are ignored because androidTest is disabled.
+Add android.sync.suppressAgpWarnings=GENERIC to the gradle.properties file to suppress this warning.
+
+> Task :core:common:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:model:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :reflex-kit:processResources NO-SOURCE
+> Task :core:model:processResources NO-SOURCE
+> Task :core:datastore-proto:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:datastore-proto:protobufDummy UP-TO-DATE
+> Task :core:common:kspKotlin UP-TO-DATE
+> Task :core:model:compileKotlin UP-TO-DATE
+> Task :reflex-kit:compileKotlin UP-TO-DATE
+> Task :core:common:processResources NO-SOURCE
+> Task :core:datastore-proto:extractIncludeProto UP-TO-DATE
+> Task :core:datastore-proto:extractProto UP-TO-DATE
+> Task :reflex-kit:compileJava NO-SOURCE
+> Task :core:model:compileJava NO-SOURCE
+> Task :reflex-kit:classes UP-TO-DATE
+> Task :core:model:classes UP-TO-DATE
+> Task :core:common:compileKotlin UP-TO-DATE
+> Task :reflex-kit:jar UP-TO-DATE
+> Task :core:datastore-proto:generateProto UP-TO-DATE
+> Task :core:model:jar UP-TO-DATE
+> Task :core:common:compileJava UP-TO-DATE
+> Task :reflexForYou:preBuild UP-TO-DATE
+> Task :reflexForYou:preDemoDebugBuild UP-TO-DATE
+> Task :core:common:classes UP-TO-DATE
+> Task :core:datastore-proto:processResources UP-TO-DATE
+> Task :reflexForYou:generateDemoDebugResources UP-TO-DATE
+> Task :core:common:jar UP-TO-DATE
+> Task :core:datastore-proto:compileKotlin UP-TO-DATE
+> Task :reflexForYou:javaPreCompileDemoDebug UP-TO-DATE
+> Task :reflexForYou:processDemoDebugNavigationResources UP-TO-DATE
+> Task :reflexForYou:preDemoDebugUnitTestBuild UP-TO-DATE
+> Task :core:datastore-proto:compileJava UP-TO-DATE
+> Task :core:analytics:preBuild UP-TO-DATE
+> Task :core:datastore-proto:classes UP-TO-DATE
+> Task :core:analytics:preDemoDebugBuild UP-TO-DATE
+> Task :reflexForYou:packageDemoDebugResources UP-TO-DATE
+> Task :core:data:preBuild UP-TO-DATE
+> Task :core:analytics:generateDemoDebugResources UP-TO-DATE
+> Task :core:analytics:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:datastore-proto:jar UP-TO-DATE
+> Task :core:data:preDemoDebugBuild UP-TO-DATE
+> Task :reflexForYou:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:analytics:packageDemoDebugResources UP-TO-DATE
+> Task :core:data:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:database:preBuild UP-TO-DATE
+> Task :reflexForYou:generateDemoDebugRFile UP-TO-DATE
+> Task :core:database:preDemoDebugBuild UP-TO-DATE
+> Task :core:analytics:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:data:generateDemoDebugResources UP-TO-DATE
+> Task :core:analytics:generateDemoDebugRFile UP-TO-DATE
+> Task :core:data:packageDemoDebugResources UP-TO-DATE
+> Task :reflexForYou:compileDemoDebugKotlin NO-SOURCE
+> Task :reflexForYou:compileDemoDebugJavaWithJavac NO-SOURCE
+> Task :core:database:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:database:generateDemoDebugResources UP-TO-DATE
+> Task :reflexForYou:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:data:parseDemoDebugLocalResources UP-TO-DATE
+> Task :reflexForYou:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:datastore:preBuild UP-TO-DATE
+> Task :core:designsystem:preBuild UP-TO-DATE
+> Task :core:datastore:preDemoDebugBuild UP-TO-DATE
+> Task :core:database:packageDemoDebugResources UP-TO-DATE
+> Task :core:designsystem:preDemoDebugBuild UP-TO-DATE
+> Task :core:data:generateDemoDebugRFile UP-TO-DATE
+> Task :core:designsystem:generateDemoDebugResources UP-TO-DATE
+> Task :core:datastore:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:database:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:datastore:generateDemoDebugResources UP-TO-DATE
+> Task :core:designsystem:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:database:generateDemoDebugRFile UP-TO-DATE
+> Task :core:designsystem:packageDemoDebugResources UP-TO-DATE
+> Task :core:domain:preBuild UP-TO-DATE
+> Task :core:navigation:preBuild UP-TO-DATE
+> Task :core:domain:preDemoDebugBuild UP-TO-DATE
+> Task :core:designsystem:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:datastore:packageDemoDebugResources UP-TO-DATE
+> Task :core:domain:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:navigation:preDemoDebugBuild UP-TO-DATE
+> Task :core:domain:generateDemoDebugResources UP-TO-DATE
+> Task :core:designsystem:generateDemoDebugRFile UP-TO-DATE
+> Task :core:datastore:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:navigation:generateDemoDebugResources UP-TO-DATE
+> Task :core:navigation:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:domain:packageDemoDebugResources UP-TO-DATE
+> Task :core:network:preBuild UP-TO-DATE
+> Task :core:network:preDemoDebugBuild UP-TO-DATE
+> Task :core:datastore:generateDemoDebugRFile UP-TO-DATE
+> Task :core:domain:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:navigation:packageDemoDebugResources UP-TO-DATE
+> Task :core:network:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:domain:generateDemoDebugRFile UP-TO-DATE
+> Task :core:navigation:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:network:generateDemoDebugResources UP-TO-DATE
+> Task :core:notifications:preBuild UP-TO-DATE
+> Task :core:notifications:preDemoDebugBuild UP-TO-DATE
+> Task :core:testing:preBuild UP-TO-DATE
+> Task :core:navigation:generateDemoDebugRFile UP-TO-DATE
+> Task :core:testing:preDemoDebugBuild UP-TO-DATE
+> Task :core:notifications:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:network:packageDemoDebugResources UP-TO-DATE
+> Task :core:notifications:generateDemoDebugResources UP-TO-DATE
+> Task :core:testing:generateDemoDebugResources UP-TO-DATE
+> Task :core:testing:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:notifications:packageDemoDebugResources UP-TO-DATE
+> Task :core:network:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:ui:preBuild UP-TO-DATE
+> Task :core:ui:preDemoDebugBuild UP-TO-DATE
+> Task :core:network:generateDemoDebugRFile UP-TO-DATE
+> Task :core:notifications:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:ui:generateDemoDebugResources UP-TO-DATE
+> Task :core:ui:processDemoDebugNavigationResources UP-TO-DATE
+> Task :core:testing:packageDemoDebugResources UP-TO-DATE
+> Task :feature:foryou:api:preBuild UP-TO-DATE
+> Task :core:notifications:generateDemoDebugRFile UP-TO-DATE
+> Task :core:ui:packageDemoDebugResources UP-TO-DATE
+> Task :feature:foryou:api:preDemoDebugBuild UP-TO-DATE
+> Task :core:testing:parseDemoDebugLocalResources UP-TO-DATE
+> Task :feature:foryou:impl:preBuild UP-TO-DATE
+> Task :feature:foryou:api:generateDemoDebugResources UP-TO-DATE
+> Task :core:ui:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:testing:generateDemoDebugRFile UP-TO-DATE
+> Task :feature:foryou:api:processDemoDebugNavigationResources UP-TO-DATE
+> Task :feature:foryou:impl:preDemoDebugBuild UP-TO-DATE
+> Task :feature:topic:api:preBuild UP-TO-DATE
+> Task :core:ui:generateDemoDebugRFile UP-TO-DATE
+> Task :feature:topic:api:preDemoDebugBuild UP-TO-DATE
+> Task :feature:foryou:api:packageDemoDebugResources UP-TO-DATE
+> Task :feature:foryou:impl:processDemoDebugNavigationResources UP-TO-DATE
+> Task :feature:topic:api:generateDemoDebugResources UP-TO-DATE
+> Task :feature:foryou:impl:generateDemoDebugResources UP-TO-DATE
+> Task :feature:foryou:api:parseDemoDebugLocalResources UP-TO-DATE
+> Task :feature:topic:api:processDemoDebugNavigationResources UP-TO-DATE
+> Task :feature:topic:api:packageDemoDebugResources UP-TO-DATE
+> Task :feature:foryou:api:generateDemoDebugRFile UP-TO-DATE
+> Task :feature:foryou:impl:packageDemoDebugResources UP-TO-DATE
+> Task :feature:topic:api:parseDemoDebugLocalResources UP-TO-DATE
+> Task :core:analytics:javaPreCompileDemoDebug UP-TO-DATE
+> Task :feature:foryou:impl:parseDemoDebugLocalResources UP-TO-DATE
+> Task :feature:topic:api:generateDemoDebugRFile UP-TO-DATE
+> Task :core:database:javaPreCompileDemoDebug UP-TO-DATE
+> Task :feature:foryou:impl:generateDemoDebugRFile UP-TO-DATE
+> Task :core:analytics:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:database:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:datastore:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:datastore:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:database:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:analytics:compileDemoDebugKotlin UP-TO-DATE
+> Task :reflexForYou:generateDemoDebugUnitTestStubRFile UP-TO-DATE
+> Task :core:datastore:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:analytics:compileDemoDebugJavaWithJavac UP-TO-DATE
+> Task :core:database:compileDemoDebugJavaWithJavac UP-TO-DATE
+> Task :core:datastore:compileDemoDebugJavaWithJavac UP-TO-DATE
+> Task :core:database:copyRoomSchemas NO-SOURCE
+> Task :core:network:generateDemoDebugBuildConfig UP-TO-DATE
+> Task :core:datastore:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :core:database:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :core:network:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:database:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:datastore:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:network:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:notifications:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:analytics:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :core:data:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:analytics:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:analytics:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:notifications:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:datastore:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:database:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:designsystem:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:domain:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:network:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:navigation:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:notifications:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:network:compileDemoDebugJavaWithJavac UP-TO-DATE
+> Task :core:notifications:compileDemoDebugJavaWithJavac UP-TO-DATE
+> Task :core:designsystem:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:network:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :core:designsystem:compileDemoDebugJavaWithJavac NO-SOURCE
+> Task :core:network:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:network:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:designsystem:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:navigation:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:testing:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:ui:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:navigation:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:navigation:compileDemoDebugJavaWithJavac NO-SOURCE
+> Task :core:notifications:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :core:notifications:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:notifications:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :feature:foryou:api:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:designsystem:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :feature:topic:api:javaPreCompileDemoDebug UP-TO-DATE
+> Task :feature:foryou:impl:javaPreCompileDemoDebug UP-TO-DATE
+> Task :core:data:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:navigation:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :core:navigation:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:navigation:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:ui:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:ui:compileDemoDebugJavaWithJavac NO-SOURCE
+> Task :core:ui:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:ui:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :feature:foryou:api:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:data:compileDemoDebugKotlin UP-TO-DATE
+> Task :feature:foryou:api:compileDemoDebugJavaWithJavac NO-SOURCE
+> Task :feature:foryou:api:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :feature:foryou:api:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :feature:topic:api:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:data:compileDemoDebugJavaWithJavac UP-TO-DATE
+> Task :core:data:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :core:data:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:data:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:domain:kspDemoDebugKotlin SKIPPED
+> Task :feature:topic:api:compileDemoDebugKotlin UP-TO-DATE
+> Task :feature:topic:api:compileDemoDebugJavaWithJavac NO-SOURCE
+> Task :core:testing:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:domain:compileDemoDebugKotlin UP-TO-DATE
+> Task :core:domain:compileDemoDebugJavaWithJavac NO-SOURCE
+> Task :core:domain:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:domain:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :feature:topic:api:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :feature:topic:api:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :feature:topic:api:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :core:testing:compileDemoDebugKotlin UP-TO-DATE
+> Task :feature:foryou:impl:kspDemoDebugKotlin UP-TO-DATE
+> Task :core:testing:compileDemoDebugJavaWithJavac UP-TO-DATE
+> Task :core:testing:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :core:testing:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :core:testing:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :feature:foryou:impl:compileDemoDebugKotlin UP-TO-DATE
+> Task :feature:foryou:impl:compileDemoDebugJavaWithJavac UP-TO-DATE
+> Task :feature:foryou:impl:transformDemoDebugClassesWithAsm UP-TO-DATE
+> Task :feature:foryou:impl:bundleLibCompileToJarDemoDebug UP-TO-DATE
+> Task :feature:foryou:impl:bundleLibRuntimeToJarDemoDebug UP-TO-DATE
+> Task :reflexForYou:compileDemoDebugUnitTestKotlin
+> Task :reflexForYou:reflexClasspath
+
+BUILD SUCCESSFUL in 4s
+185 actionable tasks: 2 executed, 183 up-to-date
+Configuration cache entry stored.
+./gradlew --max-workers=4 :reflexForYou:reflexClasspath  0.90s user 0.14s system 21% cpu 4.802 total

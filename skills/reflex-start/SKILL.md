@@ -17,9 +17,9 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
 1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. **Check the repo.** You must be in the app’s repo, not in Reflex. If it has uncommitted changes, ask before you start. Never stash or discard them.
 3. **Check the stack.**
-   - Native Swift and Kotlin: carry on.
+   - Native Swift and Kotlin: carry on. Android ViewModels in an Android library or app module stay where they are: the host runs on that module’s unit test classpath (guide 3, “When the ViewModel lives in an Android module”). A ViewModel with `viewModelScope` or `stateIn` needs the Main dispatcher and collectors from guide 3, “viewModelScope and stateIn”.
    - Kotlin Multiplatform or Compose Multiplatform: one Kotlin host covers the shared logic. List only `kotlin` in `tests/reflex.json`.
-   - Flutter or React Native: stop with BLOCKED. There is no kit. Say the user can copy the small host in `../reflex/samples/stacks/flutter` or `../reflex/samples/stacks/react-native` and ask before writing one.
+   - Flutter or React Native: stop with BLOCKED. There is no kit. Say the user can copy the small host in `../reflex/samples/stacks/flutter` or `../reflex/samples/stacks/react-native` and ask before writing one. A Flutter host runs on `flutter_tester` so ViewModels that import `package:flutter` need no change (guide 5, “Flutter apps”).
    - Any other stack: stop with BLOCKED. Reflex has no kit or sample host for it.
    - Only one platform here: ask whether the app has the other one and where its repo is.
 4. **Check the tools.** `git`, `python3`, `clang` or `cc`, `java -version` 17 or newer for Kotlin and `xcodebuild -version` with Swift 6.0 or newer for Swift. Swift needs macOS. Windows needs WSL 2. A missing native app build or test tool makes that app INCOMPLETE. So does a Gradle toolchain the build asks for that is not installed, such as JDK 17: name the version to install. Other missing tools: stop with BLOCKED and name what to install.

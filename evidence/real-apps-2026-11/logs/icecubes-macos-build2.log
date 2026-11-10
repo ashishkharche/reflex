@@ -1,0 +1,1 @@
+   1 error: the library 'Bodega' requires macos 11.0, but depends on the product 'SQLite' which requires macos 12.0; consider changing the library 'Bodega' to require macos 12.0 or later, or the product 'SQLite' to require macos 11.0 or earlier.

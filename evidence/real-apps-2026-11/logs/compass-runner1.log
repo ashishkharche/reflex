@@ -1,0 +1,10 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=compass-home platforms=flutter journeys=2 files=2
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=flutter protocol=1 sample=compass-home kit=dart-minimal-1
+FAIL platform=flutter journey=tool/reflex/journeys/empty.json#empty step=1 action=hello send={"op":"hello","protocol":1} $.node.state.bookings expected=0 items actual=2 items response={"kit":"dart-minimal-1","node":{"actions":["Delete","Reload"],"name":"Home","state":{"bookings":[{"id":0,"name":"name1, Europe"},{"id":1,"name":"name1, Europe"}],"deleting":false,"loadFailed":false,"loading":false,"user":"NAME"}},"ok":true,"protocol":1,"sample":"compass-home"}
+JOURNEY FAIL platform=flutter journey=tool/reflex/journeys/empty.json#empty steps=2 exit=0 network=clean
+FAIL platform=flutter journey=tool/reflex/journeys/home.json#home step=2 action=Delete send={"action":"Delete","input":{"id":0},"op":"do"} $.node.state.bookings expected=1 items actual=2 items response={"node":{"actions":["Delete","Reload"],"name":"Home","state":{"bookings":[{"id":0,"name":"name1, Europe"},{"id":1,"name":"name1, Europe"}],"deleting":true,"loadFailed":false,"loading":false,"user":"NAME"}},"ok":true}
+FAIL platform=flutter journey=tool/reflex/journeys/home.json#home step=3 action=Reload send={"action":"Reload","op":"do"} $.node.state.loading expected=false (boolean) actual=true (boolean) response={"node":{"actions":["Delete","Reload"],"name":"Home","state":{"bookings":[{"id":1,"name":"name1, Europe"}],"deleting":false,"loadFailed":false,"loading":true,"user":"NAME"}},"ok":true}
+JOURNEY FAIL platform=flutter journey=tool/reflex/journeys/home.json#home steps=5 exit=0 network=clean
+SUITE platform=flutter repeat=1/1 journeys=2 steps=7 wall_s=0.46
+RESULT FAIL mode=xfail-tracked unexpected_failures=3 xfail=0 platforms=flutter repeat=1 sample=compass-home guard=canary-pass

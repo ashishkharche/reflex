@@ -1,0 +1,10 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=fossify-calculator platforms=jvm journeys=2 files=2
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=jvm protocol=1 sample=fossify-calculator kit=1.0.1
+XFAIL platform=jvm journey=reflex/journeys/divide-by-zero.json#divide-by-zero step=5 action=Equals finding=toast-only-error actual=EOF exit=1 stderr='Exception in thread "main" java.lang.NullPointerException: getString(...) must not be null ... at reflexcli.MainKt.main(Main.kt)'
+XFAIL platform=jvm journey=reflex/journeys/divide-by-zero.json#divide-by-zero end finding=toast-only-error expected exit=0 actual exit=1
+WARN platform=jvm ReflexKit warning: Dispatchers.Main is missing, so viewModelScope work never runs and state stays at its first value. Call Dispatchers.setMain(UnconfinedTestDispatcher()) from kotlinx-coroutines-test before you build the ViewModel. See docs/add-to-your-app.md.
+JOURNEY PASS platform=jvm journey=reflex/journeys/divide-by-zero.json#divide-by-zero steps=6 exit=1 network=clean
+JOURNEY PASS platform=jvm journey=reflex/journeys/main.json#main steps=15 exit=0 network=clean
+SUITE platform=jvm repeat=1/1 journeys=2 steps=21 wall_s=0.68
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=2 platforms=jvm repeat=1 sample=fossify-calculator guard=canary-pass

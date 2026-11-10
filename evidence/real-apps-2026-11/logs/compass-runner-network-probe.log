@@ -1,0 +1,6 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=compass-home platforms=flutter journeys=1 files=1
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=flutter protocol=1 sample=compass-home kit=dart-minimal-1
+JOURNEY PASS platform=flutter journey=../../../../../../../../private/tmp/netj/net.json#net steps=2 exit=0 network=denied
+SUITE platform=flutter repeat=1/1 journeys=1 steps=2 wall_s=0.37
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=flutter repeat=1 sample=compass-home guard=canary-pass

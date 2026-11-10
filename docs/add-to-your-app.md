@@ -227,6 +227,63 @@ Use JVM 17. Build the CLI with one worker and no daemon on a small machine:
 ./gradlew --no-daemon --max-workers=1 :cli:installDist
 ```
 
+### When the ViewModel lives in an Android module
+
+Most Android apps keep ViewModels in an Android library or app module, so a JVM CLI can’t depend on them. Don’t move them. Run the host on that module’s JVM unit test classpath, the one its ViewModel tests already use. AGP adds a stub `android.jar` to it.
+
+- Put the host’s `main` in `src/test/kotlin` of a small Android library module that has the feature module as a `testImplementation` dependency. With no library module, use the app module’s `src/test`.
+- Add `testImplementation(project(":reflex-kit"))` inside an `if (findProject(":reflex-kit") != null)` block.
+- Use the app’s own test fakes as fixtures when it has them.
+- Write the classpath to a file and start the host with a Java argument file:
+
+```kotlin
+// module with the host, inside the same block
+afterEvaluate {
+    val cp = tasks.named<Test>("testDebugUnitTest")
+        .get().classpath
+    val file = layout.buildDirectory
+        .file("reflex/classpath.txt")
+    tasks.register("reflexClasspath") {
+        inputs.files(cp)
+        outputs.file(file)
+        val files = cp
+        val out = file
+        doLast {
+            val path = files.files
+                .joinToString(":") { it.path }
+            out.get().asFile
+                .writeText("-cp\n$path\n")
+        }
+    }
+}
+```
+
+Use the test task of a flavor when the app has flavors, such as `testDemoDebugUnitTest`. Build with `./gradlew :yourmodule:reflexClasspath` and start the host with `"{java}", "@{root}/yourmodule/build/reflex/classpath.txt", "reflexcli.MainKt"`.
+
+The stub `android.jar` returns `null` and `0`. Code that shows a toast or opens a database through a `Context` stops the host. Move that behind an interface or keep it out of the journey.
+
+### viewModelScope and stateIn
+
+If the app’s ViewModel tests use a `MainDispatcherRule` or collect flows in `backgroundScope`, the host needs the same two things.
+
+- `viewModelScope` runs on `Dispatchers.Main`. A JVM host has none. That work never runs and state stays at its first value with no error. The Kotlin kit then prints `ReflexKit warning: Dispatchers.Main is missing` and the runner shows it as a `WARN` line. Before you build the ViewModel, call this from `kotlinx-coroutines-test`:
+
+```kotlin
+val main = UnconfinedTestDispatcher()
+Dispatchers.setMain(main)
+```
+
+- A `StateFlow` made with `stateIn(..., WhileSubscribed(...))` only runs while something collects it. The screen collects it, so the host must too. Collect every flow the adapter reads:
+
+```kotlin
+val screen = CoroutineScope(main)
+screen.launch { vm.feed.collect {} }
+```
+
+A missing collector looks like a state stuck at its first value, such as loading.
+
+- `Cannot access 'androidx.lifecycle.ViewModel'` when the CLI compiles: the module with the ViewModel has lifecycle as an `implementation` dependency, which doesn’t reach the CLI. Add the lifecycle ViewModel library to the CLI.
+
 ## 4. One adapter node per ViewModel
 
 An adapter is a small type that implements ReflexKit’s `Node`. It exposes a name, JSON state and named actions. It only calls `send` on your ViewModel.
@@ -313,6 +370,29 @@ Build Swift with two jobs:
 swift build --package-path ReflexHarness -j 2
 ```
 
+### Flutter apps
+
+There is no Dart kit. Copy the protocol v1 host in [samples/stacks/flutter/lib/reflex/host.dart](../samples/stacks/flutter/lib/reflex/host.dart) and write the adapter and `main` next to it, for example in `tool/reflex/`.
+
+A Flutter ViewModel usually extends `ChangeNotifier` from `package:flutter`, which needs `dart:ui`, so `dart run` can’t load it. Run the host on `flutter_tester`, Flutter’s headless engine, instead. It has `dart:ui` and reads stdin, so the ViewModel needs no change:
+
+```bash
+python3 ../reflex/runner/flutter_kernel.py \
+  tool/reflex/main.dart build/reflex/host.dill
+```
+
+```json
+"command": [
+  "{flutter_tester}",
+  "--non-interactive",
+  "--disable-vm-service",
+  "--dart-entrypoint-args={fixture}",
+  "{root}/build/reflex/host.dill"
+]
+```
+
+`flutter_tester` doesn’t pass arguments to `main`, so read the fixture with the host’s `fixture(args)`. An action may return a `Future`, such as a command that loads. The reply waits for it and for queued microtasks, so it shows settled state.
+
 ## 6. Try it by hand
 
 The CLI speaks NDJSON (one JSON object per line). Send `hello`, then `ls` and `do`:
@@ -335,7 +415,7 @@ python3 ../reflex/runner/explore.py tests/reflex.json ls 'do Increment' ls
 
 ## 7. Manifest and journey
 
-Create `tests/reflex.json`. `root` is your app directory (relative to the manifest). Point conformance and the network guard at the reflex clone. Do not set `warm` until a journey restores starting state; warm timings reuse one process.
+Create `tests/reflex.json`. `root` is your app directory (relative to the manifest). Point conformance at the reflex clone. The runner builds the network guard from the clone it runs from, so `guard` is only for a different guard. Do not set `warm` until a journey restores starting state; warm timings reuse one process.
 
 ```json
 {
@@ -343,10 +423,6 @@ Create `tests/reflex.json`. `root` is your app directory (relative to the manife
   "protocol": 1,
   "root": "..",
   "conformance": "../reflex/kit/conformance/strict-decoder.json",
-  "guard": {
-    "source": "../reflex/scripts/network_guard.c",
-    "library": ".build/network_guard.dylib"
-  },
   "platforms": {
     "swift": {
       "command": ["{root}/ReflexHarness/.build/debug/your-cli"]
@@ -529,6 +605,9 @@ Next: answer 1, then /reflex-check
 | Symptom | What to check |
 | --- | --- |
 | `host binary not found` | Build the Swift executable and run Gradle `:cli:installDist` first. |
+| `host input not found` | A classpath folder, argument file or script in the command is missing. Build the CLI first. |
+| `WARN` with `Dispatchers.Main is missing` | Set a Main dispatcher in the host. See [viewModelScope and stateIn](#viewmodelscope-and-statein). |
+| A state stays at loading or empty | A `WhileSubscribed` flow has no collector in the host. See the same section. |
 | `json.malformed` on the first line | Send `{"op":"hello","protocol":1}` before `ls` or `do`. Human `ls` / `do` lines are not the wire format; use JSON objects. |
 | Kotlin and Swift disagree on keys | Both kits compare keys by exact UTF-16 code units. Use the same spellings. |
 | Warm timing fails after a green suite | The warm run reuses one process. Omit `warm` until the journey resets state. Another option is a reset action. |
