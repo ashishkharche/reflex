@@ -939,6 +939,30 @@ def host_stderr(text):
     return [line for line in text.splitlines() if line.strip() and not line.startswith("Picked up ")]
 
 
+FROZEN_CAUSES = ("likely causes: no Main dispatcher so viewModelScope work never runs, stateIn(WhileSubscribed) "
+                 "with no subscriber in the host or async work the host did not wait for "
+                 "(docs/add-to-your-app.md, viewModelScope and stateIn)")
+
+
+def is_action(wire):
+    try:
+        command = parse(wire) if wire else None
+    except ValueError:
+        return False
+    return isinstance(command, dict) and command.get("op") == "do"
+
+
+def frozen_state(records):
+    """How many actions ran when a journey expected node.state to change but every reply showed the same state.
+    That points at the host, not the app: work the ViewModel queued never reached the state. Returns 0 otherwise."""
+    states = [node_state(r["resp"]) for r in records if node_state(r.get("resp")) is not None]
+    actions = sum(is_action(r.get("wire")) for r in records)
+    expected = any(p.startswith("$.node.state") for r in records for p in r["problems"])
+    if not actions or not expected or len(states) < 2 or any(not same(states[0], s) for s in states[1:]):
+        return 0
+    return actions
+
+
 def classify(records, end, journey, target, strict):
     """Assign PASS, FAIL, XFAIL or XPASS to each step and to the journey end checks."""
     journey_xfail = (journey.get("xfail") or {}).get(target)
@@ -1117,6 +1141,10 @@ def main():
                     if (target, warning) not in warned:
                         warned.add((target, warning))
                         out(f"WARN platform={target} {warning}")
+                frozen = frozen_state(records)
+                if frozen:
+                    out(f"WARN platform={target} journey={journey['id']} node.state never changed across {frozen} action(s) "
+                        f"but the journey expected it to; {FROZEN_CAUSES}")
                 plain = [line for line in stderr if not line.startswith(KIT_WARNING)]
                 if bad and plain:
                     out(f"STDERR platform={target} journey={journey['id']} lines={len(plain)} last={' | '.join(plain[-3:])[:600]!r}")

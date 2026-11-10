@@ -1,5 +1,7 @@
-"""Unit tests for the runner’s host checks: a host that was never built, a crash cause and kit warnings."""
+"""Unit tests for the runner’s host checks: a host that was never built, a crash cause, kit warnings and state that never changes."""
+import json
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -68,6 +70,54 @@ class HostOutput(unittest.TestCase):
     def test_kit_warning_prefix_matches_the_kotlin_kit(self):
         kit = Path(__file__).resolve().parent.parent / "kit/kotlin/src/main/kotlin/reflex/kit/MainDispatcher.kt"
         self.assertIn(f'"{rr.KIT_WARNING} Dispatchers.Main is missing', kit.read_text(encoding="utf-8"))
+
+
+class FrozenState(unittest.TestCase):
+    @staticmethod
+    def record(wire, count, problems=()):
+        return {"wire": wire, "resp": {"ok": True, "node": {"name": "List", "state": {"count": count}}},
+                "problems": list(problems)}
+
+    DO = '{"action":"Add","op":"do"}'
+    MISS = "$.node.state.count expected=1 (integer) actual=0 (integer)"
+
+    def test_unchanged_state_after_an_expected_change_warns(self):
+        records = [self.record('{"op":"ls"}', 0), self.record(self.DO, 0, [self.MISS]), self.record(self.DO, 0)]
+        self.assertEqual(rr.frozen_state(records), 2)
+
+    def test_state_that_moved_does_not_warn(self):
+        records = [self.record('{"op":"ls"}', 0), self.record(self.DO, 1, ["$.node.state.count expected=2 (integer) actual=1 (integer)"])]
+        self.assertEqual(rr.frozen_state(records), 0)
+
+    def test_passing_journey_with_steady_state_does_not_warn(self):
+        records = [self.record('{"op":"ls"}', 5), self.record(self.DO, 5)]
+        self.assertEqual(rr.frozen_state(records), 0)
+
+    def test_other_failures_and_no_actions_do_not_warn(self):
+        self.assertEqual(rr.frozen_state([self.record('{"op":"ls"}', 0), self.record(self.DO, 0, ["$.error.code expected=x"])]), 0)
+        self.assertEqual(rr.frozen_state([self.record('{"op":"ls"}', 0), self.record('{"op":"ls"}', 0, [self.MISS])]), 0)
+
+    def test_runner_prints_the_warning(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "host.py").write_text(
+                "import json, sys\n"
+                "for line in sys.stdin:\n"
+                "    op = json.loads(line).get('op')\n"
+                "    reply = {'ok': True, 'node': {'name': 'List', 'state': {'count': 0}}}\n"
+                "    if op == 'hello':\n"
+                "        reply.update(protocol=1, sample='frozen')\n"
+                "    print(json.dumps(reply), flush=True)\n")
+            (root / "j.json").write_text(json.dumps({"name": "add", "steps": [
+                {"ls": True, "expect": {"node": {"state": {"count": 0}}}},
+                {"do": "Add", "expect": {"node": {"state": {"count": 1}}}}]}))
+            (root / "reflex.json").write_text(json.dumps({
+                "sample": "frozen", "protocol": 1, "root": ".", "defaultFixture": "default",
+                "platforms": {"py": {"command": [sys.executable, "{root}/host.py"]}}, "journeys": ["j.json"]}))
+            run = subprocess.run([sys.executable, str(Path(rr.__file__)), str(root / "reflex.json"), "--no-guard", "--allow-unguarded"],
+                                 capture_output=True, text=True, timeout=60)
+            self.assertIn("WARN platform=py journey=j.json#add node.state never changed across 1 action(s)", run.stdout)
+            self.assertIn("no Main dispatcher", run.stdout)
 
 
 if __name__ == "__main__":
