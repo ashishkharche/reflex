@@ -6,6 +6,7 @@ Each LINE is `ls`, `do Action {json}`, `op name {json}`, `wait Name [ms]`, `wait
 `wait` sends only `ls` until the screen is Name or the reply contains {json}, for up to ms (default 5000). Use it after an action that loads.
 With no LINE, lines come from stdin.
 All lines run in one process per platform. It prints each reply, the network status and whether the platforms agree.
+The manifest’s `stateKeys` map applies to `wait` and to the parity check, as in the runner. Replies print as sent.
 Exit 0 when every reply is ok and the network stayed clean, 1 otherwise, 2 when the guard cannot run (BLOCKED).
 """
 import argparse
@@ -70,12 +71,12 @@ def brief(reply):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
-def run(manifest, target, fixture, guard, requests):
+def run(manifest, target, fixture, guard, requests, rename):
     host = rr.Host(manifest, target, fixture, guard)
     replies = []
     for request in [{"op": "hello", "protocol": manifest.protocol}] + requests:
         if "wait" in request:
-            line, dead, _, problem, polls, waited = rr.poll(host, request["wait"], None, request["within_ms"], rr.POLL_EVERY_MS)
+            line, dead, _, problem, polls, waited = rr.poll(host, request["wait"], None, request["within_ms"], rr.POLL_EVERY_MS, rename)
             if problem and not dead:
                 line = json.dumps({"ok": False, "error": f"wait not met within {request['within_ms']} ms: {problem}"})
         else:
@@ -111,6 +112,7 @@ def main():
         print(f"BLOCKED guard canary did not prove denial: {audit}")
         return 2
     fixture = args.fixture or manifest.default_fixture
+    keys = rr.state_keys(manifest.state_keys, manifest.platforms)
     results, failed = {}, False
     for target in targets:
         if target not in manifest.platforms or "command" not in manifest.platforms[target]:
@@ -124,7 +126,7 @@ def main():
         if not os.access(executable, os.X_OK):
             print(f"BLOCKED {target} CLI is not built: {manifest.command(target, fixture)[0]}")
             return 2
-        replies, code, network, stderr = run(manifest, target, fixture, guard, requests)
+        replies, code, network, stderr = run(manifest, target, fixture, guard, requests, keys.get(target, ({}, []))[0])
         results[target] = replies
         print(f"== {target} fixture={fixture} exit={code} network={network}")
         for index, (request, reply) in enumerate(zip([{"op": "hello"}] + requests, replies)):
@@ -146,8 +148,13 @@ def main():
             print(f"NETWORK {network}: the CLI tried the network. Add a fixture before testing this action.")
     if len(results) > 1:
         first, *others = targets
+
+        def shared(target, reply):
+            rename, only = keys.get(target, ({}, []))
+            return rr.drop_state(rr.rename_state(rr.parse(reply), rename)[0], only)[0]
+
         for other in others:
-            diffs = [i for i, (a, b) in enumerate(zip(results[first], results[other])) if rr.parse(a) != rr.parse(b)]
+            diffs = [i for i, (a, b) in enumerate(zip(results[first], results[other])) if shared(first, a) != shared(other, b)]
             diffs += list(range(min(len(results[first]), len(results[other])), max(len(results[first]), len(results[other]))))
             print(f"PARITY {first}/{other} " + ("same" if not diffs else "differs at line " + ", ".join(map(str, diffs))))
             failed |= bool(diffs)

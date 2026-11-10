@@ -1,0 +1,10 @@
+{
+ "rename": {
+  "saved": "isSaved",
+  "product.quantity": "count",
+  "products.quantity": "count"
+ },
+ "add": {
+  "debugBuild": true
+ }
+}

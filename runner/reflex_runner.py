@@ -6,9 +6,11 @@ with a type-strict partial matcher, compares every reply across platforms step b
 bytes and as parsed JSON, tracks xfail annotations (XPASS fails the run), repeats suites for
 determinism, measures warm p50 and runs every host under the network guard (DYLD on macOS,
 LD_PRELOAD on Linux) after a canary proves denial. A run without the guard never prints a plain PASS. Steps may send raw bytes, so framing and UTF-8 rules are exercised too.
+An optional `stateKeys` map renames platform state keys to shared names and skips keys only one platform has.
 Manifest and journey formats: runner/README.md. Protocol: docs/protocol/v1.md.
 """
 import argparse
+import copy
 import glob
 import json
 import os
@@ -32,6 +34,7 @@ LS_WIRE = '{"op":"ls"}'
 GUARD_ENV = "DYLD_INSERT_LIBRARIES" if sys.platform == "darwin" else "LD_PRELOAD"
 EXIT_UNGUARDED = 3
 IGNORED_FOR_UNCHANGED = {"ok", "error", "protocol", "sample", "kit", "supported"}
+KEYS_HINT = "hint: if a key names the same thing on both platforms, map it with stateKeys (runner/README.md)"
 
 
 class DuplicateKey(ValueError):
@@ -173,6 +176,104 @@ def brief(value):
     return dumps(value)
 
 
+def state_keys(spec, platforms):
+    """Checks a `stateKeys` object. Returns {platform: (rename, only)}. Raises ValueError on a bad map.
+
+    `rename` maps a dotted path into node.state to the shared name of its last key. `only` lists dotted paths
+    that exist on that platform alone: parity skips them and reports them as not compared."""
+    if spec is None:
+        return {}
+    if not isinstance(spec, dict):
+        raise ValueError("stateKeys must be an object keyed by platform name")
+    out = {}
+    for target, entry in spec.items():
+        if target not in platforms:
+            raise ValueError(f"stateKeys names platform {target}, which the manifest does not list")
+        if not isinstance(entry, dict) or set(entry) - {"rename", "only"}:
+            raise ValueError(f"stateKeys.{target} must be an object with rename and only")
+        rename, only = entry.get("rename", {}), entry.get("only", [])
+        if not isinstance(rename, dict) or not all(isinstance(v, str) and v and "." not in v for v in rename.values()):
+            raise ValueError(f"stateKeys.{target}.rename must map a path to a key name with no dots")
+        if not isinstance(only, list) or not all(isinstance(v, str) for v in only):
+            raise ValueError(f"stateKeys.{target}.only must be a list of paths")
+        for path in list(rename) + only:
+            if not path or "" in path.split("."):
+                raise ValueError(f"stateKeys.{target}: {dumps(path)} is not a dotted path")
+        out[target] = (rename, only)
+    return out
+
+
+def at_path(value, parts, visit):
+    """Calls visit(parent, key) for every object the dotted path reaches. A list applies the rest to each item."""
+    if isinstance(value, list):
+        for item in value:
+            at_path(item, parts, visit)
+    elif isinstance(value, dict):
+        if len(parts) == 1:
+            visit(value, parts[0])
+        elif parts[0] in value:
+            at_path(value[parts[0]], parts[1:], visit)
+
+
+def node_state(response):
+    node = response.get("node") if isinstance(response, dict) else None
+    return node.get("state") if isinstance(node, dict) else None
+
+
+def rename_state(response, rename):
+    """Returns (response with shared key names, whether anything changed, problems). The input is not changed."""
+    if not rename or node_state(response) is None:
+        return response, False, []
+    response = copy.deepcopy(response)
+    changed, problems = [], []
+
+    def visit(parent, key, path, new):
+        if key not in parent or key == new:
+            return
+        if new in parent:
+            problems.append(f"journey error: stateKeys rename {path} to {new}, but {new} is already there")
+            return
+        parent[new] = parent.pop(key)
+        changed.append(path)
+
+    for path, new in sorted(rename.items()):
+        at_path(response["node"]["state"], path.split("."), lambda parent, key: visit(parent, key, path, new))
+    return response, bool(changed), problems
+
+
+def drop_state(response, only):
+    """Returns (response without the one-platform keys, the sorted paths that were there)."""
+    if not only or node_state(response) is None:
+        return response, []
+    response = copy.deepcopy(response)
+    dropped = set()
+
+    def visit(parent, key, path):
+        if key in parent:
+            del parent[key]
+            dropped.add(path)
+
+    for path in only:
+        at_path(response["node"]["state"], path.split("."), lambda parent, key: visit(parent, key, path))
+    return response, sorted(dropped)
+
+
+def absent_hint(problem):
+    """A state key missing on one platform is often the same key under another name."""
+    if problem and problem.startswith("$.node.state") and "actual=<absent>" in problem:
+        return f"{problem}; {KEYS_HINT}"
+    return problem
+
+
+def apply_keys(record, keys):
+    """Gives a record its shared-name response, the copy parity compares and the paths it does not compare."""
+    rename, only = keys
+    record["resp"], renamed, problems = rename_state(record["resp"], rename)
+    record["problems"].extend(problems)
+    record["compare"], record["not_compared"] = drop_state(record["resp"], only)
+    record["mapped"] = renamed or bool(record["not_compared"])
+
+
 class Manifest:
     def __init__(self, path):
         self.path = Path(path).resolve()
@@ -189,6 +290,8 @@ class Manifest:
         self.guard_source = self.root / guard.get("source", "scripts/network_guard.c")
         self.guard_library = self.root / guard.get("library", ".build/network_guard.dylib")
         self.conformance = self.root / data["conformance"] if data.get("conformance") else None
+        self.state_keys = data.get("stateKeys")
+        state_keys(self.state_keys, self.platforms)
 
     def command(self, target, fixture):
         parts = self.platforms[target]["command"]
@@ -285,8 +388,9 @@ def poll_settings(step, within_key):
     return within, every
 
 
-def poll(host, expected, every_response, within_ms, every_ms):
+def poll(host, expected, every_response, within_ms, every_ms, rename=None):
     """Sends only `ls` until a reply matches `expected` or the deadline passes. Never re-sends an action.
+    `rename` maps state keys to shared names before matching. The response returned is the raw parsed reply.
     Returns (line, dead, response, problem, polls, waited_ms). `problem` is None on a match."""
     started = time.monotonic()
     deadline = started + within_ms / 1000
@@ -301,7 +405,8 @@ def poll(host, expected, every_response, within_ms, every_ms):
             except ValueError as error:
                 problem = f"response is not JSON: {error}"
             else:
-                problem = mismatch(response, expected) if isinstance(response, dict) else "response is not an object"
+                shared = rename_state(response, rename)[0] if isinstance(response, dict) else response
+                problem = mismatch(shared, expected) if isinstance(response, dict) else "response is not an object"
                 if not problem and every_response:
                     problem = mismatch(response, every_response)
         waited = round((time.monotonic() - started) * 1000)
@@ -632,6 +737,7 @@ def run_journey(manifest, target, journey, guard, strict):
     host = SocketConn(manifest.platforms[target]["socket"]) if live else Host(manifest, target, journey["fixture"], guard)
     records = []
     every = journey.get("everyResponse", manifest.every)
+    keys = state_keys(journey.get("stateKeys", manifest.state_keys), manifest.platforms).get(target, ({}, []))
     previous = None
     stopped = None
     steps = list(journey["steps"])
@@ -652,8 +758,10 @@ def run_journey(manifest, target, journey, guard, strict):
                     records.append(record)
                     stopped = f"journey stopped at step {index}: bad precondition"
                     break
-                line, dead, response, problem, polls, waited = poll(host, step["before"], every, within, every_ms)
+                line, dead, response, problem, polls, waited = poll(host, step["before"], every, within, every_ms, keys[0])
                 record.update(raw=line, dead=dead, resp=response, polls=polls)
+                apply_keys(record, keys)
+                response = record["resp"]
                 records.append(record)
                 if problem:
                     record["problems"].append(f"precondition not met after {polls} ls poll(s) in {waited} ms: {problem}; "
@@ -674,11 +782,13 @@ def run_journey(manifest, target, journey, guard, strict):
                     records.append(record)
                     index += 1
                     continue
-                line, dead, response, problem, polls, waited = poll(host, step["eventually"], every, within, every_ms)
+                line, dead, response, problem, polls, waited = poll(host, step["eventually"], every, within, every_ms, keys[0])
                 record.update(raw=line, dead=dead, resp=response, polls=polls)
+                apply_keys(record, keys)
+                response = record["resp"]
                 if problem:
                     record["problems"].append(f"eventually not met within {within} ms after {polls} ls poll(s), action not re-sent: "
-                                              f"{problem}; last state={brief(response) if response else dead}")
+                                              f"{absent_hint(problem)}; last state={brief(response) if response else dead}")
                 if response is not None:
                     previous = response
                 records.append(record)
@@ -707,9 +817,10 @@ def run_journey(manifest, target, journey, guard, strict):
                         record["problems"].append(f"response is not JSON: {error}")
                 if dead:
                     record["problems"].append(f"actual={dead}")
+                apply_keys(record, keys)
                 response = record["resp"]
                 if isinstance(response, dict):
-                    problem = mismatch(response, expected)
+                    problem = absent_hint(mismatch(response, expected))
                     if problem:
                         record["problems"].append(f"{problem} response={brief(response)}")
                     if every:
@@ -773,11 +884,12 @@ def warm_p50(manifest, target, guard, path, samples):
         if any("eventually" in s or "before" in s for s in journey["steps"]):
             raise AssertionError(f"warm journey {path} must not poll: remove eventually and before steps")
         payloads = [(payload_for(s), expectations(s)) for s in journey["steps"]]
+        rename = state_keys(journey.get("stateKeys", manifest.state_keys), manifest.platforms).get(target, ({}, []))[0]
 
         def once():
             for step, (data, wanted) in zip(journey["steps"], payloads):
                 for (line, dead), expected in zip(host.send(data, len(wanted)), wanted):
-                    problem = dead or mismatch(parse(line), expected)
+                    problem = dead or mismatch(rename_state(parse(line), rename)[0], expected)
                     if problem:
                         raise AssertionError(f"warm journey failed platform={target} action={label(step)} {problem}")
         once()
@@ -812,6 +924,12 @@ def main():
     paths = manifest.journey_paths(args.journeys)
     journeys = load_journeys(manifest, paths)
     out = lambda text: print(text, flush=True)
+    for journey in journeys:
+        try:
+            state_keys(journey.get("stateKeys", manifest.state_keys), manifest.platforms)
+        except ValueError as error:
+            out(f"RESULT FAIL journey={journey['id']} journey error: {error}")
+            sys.exit(2)
     out(f"HOST {host_platform.platform()} python={host_platform.python_version()} runner=reflex_runner protocol={manifest.protocol} "
         f"sample={manifest.sample} platforms={','.join(targets)} journeys={len(journeys)} files={len(paths)}")
     failures = 0
@@ -933,16 +1051,23 @@ def main():
             out(f"SUITE platform={target} repeat={iteration + 1}/{args.repeat} journeys={len(run)} steps={steps} wall_s={elapsed:.2f}")
     if len(targets) > 1:
         reference = targets[0]
-        diffs = known = byte_diffs = compared = 0
+        diffs = known = byte_diffs = compared = mapped = 0
+        skipped = {}
         for other in targets[1:]:
             names = (reference, other)
             for (journey, a, c1, n1), (_, b, c2, n2) in zip(transcripts[reference], transcripts[other]):
                 for x, y in zip(a, b):
                     compared += 1
-                    left = x["resp"] if x["resp"] is not None else x["dead"]
-                    right = y["resp"] if y["resp"] is not None else y["dead"]
+                    left = x.get("compare", x["resp"]) if x["resp"] is not None else x["dead"]
+                    right = y.get("compare", y["resp"]) if y["resp"] is not None else y["dead"]
+                    for target, record in ((reference, x), (other, y)):
+                        for path in record.get("not_compared", []):
+                            skipped[(target, path)] = skipped.get((target, path), 0) + 1
                     if same(left, right):
-                        if x["raw"] != y["raw"]:
+                        if x.get("mapped") or y.get("mapped"):
+                            # stateKeys changed a reply, so its bytes cannot match. The parsed values did.
+                            mapped += 1
+                        elif x["raw"] != y["raw"]:
                             # Both kits promise canonical bytes, so equal values with different bytes fail.
                             if x["parity"]:
                                 known += 1
@@ -957,6 +1082,10 @@ def main():
                         continue
                     what = "; ".join(diff_paths(left, right, names)) if isinstance(left, dict) and isinstance(right, dict) \
                         else f"{reference}={left!r} {other}={right!r}"
+                    state_diffs = [p for p in what.split("; ") if p.startswith("$.node.state")]
+                    if all(any(f'{name}="<absent>"' in p for p in state_diffs) for name in names):
+                        # Each platform lacks a key the other has: often one key under two names.
+                        what += f"; {KEYS_HINT}"
                     if x["parity"]:
                         known += 1
                         out(f"PARITY KNOWN journey={journey['id']} step={x['step']} action={x['action']} finding={x['parity']} {what}")
@@ -966,8 +1095,11 @@ def main():
                 if len(a) != len(b) or c1 != c2 or n1 != n2:
                     diffs += 1
                     out(f"PARITY DIFF journey={journey['id']} steps {reference}={len(a)} {other}={len(b)} exit {c1}/{c2} network {n1}/{n2}")
+        for (target, path), count in sorted(skipped.items()):
+            out(f"PARITY NOT COMPARED platform={target} key=node.state.{path} steps={count} (stateKeys only)")
+        keyed = f" mapped_steps={mapped} not_compared_keys={len(skipped)}" if mapped or skipped else ""
         out(f"PARITY {'PASS' if not diffs and not byte_diffs else 'FAIL'} platforms={','.join(targets)} steps={compared} "
-            f"unexpected_diffs={diffs} byte_diffs={byte_diffs} known_diffs={known} (raw reply bytes and full parsed JSON, strict types)")
+            f"unexpected_diffs={diffs} byte_diffs={byte_diffs} known_diffs={known}{keyed} (raw reply bytes and full parsed JSON, strict types)")
         failures += diffs + byte_diffs
     if args.timings and manifest.warm:
         warm = str(manifest.root / manifest.warm)

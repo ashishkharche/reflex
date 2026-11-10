@@ -1,0 +1,31 @@
+{
+ "sample": "inventory",
+ "protocol": 1,
+ "root": "../..",
+ "defaultFixture": "happy",
+ "note": "The same renamed platform with no stateKeys. Must fail with absent state keys, print the stateKeys hint and exit 1.",
+ "platforms": {
+  "swift": {
+   "command": [
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  },
+  "swift-renamed": {
+   "command": [
+    "{python}",
+    "{root}/runner/keys/renamed_host.py",
+    "{root}/runner/keys/renames.json",
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  }
+ },
+ "journeys": [
+  "tests/inventory/journeys/01-happy.json",
+  "tests/inventory/journeys/03-save-failure.json"
+ ],
+ "everyResponse": {
+  "networkAttempts": 0
+ }
+}

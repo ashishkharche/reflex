@@ -1,0 +1,43 @@
+{
+ "sample": "inventory",
+ "protocol": 1,
+ "root": "../..",
+ "defaultFixture": "happy",
+ "note": "The second platform names three state keys differently and adds one key of its own. stateKeys maps them. Must print PARITY NOT COMPARED for debugBuild and exit 0.",
+ "platforms": {
+  "swift": {
+   "command": [
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  },
+  "swift-renamed": {
+   "command": [
+    "{python}",
+    "{root}/runner/keys/renamed_host.py",
+    "{root}/runner/keys/renames.json",
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  }
+ },
+ "journeys": [
+  "tests/inventory/journeys/01-happy.json",
+  "tests/inventory/journeys/03-save-failure.json"
+ ],
+ "everyResponse": {
+  "networkAttempts": 0
+ },
+ "stateKeys": {
+  "swift-renamed": {
+   "rename": {
+    "isSaved": "saved",
+    "product.count": "quantity",
+    "products.count": "quantity"
+   },
+   "only": [
+    "debugBuild"
+   ]
+  }
+ }
+}

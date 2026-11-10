@@ -1,0 +1,42 @@
+{
+ "sample": "inventory",
+ "protocol": 1,
+ "root": "../..",
+ "defaultFixture": "happy",
+ "note": "Mapped keys with a real value difference: the second platform always runs the save-failure fixture. Must print PARITY DIFF at node.state.saved and exit 1.",
+ "platforms": {
+  "swift": {
+   "command": [
+    "{root}/swift/.build/debug/inventory-cli",
+    "{fixture}"
+   ]
+  },
+  "swift-renamed": {
+   "command": [
+    "{python}",
+    "{root}/runner/keys/renamed_host.py",
+    "{root}/runner/keys/renames.json",
+    "{root}/swift/.build/debug/inventory-cli",
+    "save-failure"
+   ]
+  }
+ },
+ "journeys": [
+  "runner/red/parity.json"
+ ],
+ "everyResponse": {
+  "networkAttempts": 0
+ },
+ "stateKeys": {
+  "swift-renamed": {
+   "rename": {
+    "isSaved": "saved",
+    "product.count": "quantity",
+    "products.count": "quantity"
+   },
+   "only": [
+    "debugBuild"
+   ]
+  }
+ }
+}
