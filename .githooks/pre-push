@@ -4,6 +4,9 @@ root=$(git rev-parse --show-toplevel)
 zero=0000000000000000000000000000000000000000
 while read -r _ local _ remote; do
   [ "$local" = "$zero" ] && continue
-  if [ "$remote" = "$zero" ]; then range=$local; else range=$remote..$local; fi
-  "$root/scripts/check_authors.sh" "$range" || exit 1
+  if [ "$remote" != "$zero" ] && git cat-file -e "$remote^{commit}" 2>/dev/null; then
+    "$root/scripts/check_authors.sh" "$remote..$local" || exit 1
+  else
+    "$root/scripts/check_authors.sh" "$local" || exit 1
+  fi
 done

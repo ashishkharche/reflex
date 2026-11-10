@@ -14,6 +14,7 @@ if [ "$1" = "--me" ]; then
 fi
 
 range=${1:-HEAD}
+git rev-parse --verify -q "${range##*..}^{commit}" >/dev/null || { echo "Blocked: unknown revision $range" >&2; exit 1; }
 bad=$(git log --format='%h %ae %ce' "$range" | while read -r h a c; do
   ok "$a" || { echo "$h author $a"; continue; }
   # GitHub's web merges are committed by noreply@github.com.
