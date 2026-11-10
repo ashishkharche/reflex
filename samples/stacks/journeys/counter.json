@@ -1,0 +1,322 @@
+{
+ "name": "counter",
+ "handshake": false,
+ "note": "One journey for every stack check. Counts up and down, clamps at 0 and 99 and rejects bad input before the ViewModel sees it. The hello step is marked host-kit because a host without ReflexKit reports its own kit name.",
+ "steps": [
+  {
+   "send": {
+    "op": "ls"
+   },
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "protocol.handshake_required",
+     "path": "$.op"
+    }
+   }
+  },
+  {
+   "send": {
+    "op": "hello",
+    "protocol": 1
+   },
+   "parity": "host-kit",
+   "expect": {
+    "ok": true,
+    "protocol": 1,
+    "sample": "counter",
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "ls": true,
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 0
+     },
+     "actions": [
+      "Decrement",
+      "Increment",
+      "Reset",
+      "Set"
+     ],
+     "inputs": {
+      "Set": {
+       "additionalProperties": false,
+       "properties": {
+        "value": {
+         "format": "int64",
+         "maximum": 99,
+         "minimum": 0,
+         "type": "integer"
+        }
+       },
+       "required": [
+        "value"
+       ],
+       "type": "object"
+      }
+     }
+    }
+   }
+  },
+  {
+   "do": "Increment",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "do": "Increment",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 2
+     }
+    }
+   }
+  },
+  {
+   "do": "Decrement",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 1
+     }
+    }
+   }
+  },
+  {
+   "do": "Set",
+   "input": {
+    "value": 5
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "do": "Set",
+   "input": {
+    "value": 100
+   },
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "int.range",
+     "path": "$.input.value"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "do": "Set",
+   "input": {
+    "value": "5"
+   },
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.type",
+     "path": "$.input.value"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "raw": "{\"op\":\"do\",\"action\":\"Set\",\"input\":{\"value\":5.0}}",
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "int.syntax",
+     "path": "$.input.value"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "do": "Set",
+   "input": {},
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.missing",
+     "path": "$.input.value"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "do": "Set",
+   "input": {
+    "value": 5,
+    "x": 1
+   },
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "field.unknown",
+     "path": "$.input.x"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "do": "Jump",
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "action.unknown",
+     "path": "$.action"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "raw": "{\"op\":\"ls\"",
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.malformed",
+     "path": "$"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "raw": "{\"op\":\"ls\",\"op\":\"ls\"}",
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "json.duplicate_key",
+     "path": "$.op"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "send": {
+    "op": "fly"
+   },
+   "expect": {
+    "ok": false,
+    "error": {
+     "code": "request.unknown_op",
+     "path": "$.op"
+    },
+    "node": {
+     "state": {
+      "count": 5
+     }
+    }
+   }
+  },
+  {
+   "do": "Set",
+   "input": {
+    "value": 99
+   },
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 99
+     }
+    }
+   }
+  },
+  {
+   "do": "Increment",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 99
+     }
+    }
+   }
+  },
+  {
+   "do": "Reset",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 0
+     }
+    }
+   }
+  },
+  {
+   "do": "Decrement",
+   "expect": {
+    "ok": true,
+    "node": {
+     "name": "Counter",
+     "state": {
+      "count": 0
+     }
+    }
+   }
+  }
+ ]
+}

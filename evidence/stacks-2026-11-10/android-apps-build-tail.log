@@ -1,0 +1,40 @@
+> Task :java-app:parseDebugLocalResources
+> Task :java-app:generateDebugRFile
+> Task :java-app:compileDebugKotlin NO-SOURCE
+> Task :java-app:javaPreCompileDebug
+> Task :java-app:compileDebugJavaWithJavac
+> Task :java-app:generateDebugAssets UP-TO-DATE
+> Task :java-app:mergeDebugAssets
+> Task :java-app:compressDebugAssets
+> Task :java-app:generateDebugGlobalSynthetics
+> Task :java-app:compressDebugJavaRes NO-SOURCE
+> Task :java-app:mergeDebugJavaResource
+> Task :java-app:checkDebugDuplicateClasses
+> Task :java-app:desugarDebugFileDependencies
+> Task :java-app:mergeExtDexDebug
+> Task :java-app:mergeLibDexDebug
+> Task :java-app:checkDebugAarMetadata
+> Task :java-app:mapDebugSourceSetPaths
+> Task :java-app:compileDebugNavigationResources
+> Task :java-app:mergeDebugResources
+> Task :java-app:createDebugCompatibleScreenManifests
+> Task :java-app:extractDeepLinksDebug
+> Task :java-app:processDebugMainManifest
+> Task :java-app:processDebugManifest
+> Task :java-app:processDebugManifestForPackage
+> Task :java-app:processDebugResources
+> Task :java-app:dexBuilderDebug
+> Task :java-app:mergeProjectDexDebug
+> Task :java-app:mergeDebugJniLibFolders
+> Task :java-app:mergeDebugNativeLibs NO-SOURCE
+> Task :java-app:stripDebugDebugSymbols NO-SOURCE
+> Task :java-app:validateSigningDebug
+> Task :java-app:writeDebugAppMetadata
+> Task :java-app:writeDebugSigningConfigVersions
+> Task :java-app:packageDebug
+> Task :java-app:createDebugApkListingFileRedirect
+> Task :java-app:assembleDebug
+
+BUILD SUCCESSFUL in 24s
+71 actionable tasks: 68 executed, 3 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html

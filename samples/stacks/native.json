@@ -1,0 +1,15 @@
+{
+ "sample": "counter",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "default",
+ "note": "UIKit, Android Views and Java on Android hosts of the same counter. Parity compares each with uikit.",
+ "platforms": {
+  "uikit": {"command": ["{root}/samples/stacks/uikit/Harness/.build/debug/counter-cli"]},
+  "android-views": {"command": ["{java}", "-Xmx96m", "-cp", "{root}/samples/stacks/android/views-cli/build/install/views-cli/lib/*", "counter.views.cli.MainKt"]},
+  "android-java": {"command": ["{java}", "-Xmx96m", "-cp", "{root}/samples/stacks/android/java-cli/build/install/java-cli/lib/*", "counter.java.cli.MainKt"]}
+ },
+ "journeys": ["samples/stacks/journeys/*.json"],
+ "everyResponse": {"node": {"name": "Counter"}}
+}
