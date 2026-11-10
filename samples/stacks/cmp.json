@@ -1,0 +1,14 @@
+{
+ "sample": "counter",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "default",
+ "note": "The commonMain ViewModel behind the Compose Multiplatform screen, run as Kotlin/JVM through the Kotlin kit and as Kotlin/Native through the Swift kit.",
+ "platforms": {
+  "cmp-jvm": {"command": ["{java}", "-Xmx96m", "-cp", "{root}/samples/stacks/cmp/cli/build/install/cli/lib/*", "counter.cmp.cli.MainKt"]},
+  "cmp-native-swift": {"command": ["{root}/samples/stacks/cmp/SwiftHost/.build/debug/cmp-swift-cli"]}
+ },
+ "journeys": ["samples/stacks/journeys/*.json"],
+ "everyResponse": {"node": {"name": "Counter"}}
+}

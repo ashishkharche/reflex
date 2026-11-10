@@ -1,0 +1,15 @@
+
+RegisterExecutionPolicyException /Users/ask/personal/code/reflex-stack-tests/dd-cmp/Build/Products/Debug-iphonesimulator/CounterCMP.app (in target 'CounterCMP' from project 'CounterCMP')
+    cd /Users/ask/personal/code/reflex/samples/stacks/cmp/iosApp
+    builtin-RegisterExecutionPolicyException /Users/ask/personal/code/reflex-stack-tests/dd-cmp/Build/Products/Debug-iphonesimulator/CounterCMP.app
+
+Validate /Users/ask/personal/code/reflex-stack-tests/dd-cmp/Build/Products/Debug-iphonesimulator/CounterCMP.app (in target 'CounterCMP' from project 'CounterCMP')
+    cd /Users/ask/personal/code/reflex/samples/stacks/cmp/iosApp
+    builtin-validationUtility /Users/ask/personal/code/reflex-stack-tests/dd-cmp/Build/Products/Debug-iphonesimulator/CounterCMP.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /Users/ask/personal/code/reflex-stack-tests/dd-cmp/Build/Products/Debug-iphonesimulator/CounterCMP.app (in target 'CounterCMP' from project 'CounterCMP')
+    cd /Users/ask/personal/code/reflex/samples/stacks/cmp/iosApp
+    /usr/bin/touch -c /Users/ask/personal/code/reflex-stack-tests/dd-cmp/Build/Products/Debug-iphonesimulator/CounterCMP.app
+
+** BUILD SUCCEEDED **
+
