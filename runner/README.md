@@ -83,7 +83,7 @@ Without a map, an `expect` key missing on one platform and a parity diff where e
 
 A platform may give `socket` (a loopback `host:port`) instead of `command` to drive a running debug build. With both, the runner starts `command` once and connects to `socket` for each journey. See [docs/real-build.md](../docs/real-build.md).
 
-`root` is relative to the manifest. `{java}` resolves `JAVA_HOME` or `java` on `PATH` to its real binary. Launchers under SIP, such as `/usr/bin/java` or a `/bin/sh` start script, drop `DYLD_*` variables, so the runner never uses them. Any number of platforms may be listed. Parity compares each one with the first. `guard` may override the guard’s `source` and `library` paths. `stateKeys` maps state keys that differ by name ([State keys with different names](#state-keys-with-different-names)).
+`root` is relative to the manifest. `{java}` resolves `JAVA_HOME` or `java` on `PATH` to its real binary. `{node}` resolves `node` on `PATH` the same way and `{python}` is the runner’s own Python. Launchers under SIP, such as `/usr/bin/java` or a `/bin/sh` start script, drop `DYLD_*` variables, so the runner never uses them. Any number of platforms may be listed. Parity compares each one with the first. `guard` may override the guard’s `source` and `library` paths. `stateKeys` maps state keys that differ by name ([State keys with different names](#state-keys-with-different-names)).
 
 ## Journey files
 

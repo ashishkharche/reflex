@@ -302,7 +302,14 @@ class Manifest:
             if not java:
                 raise NoJava(f"BLOCKED platform={target} {NO_JAVA}")
             java = os.path.realpath(java)
-        values = {"root": str(self.root), "fixture": fixture, "java": java, "python": os.path.realpath(sys.executable)}
+        node = "node"
+        if any("{node}" in part for part in parts):
+            # Same reason as {java}: a version manager shim or /usr/bin/env would drop the guard.
+            found = shutil.which("node")
+            if not found:
+                raise NoJava(f"BLOCKED platform={target} no node on PATH. Install Node.js 18 or newer")
+            node = os.path.realpath(found)
+        values = {"root": str(self.root), "fixture": fixture, "java": java, "python": os.path.realpath(sys.executable), "node": node}
         return [part.format(**values) for part in parts]
 
     def journey_paths(self, extra):

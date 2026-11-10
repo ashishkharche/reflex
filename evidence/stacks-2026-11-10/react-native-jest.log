@@ -1,0 +1,8 @@
+PASS __tests__/App.test.js
+  ✓ the screen shows and drives the same ViewModel the Reflex host serves (647 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        1.243 s
+Ran all test suites.

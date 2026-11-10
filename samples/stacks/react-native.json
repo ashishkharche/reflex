@@ -1,0 +1,14 @@
+{
+ "sample": "counter",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "default",
+ "note": "The plain JavaScript ViewModel behind the React Native screen, served by the minimal Node host and compared with the Swift kit host of the same counter.",
+ "platforms": {
+  "uikit": {"command": ["{root}/samples/stacks/uikit/Harness/.build/debug/counter-cli"]},
+  "react-native-node": {"command": ["{node}", "{root}/samples/stacks/react-native/bin/reflex-host.js"]}
+ },
+ "journeys": ["samples/stacks/journeys/*.json"],
+ "everyResponse": {"node": {"name": "Counter"}}
+}

@@ -48,7 +48,7 @@ Yes. `--platform` accepts one name, a comma list or `both`/`all` (every platform
 
 **Does the runner care which language the host is written in?**
 
-No. A platform entry is just a `command` argv list. `{java}`, `{root}`, `{fixture}` and `{python}` are substituted. Any program that speaks protocol v1 on stdin/stdout can be a host.
+No. A platform entry is just a `command` argv list. `{java}`, `{node}`, `{root}`, `{fixture}` and `{python}` are substituted. Any program that speaks protocol v1 on stdin/stdout can be a host.
 
 ## Tech stacks
 
