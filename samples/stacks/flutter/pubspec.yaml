@@ -1,0 +1,14 @@
+name: counter_flutter
+description: Flutter stack check for Reflex. The counter ViewModel is plain Dart, so a small Dart host can serve it.
+publish_to: none
+version: 1.0.0
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  uses-material-design: false

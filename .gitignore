@@ -8,3 +8,7 @@ DerivedData/
 __pycache__/
 
 .kotlin/
+.dart_tool/
+.flutter-plugins-dependencies
+samples/stacks/flutter/pubspec.lock
+node_modules/

@@ -1,0 +1,14 @@
+{
+ "sample": "counter",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "default",
+ "note": "The plain Dart ViewModel behind the Flutter screen, served by the minimal Dart host and compared with the Swift kit host of the same counter.",
+ "platforms": {
+  "uikit": {"command": ["{root}/samples/stacks/uikit/Harness/.build/debug/counter-cli"]},
+  "flutter-dart": {"command": ["{root}/samples/stacks/flutter/build/reflex-host"]}
+ },
+ "journeys": ["samples/stacks/journeys/*.json"],
+ "everyResponse": {"node": {"name": "Counter"}}
+}
