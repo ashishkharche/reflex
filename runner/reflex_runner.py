@@ -14,6 +14,7 @@ import copy
 import glob
 import json
 import os
+import re
 import platform as host_platform
 import select
 import shutil
@@ -34,6 +35,7 @@ LS_WIRE = '{"op":"ls"}'
 GUARD_ENV = "DYLD_INSERT_LIBRARIES" if sys.platform == "darwin" else "LD_PRELOAD"
 EXIT_UNGUARDED = 3
 IGNORED_FOR_UNCHANGED = {"ok", "error", "protocol", "sample", "kit", "supported"}
+KIT_WARNING = "ReflexKit warning:"
 KEYS_HINT = "hint: if a key names the same thing on both platforms, map it with stateKeys (runner/README.md)"
 
 
@@ -43,6 +45,23 @@ class DuplicateKey(ValueError):
 
 class NoJava(RuntimeError):
     pass
+
+
+def flutter_engine():
+    """The Flutter SDK's host engine folder, found from the real path of `flutter` on PATH, or None."""
+    found = shutil.which("flutter")
+    if not found:
+        return None
+    sdk = Path(os.path.realpath(found)).parent.parent
+    host = "darwin-x64" if sys.platform == "darwin" else "linux-x64"
+    engine = sdk / "bin" / "cache" / "artifacts" / "engine"
+    return engine / host if (engine / host).is_dir() else None
+
+
+def flutter_tester():
+    engine = flutter_engine()
+    tester = engine / "flutter_tester" if engine else None
+    return str(tester) if tester and os.access(tester, os.X_OK) else None
 
 
 NO_JAVA = ("no Java runtime found. Install JDK 17 or newer, or set JAVA_HOME to one "
@@ -258,9 +277,10 @@ def drop_state(response, only):
     return response, sorted(dropped)
 
 
-def absent_hint(problem):
-    """A state key missing on one platform is often the same key under another name."""
-    if problem and problem.startswith("$.node.state") and "actual=<absent>" in problem:
+def absent_hint(problem, platforms=2):
+    """A state key missing on one platform is often the same key under another name.
+    With one platform there is nothing to map, so the hint would only mislead."""
+    if platforms > 1 and problem and problem.startswith("$.node.state") and "actual=<absent>" in problem:
         return f"{problem}; {KEYS_HINT}"
     return problem
 
@@ -287,8 +307,14 @@ class Manifest:
         self.every = data.get("everyResponse")
         self.default_fixture = data.get("defaultFixture", "default")
         guard = data.get("guard", {})
-        self.guard_source = self.root / guard.get("source", "scripts/network_guard.c")
-        self.guard_library = self.root / guard.get("library", ".build/network_guard.dylib")
+        # An app manifest may skip "guard": the source and the built library then come from this Reflex clone.
+        clone = Path(__file__).resolve().parent.parent
+        source = self.root / guard["source"] if "source" in guard else self.root / "scripts/network_guard.c"
+        if "source" not in guard and not source.exists():
+            source = clone / "scripts/network_guard.c"
+        self.guard_source = source
+        base = self.root if "source" in guard or source.parent.parent == self.root else clone
+        self.guard_library = self.root / guard["library"] if "library" in guard else base / ".build/network_guard.dylib"
         self.conformance = self.root / data["conformance"] if data.get("conformance") else None
         self.state_keys = data.get("stateKeys")
         state_keys(self.state_keys, self.platforms)
@@ -309,7 +335,15 @@ class Manifest:
             if not found:
                 raise NoJava(f"BLOCKED platform={target} no node on PATH. Install Node.js 18 or newer")
             node = os.path.realpath(found)
-        values = {"root": str(self.root), "fixture": fixture, "java": java, "python": os.path.realpath(sys.executable), "node": node}
+        tester = "flutter_tester"
+        if any("{flutter_tester}" in part for part in parts):
+            # Flutter's headless engine: it has dart:ui, so ViewModels that import package:flutter run unchanged.
+            tester = flutter_tester()
+            if not tester:
+                raise NoJava(f"BLOCKED platform={target} no flutter on PATH, or its engine has no flutter_tester. "
+                             "Run flutter precache once")
+        values = {"root": str(self.root), "fixture": fixture, "java": java, "python": os.path.realpath(sys.executable), "node": node,
+                  "flutter_tester": tester}
         return [part.format(**values) for part in parts]
 
     def journey_paths(self, extra):
@@ -554,7 +588,7 @@ class Host:
                 err = self.stderr.read().decode("utf-8", "replace").strip()
                 if "Unable to locate a Java Runtime" in err or "No Java runtime present" in err:
                     err = NO_JAVA
-                err = err[-200:]
+                err = crash_summary(err)
                 self.dead = f"EOF exit={code} stderr={err!r}" if ready else f"no response in {TIMEOUT_S}s"
                 out.append((None, self.dead))
                 continue
@@ -685,6 +719,32 @@ def launch_live(manifest, target):
             time.sleep(0.1)
 
 
+def missing_inputs(command):
+    """The first classpath entry, @argfile, jar or script that an interpreter command names and that does not exist.
+    A JVM or Node host that was never built otherwise fails every step with the same EOF."""
+    args = command[1:]
+    for index, arg in enumerate(args):
+        previous = args[index - 1] if index else None
+        if previous in ("-cp", "-classpath", "--class-path"):
+            entries = arg.split(os.pathsep)
+        elif previous == "-jar":
+            entries = [arg]
+        elif arg.startswith("@") and len(arg) > 1:
+            entries = [arg[1:]]
+        elif os.path.isabs(arg) and arg.endswith((".js", ".mjs", ".cjs", ".py", ".jar", ".dart")):
+            entries = [arg]
+        else:
+            continue
+        for entry in entries:
+            if entry.endswith("/*"):
+                folder = Path(entry[:-2])
+                if not folder.is_dir() or not any(folder.glob("*.jar")):
+                    return entry
+            elif entry and not Path(entry).exists():
+                return entry
+    return None
+
+
 def build_guard(manifest):
     """Builds the guard for this OS. Returns (library, None) or (None, why it is unavailable)."""
     src = manifest.guard_source
@@ -795,7 +855,7 @@ def run_journey(manifest, target, journey, guard, strict):
                 response = record["resp"]
                 if problem:
                     record["problems"].append(f"eventually not met within {within} ms after {polls} ls poll(s), action not re-sent: "
-                                              f"{absent_hint(problem)}; last state={brief(response) if response else dead}")
+                                              f"{absent_hint(problem, len(manifest.platforms))}; last state={brief(response) if response else dead}")
                 if response is not None:
                     previous = response
                 records.append(record)
@@ -827,7 +887,7 @@ def run_journey(manifest, target, journey, guard, strict):
                 apply_keys(record, keys)
                 response = record["resp"]
                 if isinstance(response, dict):
-                    problem = absent_hint(mismatch(response, expected))
+                    problem = absent_hint(mismatch(response, expected), len(manifest.platforms))
                     if problem:
                         record["problems"].append(f"{problem} response={brief(response)}")
                     if every:
@@ -854,14 +914,29 @@ def run_journey(manifest, target, journey, guard, strict):
     if live:
         if journey.get("exit", 0) != 0 or journey.get("network", "clean") != "clean":
             end.append("journey error: a socket platform cannot check exit or network")
-        return records, code, network, end
+        return records, code, network, end, ""
     want_exit = journey.get("exit", 0)
     if code != want_exit:
         end.append(f"expected exit={want_exit} actual exit={code}")
     want_network = journey.get("network", "clean") if guard else "unguarded"
     if network != want_network:
         end.append(f"expected network={want_network} actual network={network}")
-    return records, code, network, end
+    return records, code, network, end, host_stderr(getattr(host, "stderr_tail", ""))
+
+
+def crash_summary(err):
+    """The cause of a host crash. A stack trace names its cause on its first exception line, which a plain
+    tail cuts off, so keep that line and the last line."""
+    lines = [line.strip() for line in host_stderr(err)]
+    cause = next((line for line in lines if re.search(r"(Exception|Error)\b", line) and not line.startswith("at ")), None)
+    if cause and cause != lines[-1]:
+        return f"{cause[:200]} ... {lines[-1][:120]}"
+    return err[-200:]
+
+
+def host_stderr(text):
+    """The host's own stderr lines, without the JVM's note about options the runner injected."""
+    return [line for line in text.splitlines() if line.strip() and not line.startswith("Picked up ")]
 
 
 def classify(records, end, journey, target, strict):
@@ -953,6 +1028,11 @@ def main():
             out(f"RESULT FAIL platform={target} host binary not found: {os.path.relpath(executable, manifest.root)}. "
                 "Build it with the docs/setup.md commands first.")
             sys.exit(2)
+        absent = missing_inputs(manifest.command(target, manifest.default_fixture))
+        if absent:
+            out(f"RESULT FAIL platform={target} host input not found: {os.path.relpath(absent, manifest.root)}. "
+                "Build the CLI first.")
+            sys.exit(2)
     if manifest.conformance:
         count, bad = matcher_self_test(manifest)
         out(f"MATCHER {'PASS' if not bad else 'FAIL'} cases={count} source={os.path.relpath(manifest.conformance, manifest.root)}"
@@ -993,6 +1073,7 @@ def main():
             "but the run is unguarded, so this expectation is not tested")
     xfails = 0
     announced = set()
+    warned = set()
     transcripts = {}
     cold = {t: [] for t in targets}
     for target in targets:
@@ -1001,7 +1082,7 @@ def main():
             started = time.perf_counter()
             for journey in journeys:
                 began = time.perf_counter()
-                records, code, network, end = run_journey(manifest, target, journey, guard, args.strict)
+                records, code, network, end, stderr = run_journey(manifest, target, journey, guard, args.strict)
                 cold[target].append((time.perf_counter() - began) * 1000)
                 end_status = classify(records, end, journey, target, args.strict)
                 run.append((journey, records, code, network))
@@ -1032,6 +1113,13 @@ def main():
                     failures += 1
                     out(f"XPASS platform={target} journey={journey['id']} finding={journey['xfail'][target]} passes now: remove the xfail")
                 bad = sum(r["status"] in ("FAIL", "XPASS") for r in records) + (end_status in ("FAIL", "XPASS"))
+                for warning in dict.fromkeys(line for line in stderr if line.startswith(KIT_WARNING)):
+                    if (target, warning) not in warned:
+                        warned.add((target, warning))
+                        out(f"WARN platform={target} {warning}")
+                plain = [line for line in stderr if not line.startswith(KIT_WARNING)]
+                if bad and plain:
+                    out(f"STDERR platform={target} journey={journey['id']} lines={len(plain)} last={' | '.join(plain[-3:])[:600]!r}")
                 out(f"JOURNEY {'PASS' if not bad else 'FAIL'} platform={target} journey={journey['id']} steps={len(records)} "
                     f"exit={code} network={network}")
             elapsed = time.perf_counter() - started

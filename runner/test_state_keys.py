@@ -81,6 +81,8 @@ class StateKeysTest(unittest.TestCase):
         problem = rr.mismatch(reply({"started": True}), {"node": {"state": {"isRunning": True}}})
         self.assertIn("stateKeys", rr.absent_hint(problem))
         self.assertNotIn("stateKeys", rr.absent_hint("$.node.state.isRunning expected=true (boolean) actual=false (boolean)"))
+        # One platform: nothing to map, so no hint.
+        self.assertNotIn("stateKeys", rr.absent_hint(problem, 1))
 
     def test_rename_onto_an_existing_key_is_a_journey_error(self):
         keys = rr.state_keys({"kotlin": {"rename": {"started": "isRunning"}}}, PLATFORMS)

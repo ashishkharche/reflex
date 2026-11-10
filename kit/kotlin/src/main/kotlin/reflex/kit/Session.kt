@@ -32,7 +32,10 @@ class Session(
         }
     }
 
-    init { require(ops.keys.none { it in setOf("hello", "ls", "do") }) { "ReflexKit: reserved op name" } }
+    init {
+        require(ops.keys.none { it in setOf("hello", "ls", "do") }) { "ReflexKit: reserved op name" }
+        MainDispatcher.problem()?.let { System.err.println(it) }
+    }
 
     var negotiated: Long? = null
         private set
