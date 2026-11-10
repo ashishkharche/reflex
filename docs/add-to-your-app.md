@@ -120,7 +120,7 @@ your-workspace/
   my-app-android/   # its own repo, builds the Kotlin CLI
 ```
 
-Put `tests/reflex.json` and `tests/journeys/` in either repo or in a small third tests repo. Each platform command in the manifest points at its own repo with a relative path, for example `"../my-app-ios/ReflexHarness/.build/debug/your-cli"` and `"-cp", "../my-app-android/cli/build/install/cli/lib/*"`. Both CLIs must use the same node names, state keys and action names.
+Put `tests/reflex.json` and `tests/journeys/` in either repo or in a small third tests repo. Each platform command in the manifest points at its own repo with a relative path, for example `"../my-app-ios/ReflexHarness/.build/debug/your-cli"` and `"-cp", "../my-app-android/cli/build/install/cli/lib/*"`. Both CLIs must use the same node names and action names. State keys should match too. When the apps’ real code names one differently, map it with `stateKeys` ([7. Manifest and journey](#7-manifest-and-journey)).
 
 ## 0. Prerequisites
 
@@ -400,6 +400,21 @@ One journey file:
   ]
 }
 ```
+
+### When the apps name a state key differently
+
+Keep each app’s real key names in its adapter. If iOS says `isRunning` and Android says `started` for the same fact, add `stateKeys` to `tests/reflex.json` and write the journey with the shared name:
+
+```json
+"stateKeys": {
+  "kotlin": {
+    "rename": {"started": "isRunning"},
+    "only": ["moreCount"]
+  }
+}
+```
+
+`only` lists keys one app has and the other doesn’t. Parity reports them as not compared and never fails on them. Values under a mapped key must still match. Never map two keys that mean different things.
 
 Full field list: [runner/README.md](../runner/README.md).
 

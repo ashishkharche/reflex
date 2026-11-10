@@ -22,7 +22,7 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
    - Every network call that action makes needs a fixture. If one can’t be faked without changing app code, stop with BLOCKED and say which call.
 4. **Branch** from the latest main branch (`git symbolic-ref --short refs/remotes/origin/HEAD`), for example `reflex/settings`.
 5. **Read** `python3 ../reflex/scripts/guide.py 4 5 7`, never the whole guide. Copy the shape of the adapters the app already has.
-6. **Add** an adapter on each platform with the same node name, state keys and action names. Wire it into each CLI.
+6. **Add** an adapter on each platform with the same node name and action names. Use the same state keys when the code allows. If the apps name a fact differently, such as `isRunning` and `started`, keep the real names and add a `stateKeys` map to `tests/reflex.json` (guide section 7). List a key only one app has under `only`. Wire the adapter into each CLI.
 7. **Prove the main action:** `python3 ../reflex/runner/explore.py tests/reflex.json 'do <MainAction> {...}'`. `NETWORK denied` means a call still has no fixture. Fix that first.
 8. **Add one journey** in the existing journeys folder that runs the main action. Fold the steps of one user journey into one test. Keep a separate journey only when it needs different fixtures.
 9. **Check** with the `reflex-check` steps.

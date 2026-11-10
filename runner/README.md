@@ -22,6 +22,8 @@ python3 runner/reflex_runner.py samples/outbox/reflex.json --strict --evidence /
 
 Positional journey paths replace the manifest’s journey list.
 
+Unit tests for the runner’s `stateKeys` map: `python3 runner/test_state_keys.py`.
+
 ## What a run checks
 
 1. `MATCHER`: the runner’s matcher agrees with the kit’s on the shared F-13 cases in `kit/conformance/strict-decoder.json`.
@@ -37,6 +39,28 @@ Failure lines name the platform, journey, step, action, the line sent, the first
 ## xfail
 
 A step or a journey may carry `"xfail": {"kotlin": "F-08"}`. A failing annotated step prints `XFAIL` and does not fail the run. An annotated step that passes prints `XPASS` and fails the run until the annotation is removed. `--strict` turns every `XFAIL` back into `FAIL`. A step with `"parity": "F-08"` turns its parity diff into `PARITY KNOWN`.
+
+## State keys with different names
+
+Two apps often keep the same fact under different state key names. Add `stateKeys` to the manifest or to a journey and the runner renames them before it checks `expect` and parity. With no `stateKeys` nothing changes.
+
+```json
+"stateKeys": {
+ "kotlin": {
+  "rename": {"started": "isRunning", "session.open": "isOpen"},
+  "only": ["moreCount"]
+ }
+}
+```
+
+- Each key is a platform name from the manifest.
+- `rename` maps a dotted path into `node.state` to the shared name of its last key. `session.open` renames `open` inside `session`. A list on the path applies to each item, so `rows.done` renames `done` in every row. Write journeys with the shared names.
+- `only` lists dotted paths that exist on that platform alone. Parity skips them and prints `PARITY NOT COMPARED` with the platform, the key and the number of steps. `expect` still sees them. A listed key that the other platform also has is still compared.
+- Values are never changed and keep strict types. A real value difference under a mapped key still prints `PARITY DIFF` and fails.
+- A reply that `stateKeys` changed is compared as parsed JSON, not as bytes. The `PARITY` line then adds `mapped_steps` and `not_compared_keys`.
+- A rename onto a key that is already there is a journey error. A journey’s `stateKeys` replaces the manifest’s. `null` turns it off. `explore.py` uses the manifest’s map for `wait` and its parity line.
+
+Without a map, an `expect` key missing on one platform and a parity diff where each platform lacks a key the other has end with a hint to add `stateKeys`. Map only keys that mean the same thing. Two keys that mean different things are a platform difference: mark it with `parity` instead.
 
 ## Manifest
 
@@ -59,7 +83,7 @@ A step or a journey may carry `"xfail": {"kotlin": "F-08"}`. A failing annotated
 
 A platform may give `socket` (a loopback `host:port`) instead of `command` to drive a running debug build. With both, the runner starts `command` once and connects to `socket` for each journey. See [docs/real-build.md](../docs/real-build.md).
 
-`root` is relative to the manifest. `{java}` resolves `JAVA_HOME` or `java` on `PATH` to its real binary. Launchers under SIP, such as `/usr/bin/java` or a `/bin/sh` start script, drop `DYLD_*` variables, so the runner never uses them. Any number of platforms may be listed. Parity compares each one with the first. `guard` may override the guard’s `source` and `library` paths.
+`root` is relative to the manifest. `{java}` resolves `JAVA_HOME` or `java` on `PATH` to its real binary. Launchers under SIP, such as `/usr/bin/java` or a `/bin/sh` start script, drop `DYLD_*` variables, so the runner never uses them. Any number of platforms may be listed. Parity compares each one with the first. `guard` may override the guard’s `source` and `library` paths. `stateKeys` maps state keys that differ by name ([State keys with different names](#state-keys-with-different-names)).
 
 ## Journey files
 
@@ -72,6 +96,7 @@ A file holds one journey (`name` and `steps`) or several under `journeys`. Top-l
 | `exit` | Expected exit code. Default 0. |
 | `network` | `clean` (default) or `denied`. A tripwire journey expects `denied`. |
 | `everyResponse` | Replaces the manifest’s per-response expectation. `null` turns it off. |
+| `stateKeys` | Replaces the manifest’s state key map. `null` turns it off. See [State keys with different names](#state-keys-with-different-names). |
 | `xfail` | Per platform finding id for the whole journey. |
 
 | Step key | Meaning |

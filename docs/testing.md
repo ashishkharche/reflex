@@ -47,9 +47,22 @@ python3 runner/reflex_runner.py runner/red/parity-manifest.json --timings 0
 python3 runner/reflex_runner.py runner/red/bytes-manifest.json --timings 0
 python3 runner/reflex_runner.py samples/outbox/reflex.json runner/red/eventually-timeout.json --timings 0
 python3 runner/reflex_runner.py samples/outbox/reflex.json runner/red/precondition.json --timings 0
+python3 runner/reflex_runner.py runner/keys/unmapped-manifest.json --timings 0
+python3 runner/reflex_runner.py runner/keys/value-manifest.json --timings 0
 ```
 
 Failure lines name platform, journey, step, action, the sent line and the first mismatching path. A polling failure also prints the poll count and the last state it saw.
+
+## State keys
+
+`runner/keys/` checks the `stateKeys` map with a second platform that renames `saved` and `quantity` and adds a `debugBuild` key. These must exit 0:
+
+```bash
+python3 runner/test_state_keys.py
+python3 runner/reflex_runner.py runner/keys/mapped-manifest.json --timings 0
+```
+
+The mapped run prints `PARITY NOT COMPARED` for `debugBuild`. The unmapped red path fails with the `stateKeys` hint. The value red path maps the keys and still fails on `saved`.
 
 ## Debug socket in the apps
 

@@ -22,6 +22,7 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
    - The app changed on purpose. Only the user can confirm this. Then update the expected value.
    - The adapter or CLI is wrong. Fix it so it reads the real Core.
    - The app has a bug or the platforms differ. Do not change the app. Report it.
+   - The platforms name the same fact differently, such as `isRunning` and `started`, with the same values. The run ends with a `stateKeys` hint. Add a `stateKeys` map to `tests/reflex.json` (`../reflex/runner/README.md`, State keys with different names) and write the journey with the shared name. List a key only one app has under `only`. Never map keys that mean different things or change a value to make them match.
 6. **Rerun** after each fix until it passes or only decisions are left. Never edit an expectation, add `parity` or `xfail`, pass `--no-guard` or `--allow-unguarded` just to go green.
 7. **Build each native app and run its tests**, including the iOS app in KMP projects. List the native app targets first. These checks are part of this skill even when the user only names one failure. Attempt them without asking whether to run them. Record each app’s build and test commands, exit codes and log paths in `.build/` for this session. Read suite headers with your own tools and total the counts yourself. Keep executed, skipped and failed cases separate; never run code to count results. A Kotlin shared-code suite does not count as iOS. No emulator unless asked.
 8. **Check** the app’s own build files never name `../reflex`, apart from the guarded Kotlin block.
@@ -74,4 +75,4 @@ Next: merge reflex/home, then /reflex-cover <next screen>
 - Needs your decision is a numbered list with one short line each. Write “None” if empty. Every reason the Result is not PASS goes here.
 - The Next line follows the Result word. PASS: “Next: merge reflex/<screen>, then /reflex-cover <next screen>”. Anything else: “Next: answer 1, then /reflex-check”. Never say merge before PASS.
 - At most three decisions. Join related ones into one line. Nothing goes outside the block.
-- Fixes count as added files. No extra merge claim or logs. The Next line is the last line.
+- Fixes count as added files. Name each `stateKeys` mapping you added under What I added. No extra merge claim or logs. The Next line is the last line.
