@@ -1,0 +1,14 @@
+{
+ "sample": "counter",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "default",
+ "note": "One commonMain ViewModel, run as Kotlin/JVM through the Kotlin kit and as Kotlin/Native through the Swift kit.",
+ "platforms": {
+  "kmp-jvm": {"command": ["{java}", "-Xmx96m", "-cp", "{root}/samples/stacks/kmp/cli/build/install/cli/lib/*", "counter.kmp.cli.MainKt"]},
+  "kmp-native-swift": {"command": ["{root}/samples/stacks/kmp/SwiftHost/.build/debug/kmp-swift-cli"]}
+ },
+ "journeys": ["samples/stacks/journeys/*.json"],
+ "everyResponse": {"node": {"name": "Counter"}}
+}

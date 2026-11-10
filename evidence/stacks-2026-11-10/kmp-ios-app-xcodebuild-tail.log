@@ -1,0 +1,20 @@
+    cd /Users/ask/personal/code/reflex/samples/stacks/kmp/iosApp
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app/Info.plist --temp-dir-path /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Intermediates.noindex/CounterKMP.build/Debug-iphonesimulator/CounterKMP.build/ssu --bundle-id com.ashishkharche.reflex.counter.kmp --product-path /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app --extracted-metadata-path /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app/Metadata.appintents --metadata-file-list /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Intermediates.noindex/CounterKMP.build/Debug-iphonesimulator/CounterKMP.build/CounterKMP.DependencyMetadataFileList --source-file /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app/Info.plist --archive-ssu-assets
+2026-11-10 20:18:18.064 appintentsnltrainingprocessor[96249:1861817] Parsing options for appintentsnltrainingprocessor
+2026-11-10 20:18:18.065 appintentsnltrainingprocessor[96249:1861817] Starting AppIntents SSU YAML Generation
+2026-11-10 20:18:18.067 appintentsnltrainingprocessor[96249:1861817] No AppShortcuts found - Skipping.
+
+RegisterExecutionPolicyException /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app (in target 'CounterKMP' from project 'CounterKMP')
+    cd /Users/ask/personal/code/reflex/samples/stacks/kmp/iosApp
+    builtin-RegisterExecutionPolicyException /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app
+
+Validate /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app (in target 'CounterKMP' from project 'CounterKMP')
+    cd /Users/ask/personal/code/reflex/samples/stacks/kmp/iosApp
+    builtin-validationUtility /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app (in target 'CounterKMP' from project 'CounterKMP')
+    cd /Users/ask/personal/code/reflex/samples/stacks/kmp/iosApp
+    /usr/bin/touch -c /Users/ask/personal/code/reflex-stack-tests/dd-kmp/Build/Products/Debug-iphonesimulator/CounterKMP.app
+
+** BUILD SUCCEEDED **
+
