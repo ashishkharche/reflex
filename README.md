@@ -7,9 +7,34 @@
 
 Reflex lets a test or an AI agent read your app’s screens as plain text and press their buttons. Your iOS and Android apps must give the same answer.
 
-## Start with a prompt
+## Get started
 
-Paste this into Grok, Cursor or any coding assistant with a shell in your app’s repo:
+Run these in your app’s repo.
+
+**Grok**
+
+```bash
+grok plugin install \
+  ashishkharche/reflex --trust
+```
+
+```text
+/reflex-start
+```
+
+**Claude Code**
+
+```bash
+npx skills add ashishkharche/reflex -g
+```
+
+```text
+/reflex-start
+```
+
+**ChatGPT, Cursor or any other assistant**
+
+ChatGPT’s chat app can’t run a shell, so use Codex. Paste this:
 
 ```text
 Set up or update Reflex in this app.
@@ -21,58 +46,6 @@ Main screen only, on a new branch.
 Only add files. Ask before refactors.
 Build both apps and run their tests.
 Reply with the five-part report.
-```
-
-<details>
-<summary><b>Claude Code</b></summary>
-<br>
-
-Install the skills:
-
-```bash
-npx skills add ashishkharche/reflex -g
-```
-
-Then run this in your app’s repo:
-
-```text
-/reflex-start
-```
-
-No skills? Paste the prompt above with this first line:
-
-```text
-Read skills/reflex-start/SKILL.md.
-```
-
-</details>
-
-<details>
-<summary><b>ChatGPT</b></summary>
-<br>
-
-The chat app can’t run a shell. Use Codex or another coding agent and paste the prompt above with these first lines:
-
-```text
-Read skills/reflex-start/SKILL.md.
-Follow the files. Invent no steps.
-```
-
-</details>
-
-## Or install the skills
-
-Grok:
-
-```bash
-grok plugin install \
-  ashishkharche/reflex --trust
-```
-
-Any other assistant:
-
-```bash
-npx skills add ashishkharche/reflex -g
 ```
 
 ## Skills
