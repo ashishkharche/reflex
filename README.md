@@ -5,101 +5,89 @@
   </picture>
 </p>
 
-**Test your iOS and Android app logic without a screen.**
+Reflex lets a test or an AI agent read your app’s screens as plain text and press their buttons. Your iOS and Android apps must give the same answer.
 
-Reflex lets a test or an AI agent talk to your app in plain text. `ls` asks what’s on screen and `do` presses a button. Your iOS and Android apps must give the same answer. Based on Shopify Engineering’s [Reflex](https://shopify.engineering/reflex) article. Not affiliated with Shopify. How it works in practice: [ashishkharche.com/notes/reflex](https://ashishkharche.com/notes/reflex/).
+## Start with a prompt
 
-## Use it with an assistant
-
-Paste this into a coding assistant that can use a shell in your app’s repo (Grok, Cursor or any coding assistant):
+Paste this into Grok, Cursor or any coding assistant with a shell in your app’s repo:
 
 ```text
-Set up or update Reflex in this app using https://github.com/ashishkharche/reflex.
-Keep Reflex in its own clone next to this repo, never inside it. If it’s already there, pull the latest and apply CHANGELOG.md.
-Follow docs/add-to-your-app.md, For AI assistants first. Do my main screen only, on its own branch, and keep Reflex out of my app’s build. Only add new files and targets. Ask me before any refactor or product change, or if my iOS and Android apps are in separate repos.
-Run the Reflex tests, build both apps and run their unit tests, then reply with only the five-part report from that guide.
+Set up or update Reflex in this app.
+Repo: github.com/ashishkharche/reflex
+Follow docs/add-to-your-app.md,
+section For AI assistants.
+Clone it next to this repo, not in it.
+Main screen only, on a new branch.
+Only add files. Ask before refactors.
+Build both apps and run their tests.
+Reply with the five-part report.
 ```
 
 <details>
-<summary>Claude Code</summary>
+<summary><b>Claude Code</b></summary>
+<br>
 
-Install the skills, then run `/reflex-start`. In Claude Code the plugin command is `/reflex:reflex-start`.
+Install the skills:
 
 ```bash
 npx skills add ashishkharche/reflex -g
 ```
 
-Or `/plugin marketplace add ashishkharche/reflex`, then `/plugin install reflex@ashishkharche-reflex`.
-
-If the skill is not loaded, paste this:
+Then run this in your app’s repo:
 
 ```text
-Fetch https://github.com/ashishkharche/reflex and follow skills/reflex-start/SKILL.md and the For AI assistants section of docs/add-to-your-app.md.
-Set up or update Reflex in this app using that guide.
-Keep Reflex in its own clone next to this repo, never inside it. If it’s already there, pull the latest and apply CHANGELOG.md.
-Do my main screen only, on its own branch, and keep Reflex out of my app’s build. Only add new files and targets. Ask me before any refactor or product change, or if my iOS and Android apps are in separate repos.
-Run the Reflex tests, build both apps and run their unit tests, then reply with only the five-part report from that guide.
+/reflex-start
+```
+
+No skills? Paste the prompt above with this first line:
+
+```text
+Read skills/reflex-start/SKILL.md.
 ```
 
 </details>
 
 <details>
-<summary>ChatGPT</summary>
+<summary><b>ChatGPT</b></summary>
+<br>
 
-ChatGPT’s chat UI cannot install skills or run a shell in your repo. Use a coding agent with shell access, for example Codex, then paste this:
+The chat app can’t run a shell. Use Codex or another coding agent and paste the prompt above with these first lines:
 
 ```text
-You need a shell in this app’s repo. Fetch https://github.com/ashishkharche/reflex and read skills/reflex-start/SKILL.md and the For AI assistants section of docs/add-to-your-app.md. Follow those files. Do not invent steps.
-Set up or update Reflex in this app using that guide.
-Keep Reflex in its own clone next to this repo, never inside it. If it’s already there, pull the latest and apply CHANGELOG.md.
-Do my main screen only, on its own branch, and keep Reflex out of my app’s build. Only add new files and targets. Ask me before any refactor or product change, or if my iOS and Android apps are in separate repos.
-Run the Reflex tests, build both apps and run their unit tests, then reply with only the five-part report from that guide.
+Read skills/reflex-start/SKILL.md.
+Follow the files. Invent no steps.
 ```
 
 </details>
 
-To load the skills instead of pasting, Grok Build: `grok plugin install ashishkharche/reflex --trust`. Any other assistant: `npx skills add ashishkharche/reflex -g`. Then run `/reflex-start` from your app’s repo. Claude Code, Codex and Cursor plugins: [docs/assistants.md](docs/assistants.md).
+## Or install the skills
 
-| Skill | When |
-| --- | --- |
-| `/reflex-start` | Add Reflex to your app and get your first screen under test. Run it again to update. |
-| `/reflex-cover` | Cover a screen or feature with one test for iOS and Android. |
-| `/reflex-check` | Check iOS and Android still match and fix what doesn’t. Run it before you merge. |
-| `/reflex-explore` | Let your agent use the app while it builds, no simulator. |
-
-Ask for a dry run first to see the plan without any change.
-
-Reflex stays a separate folder next to your app. Only a separate test package points at it, so your app still builds without it. To update later, run `/reflex-start` or paste the prompt again.
-
-## Try the sample
-
-macOS is needed for the Swift (iOS) side. Linux, Docker and Linux CI work for Kotlin-only and Kotlin Multiplatform apps with `--platform kotlin`. The network guard runs there through `LD_PRELOAD` when a C compiler is installed. Windows works through WSL 2. Details: [docs/faq.md](docs/faq.md).
-
-For the full sample below you also need Xcode, JDK 17 and Python 3.
+Grok:
 
 ```bash
-git clone https://github.com/ashishkharche/reflex.git
-cd reflex
-bash scripts/build.sh
-python3 scripts/console.py swift
+grok plugin install \
+  ashishkharche/reflex --trust
 ```
 
-Then type `ls` to see the screen and `do OpenProduct {"id":"shirt"}` to open one. Both apps should agree:
+Any other assistant:
 
 ```bash
-python3 runner/reflex_runner.py tests/inventory/reflex.json --platform both
+npx skills add ashishkharche/reflex -g
 ```
 
-You should see `RESULT PASS`.
+## Skills
 
-## Use it in your app
+- **/reflex-start** adds Reflex and tests your first screen. Run it again to update.
+- **/reflex-cover** covers a screen with one test for both apps.
+- **/reflex-check** checks iOS and Android still match. Run it before you merge.
+- **/reflex-explore** lets your agent use the app with no simulator.
 
-1. Keep your ViewModel as it is.
-2. Add a small adapter that lists its state and actions.
-3. Follow [the full setup guide](docs/add-to-your-app.md).
+## Learn more
 
-## More
+- [How it works in practice](https://ashishkharche.com/notes/reflex/)
+- [Try the sample](docs/setup.md)
+- [Add it by hand](docs/add-to-your-app.md)
+- [Plugins for each assistant](docs/assistants.md)
+- [Platforms and FAQ](docs/faq.md)
 
-Environments, stacks and workflows: [docs/faq.md](docs/faq.md). Full docs index: [docs/README.md](docs/README.md).
-
-MIT licence. Copyright (c) 2026 Ashish Kharche.
+Based on Shopify Engineering’s [Reflex](https://shopify.engineering/reflex). Not affiliated with Shopify. MIT licence, © 2026 Ashish Kharche.

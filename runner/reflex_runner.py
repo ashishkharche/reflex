@@ -826,7 +826,7 @@ def main():
             sys.exit(2)
         if not os.access(executable, os.X_OK):
             out(f"RESULT FAIL platform={target} host binary not found: {os.path.relpath(executable, manifest.root)}. "
-                "Build it with the README commands first.")
+                "Build it with the docs/setup.md commands first.")
             sys.exit(2)
     if manifest.conformance:
         count, bad = matcher_self_test(manifest)
