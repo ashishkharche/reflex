@@ -299,6 +299,18 @@ def apply_keys(record, keys):
     record["mapped"] = renamed or bool(record["not_compared"])
 
 
+def writable(folder):
+    """True when a file can be made in folder. A sandbox can refuse writes that file modes allow."""
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+        probe = folder / f".write-check-{os.getpid()}"
+        probe.write_text("")
+        probe.unlink()
+        return True
+    except OSError:
+        return False
+
+
 class Manifest:
     def __init__(self, path):
         self.path = Path(path).resolve()
@@ -319,6 +331,9 @@ class Manifest:
             source = clone / "scripts/network_guard.c"
         self.guard_source = source
         base = self.root if "source" in guard or source.parent.parent == self.root else clone
+        if base == clone and not writable(clone / ".build"):
+            # The clone can be read only, as in an assistant sandbox that writes only to the app: build next to the manifest.
+            base = self.path.parent
         self.guard_library = self.root / guard["library"] if "library" in guard else base / ".build/network_guard.dylib"
         self.conformance = self.root / data["conformance"] if data.get("conformance") else None
         self.state_keys = data.get("stateKeys")

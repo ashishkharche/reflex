@@ -363,12 +363,13 @@ def kotlin_setup(app, pick, out):
         raise Stop("the app has no gradlew. Add the Gradle wrapper, then run reflex_init.py again")
     classpath = out / ".build/classpath.txt"
     task = f"{project}:reflexClasspath" if project != ":" else ":reflexClasspath"
+    env = jdk_env(app)
     say(f"BUILD {task} (the app’s JVM unit test classpath, no app file changed)")
     cmd = [str(gradlew), "-p", str(app), "-I", str(HERE / "gradle/reflex-classpath.gradle"), f"-PreflexProject={project}",
            f"-PreflexOut={classpath}", f"-PreflexJar={jar}", task, "--console=plain", "--no-configuration-cache",
            "-Dorg.gradle.unsafe.isolated-projects=false", "-Dorg.gradle.isolated-projects=false",
            "-Dorg.gradle.configuration-cache=false", "--no-configure-on-demand"]
-    code, log = run(cmd, cwd=app, env=jdk_env(app))
+    code, log = run(cmd, cwd=app, env=env)
     (out / ".build").mkdir(parents=True, exist_ok=True)
     (out / ".build/gradle.log").write_text(log)
     if code or not classpath.exists():

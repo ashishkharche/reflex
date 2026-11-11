@@ -33,6 +33,8 @@ Claude Code puts the plugin name in front of each skill, so the command is `/ref
 
 Check with `grok inspect --json` from the app repo. Its skills list must include `reflex-start`, `reflex-cover`, `reflex-check` and `reflex-explore`. If they are absent, run the plugin install above and check again. Copied files are not proof that the commands loaded. Do not search home folders for the missing skills.
 
+A sandbox such as Grok Build’s `--sandbox workspace` writes only to the app repo. The runner then builds its network guard in `tests/reflex/.build/`. Kotlin builds still need `../reflex` and the Gradle cache folders to be writable, so add them to the sandbox profile.
+
 Grok Build asks for `--trust` before it loads a plugin’s skills. Run the install without it first to see what it activates. Grok Build does not list a plugin from this repo through `grok plugin marketplace add`, so install it directly as shown.
 
 ## What every skill does
