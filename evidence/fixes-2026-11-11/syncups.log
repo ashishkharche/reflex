@@ -1,0 +1,4 @@
+$ python3 ../reflex/runner/reflex_init.py
+STACK swift
+STOP SyncUpsListModel in SyncUps/SyncUpsList.swift and 4 more hold state, but they are in the Xcode app target, which a Swift package can’t import. Next: move the model and the types it uses into a Swift package the app depends on, then run reflex_init.py again, or write the adapter by hand (docs/add-to-your-app.md)
+exit=2

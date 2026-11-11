@@ -1,0 +1,18 @@
+STACK kotlin
+FOUND kotlin HomeViewModel score=15 feature/home/src/main/kotlin/com/skydoves/pokedex/compose/feature/home/HomeViewModel.kt
+FOUND kotlin DetailsViewModel score=13 feature/details/src/main/kotlin/com/skydoves/pokedex/compose/feature/details/DetailsViewModel.kt
+FOUND kotlin MainActivityViewModel score=11 app/src/main/kotlin/com/skydoves/pokedex/compose/MainActivityViewModel.kt
+FOUND kotlin SettingsViewModel score=10 feature/settings/src/main/kotlin/com/skydoves/pokedex/compose/feature/settings/SettingsViewModel.kt
+PICK HomeViewModel (kotlin)
+BUILD reflex auto host jar
+FIX Gradle runs on JDK 21: the default JDK 27 is newer than Gradle supports
+BUILD :feature:home:reflexClasspath (the app’s JVM unit test classpath, no app file changed)
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+NOTE platform=kotlin HomeRepository: test double FakeHomeRepository
+JOURNEY first-run also runs FetchNextPokemonList: it needs no input, works offline and ends in the same state each time
+JOURNEY PASS platform=kotlin journey=tests/reflex/journeys/first-run.json#first-run steps=5 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=kotlin repeat=3 sample=Home guard=canary-pass
+ACTIONS FetchNextPokemonList
+PASS first run of HomeViewModel in 87s with no hand-written code. Files: tests/reflex/. Run: python3 ../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: add a journey that runs the screen’s main action
+exit=0 in 87s

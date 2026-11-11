@@ -1,0 +1,8 @@
+$ python3 ../reflex/runner/reflex_init.py
+STACK swift
+FOUND swift FeedModel score=11 Core/Sources/Core/FeedModel.swift
+PICK FeedModel (swift)
+BUILD Swift host (Mac first, the iOS simulator when a package is iOS only)
+FAIL ~/apps/repro/needs-setup/Core/Sources/Core/API.swift:3:15: error: cannot find 'SecretKey' in scope
+STOP the app’s own package does not build outside its Xcode project: ~/apps/repro/needs-setup/Core/Sources/Core/API.swift:3:15: error: cannot find 'SecretKey' in scope. Next: run the app’s setup step first, such as a secrets or code generation script, then run reflex_init.py again
+exit=1

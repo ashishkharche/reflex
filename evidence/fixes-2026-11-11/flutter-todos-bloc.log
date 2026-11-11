@@ -1,0 +1,17 @@
+$ python3 ../reflex/runner/reflex_init.py
+STACK flutter
+FOUND flutter TodosOverviewBloc score=14 lib/todos_overview/bloc/todos_overview_bloc.dart
+FOUND flutter HomeCubit score=12 lib/home/cubit/home_cubit.dart
+FOUND flutter EditTodoBloc score=10 lib/edit_todo/bloc/edit_todo_bloc.dart
+FOUND flutter StatsBloc score=7 lib/stats/bloc/stats_bloc.dart
+PICK TodosOverviewBloc (flutter)
+NOTE TodosRepository: mock MockTodosRepository, a stand-in: its calls return null until stubbed
+NOTE not actions, an argument type can’t come from wire input: TodosOverviewTodoCompletionToggled, TodosOverviewTodoDeleted
+BUILD Dart host kernel for flutter_tester
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+NOTE first-run runs no action: ClearCompletedRequested, SubscriptionRequested, ToggleAllRequested failed, used the network or ended differently each time
+JOURNEY PASS platform=flutter journey=tests/reflex/journeys/first-run.json#first-run steps=4 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=flutter repeat=3 sample=TodosOverview guard=canary-pass
+ACTIONS ClearCompletedRequested, FilterChanged, SubscriptionRequested, ToggleAllRequested, UndoDeletionRequested
+PASS first run of TodosOverviewBloc in 8s with no hand-written code. Files: tests/reflex/. Run: python3 ../../../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: replace the stand-ins the host used with fixtures, then add a journey that runs the main action

@@ -27,6 +27,8 @@ Every stack marked Yes passed the same counter journey under the network guard o
 
 Seven open-source apps were tried on 10 and 11 Nov 2026: Now in Android, the KMP App Template, the Flutter Compass sample, Fossify Calculator, Ice Cubes, the Ignite React Native boilerplate and NetNewsWire. Six ran their main screen’s logic under the guard with no change to app code. Fossify Calculator shows errors only as a toast, so its error path needs one. Ice Cubes is iOS only and passed on the iOS simulator, repeat 3. NetNewsWire passed through its shared Swift package, not its UIKit coordinator. Notes and logs: `evidence/real-apps-2026-11/`.
 
+`runner/reflex_init.py` was then run on fresh clones of ten more apps across Compose, Kotlin Multiplatform, Flutter (Bloc and Riverpod), React Native (Zustand), SwiftUI and UIKit. Six passed with no hand-written code. Jetcaster stopped at a real network client. Three keep their state in views, UIKit or an Xcode app target and stopped with that reason. Logs: `evidence/fixes-2026-11-11/`.
+
 The Dart and Node hosts cover the counter’s needs: integer, string and boolean fields, strict JSON and canonical output. They don’t handle object or array fields and don’t run the 142 kit conformance cases. Check your own host against `kit/conformance/strict-decoder.json` before you rely on it.
 
 ## Environments

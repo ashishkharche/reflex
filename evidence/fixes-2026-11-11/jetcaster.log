@@ -1,0 +1,15 @@
+STACK kotlin
+FOUND kotlin HomeViewModel score=15 mobile/src/main/java/com/example/jetcaster/ui/home/HomeViewModel.kt
+FOUND kotlin PodcastDetailsViewModel score=15 mobile/src/main/java/com/example/jetcaster/ui/podcast/PodcastDetailsViewModel.kt
+FOUND kotlin PodcastDetailsViewModel score=15 wear/src/main/java/com/example/jetcaster/ui/podcast/PodcastDetailsViewModel.kt
+FOUND kotlin PlayerViewModel score=14 mobile/src/main/java/com/example/jetcaster/ui/player/PlayerViewModel.kt
+FOUND kotlin PlayerViewModel score=14 wear/src/main/java/com/example/jetcaster/ui/player/PlayerViewModel.kt
+FOUND kotlin DiscoverScreenViewModel score=13 tv/src/main/java/com/example/jetcaster/tv/ui/discover/DiscoverScreenViewModel.kt
+FOUND kotlin EpisodeScreenViewModel score=13 tv/src/main/java/com/example/jetcaster/tv/ui/episode/EpisodeScreenViewModel.kt
+FOUND kotlin EpisodeViewModel score=13 wear/src/main/java/com/example/jetcaster/ui/episode/EpisodeViewModel.kt
+PICK HomeViewModel (kotlin)
+BUILD reflex auto host jar
+FIX Gradle runs on JDK 21: the default JDK 27 is newer than Gradle supports
+BUILD :mobile:reflexClasspath (the app’s JVM unit test classpath, no app file changed)
+STOP the first run failed: the app tried the network and the guard blocked it: HomeViewModel → PodcastsRepository → PodcastsFetcher → OkHttpClient is a real client. Next: give HomeViewModel a test double for PodcastsRepository (an interface with a FakePodcastsRepository in the app’s test sources), or pick another screen with --screen
+exit=1 in 7s

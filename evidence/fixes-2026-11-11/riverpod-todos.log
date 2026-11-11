@@ -1,0 +1,13 @@
+$ python3 ../reflex/runner/reflex_init.py
+STACK flutter
+FOUND flutter TodoList score=8 lib/todo.dart
+FOUND flutter TodoListFilterNotifier score=7 lib/main.dart
+PICK TodoList (flutter)
+NOTE not actions, an argument type can’t come from wire input: remove(Todo target)
+BUILD Dart host kernel for flutter_tester
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+JOURNEY PASS platform=flutter journey=tests/reflex/journeys/first-run.json#first-run steps=4 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=flutter repeat=3 sample=TodoList guard=canary-pass
+ACTIONS Add, Edit, Toggle
+PASS first run of TodoList in 11s with no hand-written code. Files: tests/reflex/. Run: python3 ../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: add a journey that runs the screen’s main action

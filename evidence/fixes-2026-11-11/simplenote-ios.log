@@ -1,0 +1,3 @@
+STACK swift
+STOP no state holder found in swift sources. Reflex needs the screen’s state in a ViewModel, notifier, store or hook, not in the views. Next: move it there, or write the adapter by hand (docs/add-to-your-app.md)
+exit=2 in 0s

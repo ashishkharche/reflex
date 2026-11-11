@@ -31,6 +31,8 @@ import simulator  # noqa: E402
 
 PROTOCOL = 1
 TIMEOUT_S = 6
+# A host on a freshly booted iOS simulator can take longer than TIMEOUT_S for its first reply.
+SIM_FIRST_REPLY_S = 30
 POLL_DEFAULT_MS = 2000
 POLL_MAX_MS = 60000
 POLL_EVERY_MS = 20
@@ -573,6 +575,7 @@ class Host:
             command = manifest.simulator.command(command)
         elif guard:
             command = guarded_command(command, guard, env)
+        self.on_simulator = target in getattr(manifest, "sim_targets", ())
         self.stderr = tempfile.TemporaryFile()
         # Its own process group, so a host that starts a child (tsx, a wrapper script) can be stopped whole.
         self.proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -584,7 +587,7 @@ class Host:
 
     def _read_line(self):
         """One reply line as bytes without its LF, or None at EOF or after the deadline."""
-        deadline = time.monotonic() + TIMEOUT_S
+        deadline = time.monotonic() + reply_timeout(self.on_simulator, self.replied)
         while b"\n" not in self.buffer:
             left = deadline - time.monotonic()
             ready, _, _ = select.select([self.proc.stdout], [], [], max(left, 0))
@@ -622,7 +625,7 @@ class Host:
                 if "Unable to locate a Java Runtime" in err or "No Java runtime present" in err:
                     err = NO_JAVA
                 err = crash_summary(err)
-                self.dead = f"EOF exit={code} stderr={err!r}" if ready else f"no response in {TIMEOUT_S}s"
+                self.dead = f"EOF exit={code} stderr={err!r}" if ready else f"no response in {reply_timeout(self.on_simulator, self.replied)}s"
                 out.append((None, self.dead))
                 continue
             self.replied = True
@@ -832,6 +835,11 @@ def guard_canary(guard):
         if sys.platform == "darwin":
             ok = ok and "STORAGE seatbelt" in audit and "STORAGE launcher" in audit
         return ok, audit.strip().replace("\n", " | "), out.stdout.strip()
+
+
+def reply_timeout(on_simulator, replied):
+    """Seconds to wait for one reply: longer for the first reply from a host on the iOS simulator."""
+    return SIM_FIRST_REPLY_S if on_simulator and not replied else TIMEOUT_S
 
 
 def start_simulator(manifest, targets, guard, out):

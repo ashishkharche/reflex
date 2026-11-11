@@ -90,6 +90,14 @@ class Devices(unittest.TestCase):
             sim.pick(self.OPTIONS, "iPhone 99")
 
 
+class ReplyTimeout(unittest.TestCase):
+    def test_first_simulator_reply_waits_longer(self):
+        import reflex_runner
+        self.assertEqual(reflex_runner.reply_timeout(True, False), reflex_runner.SIM_FIRST_REPLY_S)
+        self.assertEqual(reflex_runner.reply_timeout(True, True), reflex_runner.TIMEOUT_S)
+        self.assertEqual(reflex_runner.reply_timeout(False, False), reflex_runner.TIMEOUT_S)
+
+
 class Leftovers(unittest.TestCase):
     def test_only_devices_of_dead_runs_are_stale(self):
         devices = {"rt26": [{"name": "reflex-host-111", "udid": "A"}, {"name": "reflex-host-222", "udid": "B"},

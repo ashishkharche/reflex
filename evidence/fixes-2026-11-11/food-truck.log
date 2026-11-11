@@ -1,0 +1,19 @@
+$ python3 ../reflex/runner/reflex_init.py
+STACK swift
+FOUND swift FoodTruckModel score=15 FoodTruckKit/Sources/Model/FoodTruckModel.swift
+FOUND swift AccountStore score=13 FoodTruckKit/Sources/Account/AccountStore.swift
+FOUND swift StoreSubscriptionController score=12 FoodTruckKit/Sources/Store/StoreSubscriptionController.swift
+FOUND swift StoreProductController score=11 FoodTruckKit/Sources/Store/StoreProductController.swift
+PICK FoodTruckModel (swift)
+NOTE not actions, an argument type can’t come from wire input: updateDonut(id: Donut.ID, to newValue: Donut)
+BUILD Swift host (Mac first, the iOS simulator when a package is iOS only)
+BUILT tests/reflex/host/.build/reflex/reflex-host platform=macos
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+FIX state keys that differ between runs are left out: completionDate, creationDate
+BUILD Swift host (Mac first, the iOS simulator when a package is iOS only)
+BUILT tests/reflex/host/.build/reflex/reflex-host platform=macos
+JOURNEY PASS platform=swift journey=tests/reflex/journeys/first-run.json#first-run steps=4 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=swift repeat=3 sample=FoodTruck guard=canary-pass
+ACTIONS MarkOrderAsCompleted
+PASS first run of FoodTruckModel in 21s with no hand-written code. Files: tests/reflex/. Run: python3 ../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: add a journey that runs the screen’s main action
