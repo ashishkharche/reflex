@@ -1,0 +1,20 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=netnewswire-feeds platforms=mac journeys=2 files=2
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=mac protocol=1 sample=netnewswire-feeds kit=1.0.1
+FAIL platform=mac journey=journeys/errors.json#empty-file step=1 action=ImportOPML send={"action":"ImportOPML","op":"do"} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/errors.json#empty-file end expected exit=0 actual exit=-5
+STDERR platform=mac journey=journeys/errors.json#empty-file lines=1 last='Account/Account.swift:1049: Assertion failed'
+JOURNEY FAIL platform=mac journey=journeys/errors.json#empty-file steps=2 exit=-5 network=clean
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit step=0 action=hello send={"op":"hello","protocol":1} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit step=1 action=ls send={"op":"ls"} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit step=2 action=ImportOPML send={"action":"ImportOPML","op":"do"} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit step=3 action=AddFolder send={"action":"AddFolder","input":{"name":"Later"},"op":"do"} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit step=4 action=RenameFeed send={"action":"RenameFeed","input":{"from":"Beta Journal","to":"Beta"},"op":"do"} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit step=5 action=RemoveFeed send={"action":"RemoveFeed","input":{"name":"Alpha Notes"},"op":"do"} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit step=6 action=RemoveFeed send={"action":"RemoveFeed","input":{"name":"Nope"},"op":"do"} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit step=7 action=AddFolder send={"action":"AddFolder","input":{},"op":"do"} actual=EOF exit=-5 stderr='Account/Account.swift:1049: Assertion failed'
+FAIL platform=mac journey=journeys/feeds.json#import-and-edit end expected exit=0 actual exit=-5
+STDERR platform=mac journey=journeys/feeds.json#import-and-edit lines=1 last='Account/Account.swift:1049: Assertion failed'
+JOURNEY FAIL platform=mac journey=journeys/feeds.json#import-and-edit steps=8 exit=-5 network=clean
+SUITE platform=mac repeat=1/1 journeys=2 steps=10 wall_s=1.23
+RESULT FAIL mode=xfail-tracked unexpected_failures=11 xfail=0 platforms=mac repeat=1 sample=netnewswire-feeds guard=canary-pass

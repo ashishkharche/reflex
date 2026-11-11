@@ -9,7 +9,7 @@ Every stack marked Yes passed the same counter journey under the network guard o
 | Stack or OS | Works? | What was checked |
 | --- | --- | --- |
 | SwiftUI + Jetpack Compose | Yes | The inventory and outbox samples. The inventory apps run on an iOS simulator and an Android emulator through the [debug socket](real-build.md). |
-| UIKit | Yes | A UIKit app builds for the iOS simulator over a Swift Core. The Swift kit host of that Core passes. |
+| UIKit | Yes, when the logic is outside the views | A UIKit app builds for the iOS simulator over a Swift Core. The Swift kit host of that Core passes. NetNewsWire’s shared `Account` package, which its UIKit feed list reads, passed on the Mac and on the iOS simulator with byte parity. Its screen state lives in a UIKit coordinator, which needs a refactor first. |
 | Android Views | Yes | A Views app builds as a debug APK over a Kotlin Core. The Kotlin kit host of that Core passes. |
 | Java on Android | Yes | A Java ViewModel and a Java Activity. The adapter and CLI are Kotlin over the Java class. |
 | Kotlin Multiplatform | Yes | One `commonMain` ViewModel. The Android app uses its Android target and a SwiftUI app links its iOS simulator framework. A Kotlin/JVM host (Kotlin kit) and a Kotlin/Native host (Swift kit) both pass with byte parity. |
@@ -25,7 +25,7 @@ Every stack marked Yes passed the same counter journey under the network guard o
 | Web-only apps | No | The runner drives CLI processes over stdio, not a browser. |
 | Logic only on a backend | No | Reflex tests the app Core in-process. Point the CLI at fakes, not at production servers. |
 
-Five open-source apps were tried on 10 Nov 2026: Now in Android, the KMP App Template, the Flutter Compass sample, Fossify Calculator and Ice Cubes. Four ran their main screen under the guard with no change to app code. Fossify Calculator shows errors only as a toast, so its error path needs one. Ice Cubes is iOS only: on 11 Nov its Timeline screen passed on the iOS simulator, repeat 3, with no app change. Notes and logs: `evidence/real-apps-2026-11/`.
+Seven open-source apps were tried on 10 and 11 Nov 2026: Now in Android, the KMP App Template, the Flutter Compass sample, Fossify Calculator, Ice Cubes, the Ignite React Native boilerplate and NetNewsWire. Six ran their main screen’s logic under the guard with no change to app code. Fossify Calculator shows errors only as a toast, so its error path needs one. Ice Cubes is iOS only and passed on the iOS simulator, repeat 3. NetNewsWire passed through its shared Swift package, not its UIKit coordinator. Notes and logs: `evidence/real-apps-2026-11/`.
 
 The Dart and Node hosts cover the counter’s needs: integer, string and boolean fields, strict JSON and canonical output. They don’t handle object or array fields and don’t run the 142 kit conformance cases. Check your own host against `kit/conformance/strict-decoder.json` before you rely on it.
 

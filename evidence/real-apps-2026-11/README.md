@@ -1,6 +1,6 @@
 # Reflex on real open-source apps, 10 Nov 2026
 
-Five well-known open-source apps, one main screen each, set up the way `/reflex-start` and [docs/add-to-your-app.md](../../docs/add-to-your-app.md) describe. Each app was a shallow clone outside this repo on a local `reflex/<screen>` branch. Nothing was pushed to the apps. No app code is in this repo: only logs.
+Seven well-known open-source apps, one main screen each, set up the way `/reflex-start` and [docs/add-to-your-app.md](../../docs/add-to-your-app.md) describe. Each app was a shallow clone outside this repo on a local `reflex/<screen>` branch. Nothing was pushed to the apps. No app code is in this repo: only logs.
 
 Machine: MacBook Pro, Apple silicon, macOS 26.3.1, JDK 17, Flutter 3.47.9, Xcode 26.5, iOS 26.5 simulator runtime. Times are wall clock from clone to a passing run and include the build fixes below.
 
@@ -13,8 +13,8 @@ Machine: MacBook Pro, Apple silicon, macOS 26.3.1, JDK 17, Flutter 3.47.9, Xcode
 | Compass (Flutter samples) | Flutter, Provider, `ChangeNotifier` ViewModels with commands | Home | 9 min | PASS, no app change |
 | Fossify Calculator | Android Views, logic in a helper class that takes a `Context` | Calculator | 5 min | PASS on the main path. Divide by zero is `xfail` |
 | Ice Cubes | SwiftUI, iOS-only Swift packages | Timeline | 2 min on 10 Nov, 15 min on 11 Nov | Stopped on 10 Nov: the packages don’t build for macOS. PASS on the iOS simulator on 11 Nov, repeat 3, no app change |
-
-React Native and a UIKit app were not tried. See [Not done](#not-done).
+| Ignite boilerplate (Infinite Red) | React Native, Expo, TypeScript, state in a React context | Podcast list | 14 min on 11 Nov | PASS, repeat 3, no app change |
+| NetNewsWire | UIKit on iOS, logic in Swift packages shared with the Mac app | Feed list | 10 min on 11 Nov | PASS on the Mac and the iOS simulator with byte parity, repeat 3, no app change. The screen’s own state needs a refactor |
 
 ## What each app showed
 
@@ -30,6 +30,15 @@ React Native and a UIKit app were not tried. See [Not done](#not-done).
 
 On 11 Nov it did. The host is a SwiftPM executable next to the app’s packages that depends on `Timeline` with `@testable import`, so it can pass a fixture fetcher through the same `TimelineStatusFetching` protocol the app’s tests mock. `runner/swift_host.py` built it for the simulator after the Mac build failed the platform check (`icecubes-swift-host.log`). Three host details. Copy the app’s `Package.resolved`. Without it SwiftPM picks a newer SQLite.swift that fails the iOS platform check too. Start TelemetryDeck as the app does at launch, with analytics off. Without that the first timeline switch crashes. Serve on the main actor and settle on the ViewModel’s `timelineTask`. The journeys cover the home timeline, switching to Local and back, an unknown action, an offline fixture showing the error state and an empty one. All pass under the simulator guard, byte for byte across 3 repeats. The device is gone after the run (`icecubes-sim-final.log`). The boot takes about a minute and the 9 steps about 2 seconds.
 
+**Ignite boilerplate.** The podcast list keeps its state in `EpisodeProvider`, a React context with `useState` hooks, not in a class. The host renders the real provider in Node with `react-test-renderer` from the app’s own dev dependencies and keeps the value a small probe component gets. It runs with the app’s `tsx`. The fixture replaces only `api.apisauce.get`, so `Api.getEpisodes` still parses the response. Three setup details: define `__DEV__` before `app/config` loads, give the host a tsconfig with `"jsx": "react-jsx"` because the app’s says `"react-native"` and load `react-test-renderer` untyped so `tsc` gains no error. The journeys fetch, favorite, filter to favorites, unfavorite and reject a bad input. An offline fixture keeps the list empty. Reflex caught two runner problems and one host problem:
+
+- Under the guard, `tsx` spun for ever and the runner hung with it. The macOS guard called itself for a Unix socket `connect`. `tsx` talks to its worker over one. When the first reply timed out the runner killed `tsx`, but its worker kept stdout open and the final read never returned. With the runner fix alone the run fails in 16 seconds with `no response in 6s` (`ignite-guard-before.log`). With the guard fix it passes.
+- React commits state after a call returns, so each reply showed the state from one step before. Four steps fail and the frozen-state `WARN` fires on the fetch (`ignite-no-around.log`). The offline journey passes for the wrong reason. With `around` running each action in `act` all pass, repeat 3 (`ignite-final.log`).
+
+The boilerplate’s own `jest` and `tsc` fail before any Reflex change: `babel-preset-expo` is not installed for the template alone and `tsc` reports 3 errors. The host adds none.
+
+**NetNewsWire.** The iOS feed list is UIKit. Its state lives in `SceneCoordinator`, a 2,786-line UIKit class that owns the view controllers, so `/reflex-start` stops there and asks before a refactor. The data the screen shows comes from the `Account` Swift package, which the Mac and iOS apps share. A host over that package needed no app change. It depends on `Account` with `@testable import` to make an On My Mac account in the journey’s private home, as the app’s `TestAccountManager` does. The journeys import an OPML fixture, add a folder, rename and remove a feed, remove one that doesn’t exist and send a bad input. Three host details. Run the app’s `buildscripts/updateSecrets.sh` with no secrets set, because `Account` needs the generated `SecretKey.swift`. Embed an `Info.plist` in the executable, because `AppConfig` reads `Bundle.main.infoDictionary`. Call the account delegate’s import step, because `Account.importOPML` then refreshes every feed over the network and waits for it. The same host built for the Mac and, with `runner/swift_host.py --simulator`, for the iOS simulator. Both pass under the guard with byte parity, repeat 3 (`nnw-final.log`). Reflex caught a kit bug: `serveStandardIOOnMain` used `dispatchMain()`, which drains the main queue on another thread, so main actor code saw `Thread.isMainThread` false and the app’s `assert(Thread.isMainThread)` stopped the host (`nnw-main-thread-before.log`). The kit now runs the main run loop.
+
 ## Lessons
 
 1. Modern Android ViewModels are not in JVM modules. Asking for a JVM Core would mean a refactor nobody wants. The module’s unit test classpath already runs them.
@@ -41,6 +50,9 @@ On 11 Nov it did. The host is a SwiftPM executable next to the app’s packages 
 7. Errors shown only as a toast or a snackbar are invisible to Reflex. That is the refactor to ask for.
 8. An iOS-only app is not a dead end. `simctl spawn` runs a plain Swift executable on a simulator with stdin and stdout, so the same host and journeys work there with no app or UI.
 9. SwiftUI ViewModels on the main actor do their work in Tasks. A host that blocks the main thread on stdin never lets them run, the Swift twin of the missing Main dispatcher.
+10. React state can stay in a context. Rendering the provider headless is cheaper than moving it into a class. The reply has to wait for `act`.
+11. A UIKit screen often keeps its state in a coordinator or a view controller. When the logic sits in a shared Swift package, drive that. The screen itself still needs a refactor before Reflex sees it.
+12. Hosts start helpers. The guard has to leave Unix sockets alone and the runner has to stop the whole process group.
 
 ## Kept
 
@@ -56,6 +68,10 @@ On 11 Nov it did. The host is a SwiftPM executable next to the app’s packages 
 | Runner `WARN … node.state never changed` when a step expected a change after an action or while polling and the state stayed as it was. Added 11 Nov. | KMP App Template with the list collector removed: before, one `eventually` failure with `0 items` and no cause (`kmp-warn-nocollect-before.log`). After, the same failure plus a `WARN` naming `stateIn(WhileSubscribed)` with no subscriber among the causes (`kmp-warn-nocollect-after.log`). No warning on the working adapter, repeat 3 (`kmp-warn-final.log`). |
 | iOS simulator hosts: the runner sees a simulator binary, boots a throwaway device, runs each journey with `simctl spawn` under a simulator guard and deletes the device. `runner/swift_host.py` falls back to the simulator when the Mac build says a package is iOS only. Added 11 Nov. | Ice Cubes passes, repeat 3, guarded, with no app change (`icecubes-sim-final.log`). On 10 Nov it could not run at all (`icecubes-macos-build2.log`). |
 | Swift kit `serveStandardIOOnMain(settle:)`. Added 11 Nov. | The iOS-only SwiftUI stack sample with `serveStandardIO()` fails 15 steps with state stuck at 0. The new frozen-state `WARN` fires (`swiftui-ios-blocking.log`). With `serveStandardIOOnMain()` it passes with byte parity against UIKit. Ice Cubes needs it too. |
+| Guard calls the real `connect` for non-Internet sockets on macOS. Hosts run in their own process group and the runner stops the group. Added 11 Nov. | Ignite under `tsx`: before, the run hung. With only the runner fix it fails in 16 seconds (`ignite-guard-before.log`). With both it passes, repeat 3 (`ignite-final.log`). |
+| Node sample host `serveStandardIO({ around })`, the guide’s “React Native apps” and a React cause in the frozen-state `WARN`. Added 11 Nov. | Ignite without `around`: replies one step behind and a `WARN` (`ignite-no-around.log`). With it: PASS (`ignite-final.log`). |
+| Swift kit `serveStandardIOOnMain` keeps main actor work on the main thread. Added 11 Nov. | NetNewsWire stopped on `assert(Thread.isMainThread)` before (`nnw-main-thread-before.log`) and passes after on the Mac and the simulator (`nnw-final.log`). |
+| Guide: an `Info.plist` for a Swift host when app code reads `Bundle.main.infoDictionary`. Added 11 Nov. | NetNewsWire’s `AppConfig` crashed the host without one. |
 | Guide: ViewModels in Android modules, `viewModelScope` and `stateIn`, Flutter apps. | Written from the Now in Android, KMP App Template and Compass setups. |
 
 ## Dropped
@@ -66,6 +82,6 @@ On 11 Nov it did. The host is a SwiftPM executable next to the app’s packages 
 
 ## Not done
 
-- React Native: no real app was tried. The popular ones need large `node_modules` and free disk was near the 10 GB limit at one point.
-- UIKit: no real UIKit app was tried. Wikipedia and similar apps are large Xcode builds.
+- React Native: Ignite’s host runs in Node, not in the React Native runtime. The app shells were not built.
+- UIKit: NetNewsWire’s `SceneCoordinator` was not refactored, so the screen’s selection and navigation are not covered. Mastodon for iOS was looked at first and set aside: its timeline ViewModels are in the app target and the newer screens are SwiftUI.
 - No app was launched as an app on a simulator or emulator. The Ice Cubes host runs on the simulator, but it is a plain executable, not the app.

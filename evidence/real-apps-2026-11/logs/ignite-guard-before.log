@@ -1,0 +1,17 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=episodes platforms=react-native journeys=2 files=2
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite step=0 action=hello send={"op":"hello","protocol":1} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite step=1 action=ls send={"op":"ls"} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite step=2 action=Fetch send={"action":"Fetch","op":"do"} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite step=3 action=ToggleFavorite send={"action":"ToggleFavorite","input":{"guid":"ep-2"},"op":"do"} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite step=4 action=ToggleFavoritesOnly send={"action":"ToggleFavoritesOnly","op":"do"} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite step=5 action=ToggleFavorite send={"action":"ToggleFavorite","input":{"guid":"ep-2"},"op":"do"} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite step=6 action=ToggleFavorite send={"action":"ToggleFavorite","input":{"guid":2},"op":"do"} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite end expected exit=0 actual exit=-9
+JOURNEY FAIL platform=react-native journey=reflex/journeys/episodes.json#fetch-and-favorite steps=7 exit=-9 network=clean
+FAIL platform=react-native journey=reflex/journeys/errors.json#offline step=0 action=hello send={"op":"hello","protocol":1} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/errors.json#offline step=1 action=Fetch send={"action":"Fetch","op":"do"} actual=no response in 6s
+FAIL platform=react-native journey=reflex/journeys/errors.json#offline end expected exit=0 actual exit=-9
+JOURNEY FAIL platform=react-native journey=reflex/journeys/errors.json#offline steps=2 exit=-9 network=clean
+SUITE platform=react-native repeat=1/1 journeys=2 steps=9 wall_s=16.03
+RESULT FAIL mode=xfail-tracked unexpected_failures=11 xfail=0 platforms=react-native repeat=1 sample=episodes guard=canary-pass
