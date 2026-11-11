@@ -393,6 +393,24 @@ python3 ../reflex/runner/flutter_kernel.py \
 
 `flutter_tester` doesn’t pass arguments to `main`, so read the fixture with the host’s `fixture(args)`. An action may return a `Future`, such as a command that loads. The reply waits for it and for queued microtasks, so it shows settled state.
 
+### React Native apps
+
+There is no JavaScript kit. Copy the protocol v1 host in [samples/stacks/react-native/src/reflexHost.js](../samples/stacks/react-native/src/reflexHost.js) and write the adapter next to it, for example in `reflex/`. A TypeScript app can run the adapter with its own `tsx`:
+
+```json
+"command": ["{node}", "{root}/node_modules/tsx/dist/cli.mjs", "--tsconfig", "{root}/reflex/tsconfig.json", "{root}/reflex/host.ts", "{fixture}"]
+```
+
+State often lives in a React context or a hook, not in a class. Then render the real provider in Node with `react-test-renderer`, keep the value it gives a small probe component and call its functions from the adapter. React commits state after a call returns, so pass `around` and run each action in `act`. Each reply then waits for that work:
+
+```js
+new Session('episodes', episodesNode).serveStandardIO({
+  around: (run) => act(async () => { await run(); }),
+});
+```
+
+Set `globalThis.IS_REACT_ACT_ENVIRONMENT = true` and React Native’s `__DEV__` in a file the adapter imports first. When the app’s tsconfig has `"jsx": "react-native"`, give the host a tsconfig that extends it with `"jsx": "react-jsx"`. Replace only the API client’s transport with the fixture, so the app still parses the response.
+
 ### iOS-only Swift packages
 
 When the Core or a package it needs declares only iOS, the CLI can’t build for the Mac. Build it with the helper. It tries the Mac first and builds for the iOS simulator when the Mac build says a package is iOS only:
@@ -636,6 +654,7 @@ Next: answer 1, then /reflex-check
 | A state stays at loading or empty | A `WhileSubscribed` flow has no collector in the host. See the same section. |
 | `requires macos … but depends on the product` | A package declares only iOS. Build with `runner/swift_host.py`. See [iOS-only Swift packages](#ios-only-swift-packages). |
 | `BLOCKED … simulator did not start` | Install an iOS runtime in Xcode, Settings, Components. A first boot can time out when memory is low, so retry once. |
+| Each reply shows the state from one step before | React commits state after the action returns. Pass `around` to `serveStandardIO`. See [React Native apps](#react-native-apps). |
 | `WARN` with `node.state never changed` | A step expected a change after an action or while polling and the state stayed as it was. Check the Main dispatcher, collectors and async work in the host. See the same section. |
 | `json.malformed` on the first line | Send `{"op":"hello","protocol":1}` before `ls` or `do`. Human `ls` / `do` lines are not the wire format; use JSON objects. |
 | Kotlin and Swift disagree on keys | Both kits compare keys by exact UTF-16 code units. Use the same spellings. |

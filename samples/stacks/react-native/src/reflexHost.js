@@ -200,16 +200,36 @@ class Session {
   }
 
   handle(bytes) {
-    let response = {};
+    return this.finish(this.outcome(bytes));
+  }
+
+  // Like handle, but waits for the action's work before the snapshot. See serveStandardIO.
+  async handleSettled(bytes, around) {
+    this.around = around;
+    try {
+      const response = this.outcome(bytes);
+      await this.pending;
+      return this.finish(response);
+    } finally {
+      this.around = undefined;
+      this.pending = undefined;
+    }
+  }
+
+  outcome(bytes) {
     try {
       let text;
       try { text = this.decoder.decode(bytes); } catch { throw new WireError('json.malformed', '$'); }
-      response = { ...this.dispatch(parse(text)), ok: true };
+      return { ...this.dispatch(parse(text)), ok: true };
     } catch (error) {
       if (!(error instanceof WireError)) throw error;
-      response = { ok: false, error: { code: error.code, path: error.path } };
+      const response = { ok: false, error: { code: error.code, path: error.path } };
       if (error.code === 'protocol.unsupported') response.supported = [1];
+      return response;
     }
+  }
+
+  finish(response) {
     response.node = snapshot(this.root());
     return canonical(response);
   }
@@ -237,24 +257,34 @@ class Session {
       if (!action) throw new WireError('action.unknown', '$.action');
       const input = 'input' in request ? request.input : {};
       if (!isObject(input)) throw new WireError('input.not_object', '$.input');
-      action.run(decodeInput(input, action.input || { required: {} }, '$.input'));
+      const args = decodeInput(input, action.input || { required: {} }, '$.input');
+      if (this.around) this.pending = this.around(() => action.run(args));
+      else action.run(args);
     }
     return {};
   }
 
-  // Reads LF-framed requests from stdin and writes one reply line for each until EOF.
-  serveStandardIO() {
+  // Reads LF-framed requests from stdin and writes one reply line for each until EOF. Pass around
+  // when state changes after the action returns, as with React state: around(run) must call run and
+  // return a promise that settles once the work is done, for example (run) => act(async () => { await run(); }).
+  // Requests are then answered one at a time and the snapshot waits for that promise.
+  serveStandardIO({ around } = {}) {
     let buffer = Buffer.alloc(0);
+    let queue = Promise.resolve();
+    const reply = (bytes) => {
+      if (!around) { process.stdout.write(`${this.handle(bytes)}\n`); return; }
+      queue = queue.then(async () => process.stdout.write(`${await this.handleSettled(bytes, around)}\n`));
+    };
     process.stdin.on('data', (chunk) => {
       buffer = Buffer.concat([buffer, chunk]);
       let at;
       while ((at = buffer.indexOf(0x0a)) !== -1) {
-        process.stdout.write(`${this.handle(buffer.subarray(0, at))}\n`);
+        reply(buffer.subarray(0, at));
         buffer = buffer.subarray(at + 1);
       }
     });
     process.stdin.on('end', () => {
-      if (buffer.length) process.stdout.write(`${this.handle(buffer)}\n`);
+      if (buffer.length) reply(buffer);
     });
   }
 }

@@ -995,9 +995,9 @@ def host_stderr(text):
 
 
 FROZEN_CAUSES = ("likely causes: no Main dispatcher so viewModelScope work never runs, stateIn(WhileSubscribed) "
-                 "with no subscriber in the host, a Swift host on serveStandardIO for main actor work (use serveStandardIOOnMain) "
-                 "or async work the host did not wait for "
-                 "(docs/add-to-your-app.md, viewModelScope and stateIn). If the host is fine, the app did not change it")
+                 "with no subscriber in the host, a Swift host on serveStandardIO for main actor work (use serveStandardIOOnMain), "
+                 "a React host with no around for act or async work the host did not wait for "
+                 "(docs/add-to-your-app.md, viewModelScope and stateIn, React Native apps). If the host is fine, the app did not change it")
 
 
 def is_action(wire):
