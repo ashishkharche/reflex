@@ -3,6 +3,7 @@ import Darwin
 #else
 import Glibc
 #endif
+import Dispatch
 
 /// Reflex NDJSON protocol v1 for one host process. See docs/protocol/v1.md.
 public final class Session {
@@ -55,6 +56,10 @@ public final class Session {
     }
 
     private func respond(_ body: () throws -> [String: JSONValue]) -> JSONValue {
+        snapshot(outcome(body))
+    }
+
+    private func outcome(_ body: () throws -> [String: JSONValue]) -> [String: JSONValue] {
         var response: [String: JSONValue]
         do {
             response = try body()
@@ -67,6 +72,11 @@ public final class Session {
         } catch {
             preconditionFailure("ReflexKit: actions and ops may only throw WireError, got \(error)")
         }
+        return response
+    }
+
+    private func snapshot(_ outcome: [String: JSONValue]) -> JSONValue {
+        var response = outcome
         response["node"] = Focus(root: root()).snapshot
         for (key, value) in extras() { response[key] = value }
         return .object(response)
@@ -126,6 +136,54 @@ public final class Session {
         let input = value ?? .object(WireObject())
         guard case .object = input else { throw WireError(WireCode.inputNotObject, "$.input") }
         return try (schema ?? .empty).decode(input, at: "$.input")
+    }
+
+    /// Like `handle(bytes:)`, but awaits `settle` after the request runs and before the reply reads state.
+    /// Call it on the main actor, so work an action starts there can finish first.
+    @MainActor
+    public func handle(bytes line: [UInt8], settle: @MainActor () async -> Void) async -> JSONValue {
+        let result = outcome {
+            guard let text = StrictUTF8.decode(line) else { throw WireError(WireCode.malformed, "$") }
+            return try dispatch(WireJSON.parseTree(text))
+        }
+        await settle()
+        return snapshot(result)
+    }
+
+    /// Lets queued main actor work run: three turns of `Task.yield()`.
+    @MainActor
+    public static func yieldThrice() async {
+        for _ in 0..<3 { await Task.yield() }
+    }
+
+    /// For ViewModels on the main actor, such as `@MainActor @Observable` classes on iOS. Reads stdin on
+    /// a background queue and answers each line on the main actor, so Tasks an action starts can run.
+    /// Each reply waits for `settle`, which by default yields three times; pass one that awaits the
+    /// ViewModel’s own task when its work crosses actors. Call it from the main thread. Exits 0 at EOF.
+    public func serveStandardIOOnMain(settle: @escaping @MainActor () async -> Void = Session.yieldThrice) -> Never {
+        DispatchQueue.global().async {
+            var framer = LineFramer()
+            var buffer = [UInt8](repeating: 0, count: 65_536)
+            func answer(_ line: [UInt8]) {
+                let done = DispatchSemaphore(value: 0)
+                Task { @MainActor in
+                    let out = await self.handle(bytes: line, settle: settle).wire + "\n"
+                    fputs(out, stdout)
+                    fflush(stdout)
+                    done.signal()
+                }
+                done.wait()
+            }
+            while true {
+                let count = read(0, &buffer, buffer.count)
+                if count < 0 && errno == EINTR { continue }
+                if count <= 0 { break }
+                for line in framer.push(buffer[0..<count]) { answer(line) }
+            }
+            if let last = framer.finish() { answer(last) }
+            exit(0)
+        }
+        dispatchMain()
     }
 
     /// Reads NDJSON from stdin until EOF with `LineFramer` and answers each line with
