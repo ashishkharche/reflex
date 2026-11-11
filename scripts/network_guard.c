@@ -1,5 +1,5 @@
 // Behavior-session network guard. Deny Internet egress before any packet leaves.
-// macOS loads it with DYLD_INSERT_LIBRARIES (interpose). Linux loads it with LD_PRELOAD.
+// macOS and the iOS simulator load it with DYLD_INSERT_LIBRARIES (interpose). Linux loads it with LD_PRELOAD.
 // This is test instrumentation, never linked into Core or a Mobile host.
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
 #ifndef RTLD_NEXT
 #define RTLD_NEXT ((void *) -1l)
 #endif
@@ -21,7 +24,19 @@ static void audit(const char *message) {
     if (write(fd, message, strlen(message)) < 0) _exit(78);
     close(fd);
 }
-#ifdef __APPLE__
+#if defined(__APPLE__) && TARGET_OS_SIMULATOR
+// A simulator host runs in a throwaway device. The runner points HOME and CFFIXED_USER_HOME at a private
+// folder, so preferences and files land there and nowhere else.
+static void isolate_preferences(void) {
+    const char *home = getenv("HOME");
+    const char *fixed = getenv("CFFIXED_USER_HOME");
+    if (!home || !fixed || strcmp(home, fixed) != 0) {
+        audit("BLOCKED simulator home not private\n");
+        _exit(78);
+    }
+    audit("STORAGE simulator-home\n");
+}
+#elif defined(__APPLE__)
 // This read-only query proves the launcher installed a kernel policy before exec.
 extern int sandbox_check(pid_t pid, const char *operation, int filter_type, ...);
 static void isolate_preferences(void) {

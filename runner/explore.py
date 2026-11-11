@@ -111,6 +111,10 @@ def main():
     if not ok:
         print(f"BLOCKED guard canary did not prove denial: {audit}")
         return 2
+    problem = rr.start_simulator(manifest, [t for t in targets if t in manifest.platforms], guard, print)
+    if problem:
+        print(problem if problem.startswith("BLOCKED") else f"BLOCKED {problem}")
+        return 2
     fixture = args.fixture or manifest.default_fixture
     keys = rr.state_keys(manifest.state_keys, manifest.platforms)
     results, failed = {}, False

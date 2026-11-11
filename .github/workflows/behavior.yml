@@ -29,6 +29,7 @@ jobs:
       - run: python3 runner/reflex_runner.py samples/outbox/reflex.json --platform both --repeat 3 --timings 20
       - run: python3 runner/test_state_keys.py
       - run: python3 runner/test_host_checks.py
+      - run: python3 runner/test_simulator.py
       - run: python3 runner/reflex_runner.py runner/keys/mapped-manifest.json --timings 0
       - name: Stack checks for UIKit, Android Views, Java and the React Native Node host
         run: |
@@ -56,6 +57,7 @@ jobs:
       - run: python3 scripts/check_docs.py
       - run: python3 runner/test_state_keys.py
       - run: python3 runner/test_host_checks.py
+      - run: python3 runner/test_simulator.py
       - run: kotlin/gradlew -p kotlin --no-daemon --max-workers=1 :cli:installDist :reflex-kit:test :core:test --console=plain
       - run: kotlin/gradlew -p samples/outbox/kotlin --no-daemon --max-workers=1 :cli:installDist :core:test --console=plain
       - run: python3 runner/reflex_runner.py tests/inventory/reflex.json --platform kotlin

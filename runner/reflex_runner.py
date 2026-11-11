@@ -26,6 +26,9 @@ import tempfile
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import simulator  # noqa: E402
+
 PROTOCOL = 1
 TIMEOUT_S = 6
 POLL_DEFAULT_MS = 2000
@@ -318,6 +321,10 @@ class Manifest:
         self.conformance = self.root / data["conformance"] if data.get("conformance") else None
         self.state_keys = data.get("stateKeys")
         state_keys(self.state_keys, self.platforms)
+        # Set by main when a platform runs on the iOS simulator.
+        self.simulator = None
+        self.sim_targets = set()
+        self.sim_guard = None
 
     def command(self, target, fixture):
         parts = self.platforms[target]["command"]
@@ -539,7 +546,15 @@ class Host:
             Path(self.audit).touch()
             env.update({GUARD_ENV: str(guard), "REFLEX_NETWORK_LOG": self.audit})
         command = manifest.command(target, fixture)
-        if guard:
+        if target in getattr(manifest, "sim_targets", ()):
+            # The device is thrown away after the run. Each journey still gets its own home, so
+            # preferences and files never carry from one journey to the next.
+            child = {"HOME": self.home, "CFFIXED_USER_HOME": self.home, "TMPDIR": self.home + "/"}
+            if guard:
+                child.update(DYLD_INSERT_LIBRARIES=str(manifest.sim_guard), REFLEX_NETWORK_LOG=self.audit)
+            env = simulator.child_env(os.environ, child)
+            command = manifest.simulator.command(command)
+        elif guard:
             command = guarded_command(command, guard, env)
         self.stderr = tempfile.TemporaryFile()
         self.proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -791,6 +806,35 @@ def guard_canary(guard):
         return ok, audit.strip().replace("\n", " | "), out.stdout.strip()
 
 
+def start_simulator(manifest, targets, guard, out):
+    """Starts one throwaway iOS simulator for the platforms that need it, with the guard and its canary.
+    Returns None when nothing needs it or it is ready, else the reason it is not."""
+    sim_targets = [t for t in targets if "command" in manifest.platforms[t] and
+                   simulator.wants_simulator(manifest.platforms[t], manifest.command(t, manifest.default_fixture)[0])]
+    if not sim_targets:
+        return None
+    names = ",".join(sim_targets)
+    why = simulator.available() if sys.platform == "darwin" else "iOS simulator hosts need macOS with Xcode"
+    if why:
+        return f"BLOCKED platform={names} {why}"
+    choice = next((manifest.platforms[t]["simulator"] for t in sim_targets
+                   if isinstance(manifest.platforms[t].get("simulator"), dict)), {})
+    try:
+        manifest.simulator = simulator.Simulator(choice.get("device"), choice.get("runtime")).start()
+    except (RuntimeError, subprocess.SubprocessError) as error:
+        return f"BLOCKED platform={names} simulator did not start: {str(error)[:300]}"
+    manifest.sim_targets = set(sim_targets)
+    out(f"SIMULATOR platform={names} {manifest.simulator.label} spawn=headless (throwaway device, deleted at the end)")
+    if not guard:
+        return None
+    manifest.sim_guard = simulator.build_guard(manifest.guard_source, Path(guard).with_name("network_guard_sim.dylib"))
+    with tempfile.TemporaryDirectory(prefix="reflex-canary-") as home:
+        ok, audit, canary = simulator.canary(manifest.simulator, manifest.sim_guard, home)
+    out(f"GUARD {'PASS' if ok else 'FAIL'} backend=simctl-spawn+{GUARD_ENV} canary=sim-connect-192.0.2.1 "
+        f"audit={audit!r} canary_out={canary!r}")
+    return None if ok else "simulator guard canary did not prove denial"
+
+
 def matcher_self_test(manifest):
     """The runner’s matcher must agree with the kit’s on the shared F-13 cases."""
     data = parse(manifest.conformance.read_text(encoding="utf-8"))
@@ -940,7 +984,8 @@ def host_stderr(text):
 
 
 FROZEN_CAUSES = ("likely causes: no Main dispatcher so viewModelScope work never runs, stateIn(WhileSubscribed) "
-                 "with no subscriber in the host or async work the host did not wait for "
+                 "with no subscriber in the host, a Swift host on serveStandardIO for main actor work (use serveStandardIOOnMain) "
+                 "or async work the host did not wait for "
                  "(docs/add-to-your-app.md, viewModelScope and stateIn). If the host is fine, the app did not change it")
 
 
@@ -1085,6 +1130,10 @@ def main():
             out(f"GUARD SKIP {why}")
     if guard:
         guard_label = "canary-pass"
+    problem = start_simulator(manifest, [t for t in targets if t not in live_targets], guard, out)
+    if problem:
+        out(f"RESULT FAIL {problem}")
+        sys.exit(2)
     launched = []
     for target in live_targets:
         try:
