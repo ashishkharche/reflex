@@ -49,6 +49,7 @@ React Native and a UIKit app were not tried. See [Not done](#not-done).
 | stateKeys hint only with two or more platforms. | Now in Android with one platform: the old hint pointed at stateKeys for a feed stuck at loading (`nia-runner-nocollect.log`). It is gone (`nia-runner-nocollect-after.log`). |
 | Host stderr: a `STDERR` line for a failed journey, and the exception line of a crash. | Fossify Calculator: the crash now reads `NullPointerException: getString(...) must not be null` instead of the end of a stack trace (`calc-runner1.log` before, `calc-runner2.log` after). |
 | `{flutter_tester}` and `runner/flutter_kernel.py`. Dart host waits for async actions and reads the fixture on `flutter_tester`. | Compass passes with no app change (`compass-runner-pass.log`). Before, replies showed work in flight and the fixture was ignored (`compass-runner1.log`). |
+| Runner `WARN … node.state never changed` when a step expected a change after an action or while polling and the state stayed as it was. Added 11 Nov. | KMP App Template with the list collector removed: before, one `eventually` failure with `0 items` and no cause (`kmp-warn-nocollect-before.log`). After, the same failure plus a `WARN` naming `stateIn(WhileSubscribed)` with no subscriber among the causes (`kmp-warn-nocollect-after.log`). No warning on the working adapter, repeat 3 (`kmp-warn-final.log`). |
 | Guide: ViewModels in Android modules, `viewModelScope` and `stateIn`, Flutter apps. | Written from the Now in Android, KMP App Template and Compass setups. |
 
 ## Dropped

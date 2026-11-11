@@ -73,29 +73,37 @@ class HostOutput(unittest.TestCase):
 
 
 class FrozenState(unittest.TestCase):
-    @staticmethod
-    def record(wire, count, problems=()):
-        return {"wire": wire, "resp": {"ok": True, "node": {"name": "List", "state": {"count": count}}},
-                "problems": list(problems)}
-
     DO = '{"action":"Add","op":"do"}'
-    MISS = "$.node.state.count expected=1 (integer) actual=0 (integer)"
+    LS = '{"op":"ls"}'
+    MISS = "$.node.state.count expected=1 (integer) actual=0 (integer) response={}"
 
-    def test_unchanged_state_after_an_expected_change_warns(self):
-        records = [self.record('{"op":"ls"}', 0), self.record(self.DO, 0, [self.MISS]), self.record(self.DO, 0)]
-        self.assertEqual(rr.frozen_state(records), 2)
+    @staticmethod
+    def record(step, wire, count, problems=(), action="Add", polls=None):
+        record = {"step": step, "wire": wire, "action": action, "problems": list(problems),
+                  "resp": {"ok": True, "node": {"name": "List", "state": {"count": count}}}}
+        if polls is not None:
+            record["polls"] = polls
+        return record
+
+    def test_action_that_left_state_alone_warns(self):
+        records = [self.record(0, self.LS, 0, action="ls"), self.record(1, self.DO, 0, [self.MISS])]
+        self.assertEqual(rr.frozen_state(records), (1, "action Add"))
+
+    def test_polls_that_never_saw_a_change_warn(self):
+        miss = "eventually not met within 2000 ms after 85 ls poll(s), action not re-sent: $.node.state.objects expected=2 items actual=0 items"
+        records = [self.record(0, self.LS, 0, action="hello"), self.record(1, self.LS, 0, [miss], "eventually", 85)]
+        self.assertEqual(rr.frozen_state(records), (1, "85 ls polls"))
 
     def test_state_that_moved_does_not_warn(self):
-        records = [self.record('{"op":"ls"}', 0), self.record(self.DO, 1, ["$.node.state.count expected=2 (integer) actual=1 (integer)"])]
-        self.assertEqual(rr.frozen_state(records), 0)
+        records = [self.record(0, self.LS, 0, action="ls"),
+                   self.record(1, self.DO, 1, ["$.node.state.count expected=2 (integer) actual=1 (integer)"])]
+        self.assertIsNone(rr.frozen_state(records))
 
-    def test_passing_journey_with_steady_state_does_not_warn(self):
-        records = [self.record('{"op":"ls"}', 5), self.record(self.DO, 5)]
-        self.assertEqual(rr.frozen_state(records), 0)
-
-    def test_other_failures_and_no_actions_do_not_warn(self):
-        self.assertEqual(rr.frozen_state([self.record('{"op":"ls"}', 0), self.record(self.DO, 0, ["$.error.code expected=x"])]), 0)
-        self.assertEqual(rr.frozen_state([self.record('{"op":"ls"}', 0), self.record('{"op":"ls"}', 0, [self.MISS])]), 0)
+    def test_passing_steps_and_other_failures_do_not_warn(self):
+        self.assertIsNone(rr.frozen_state([self.record(0, self.LS, 5, action="ls"), self.record(1, self.DO, 5)]))
+        self.assertIsNone(rr.frozen_state([self.record(0, self.LS, 0, action="ls"), self.record(1, self.DO, 0, ["$.error.code expected=x"])]))
+        self.assertIsNone(rr.frozen_state([self.record(0, self.LS, 0, action="ls"), self.record(1, self.LS, 0, [self.MISS], "ls")]))
+        self.assertIsNone(rr.frozen_state([self.record(0, self.DO, 0, [self.MISS])]))
 
     def test_runner_prints_the_warning(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -116,7 +124,7 @@ class FrozenState(unittest.TestCase):
                 "platforms": {"py": {"command": [sys.executable, "{root}/host.py"]}}, "journeys": ["j.json"]}))
             run = subprocess.run([sys.executable, str(Path(rr.__file__)), str(root / "reflex.json"), "--no-guard", "--allow-unguarded"],
                                  capture_output=True, text=True, timeout=60)
-            self.assertIn("WARN platform=py journey=j.json#add node.state never changed across 1 action(s)", run.stdout)
+            self.assertIn("WARN platform=py journey=j.json#add step=2 node.state never changed over action Add", run.stdout)
             self.assertIn("no Main dispatcher", run.stdout)
 
 

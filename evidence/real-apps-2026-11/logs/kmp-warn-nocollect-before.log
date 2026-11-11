@@ -1,0 +1,8 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=kmp-app-template platforms=jvm journeys=2 files=2
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=jvm protocol=1 sample=kmp-app-template kit=1.0.1
+JOURNEY PASS platform=jvm journey=reflex/journeys/empty.json#empty steps=4 exit=0 network=clean
+FAIL platform=jvm journey=reflex/journeys/list.json#list step=2 action=eventually send={"op":"ls"} eventually not met within 2000 ms after 85 ls poll(s), action not re-sent: $.node.state.objects expected=2 items actual=0 items; last state={"node":{"actions":["Open"],"name":"List","state":{"objects":[]}},"ok":true}
+JOURNEY FAIL platform=jvm journey=reflex/journeys/list.json#list steps=7 exit=0 network=clean
+SUITE platform=jvm repeat=1/1 journeys=2 steps=11 wall_s=2.38
+RESULT FAIL mode=xfail-tracked unexpected_failures=1 xfail=0 platforms=jvm repeat=1 sample=kmp-app-template guard=canary-pass

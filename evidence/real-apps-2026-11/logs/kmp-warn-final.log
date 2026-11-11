@@ -1,0 +1,9 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=kmp-app-template platforms=jvm journeys=2 files=2
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=jvm protocol=1 sample=kmp-app-template kit=1.0.1
+JOURNEY PASS platform=jvm journey=reflex/journeys/empty.json#empty steps=4 exit=0 network=clean
+JOURNEY PASS platform=jvm journey=reflex/journeys/list.json#list steps=7 exit=0 network=clean
+SUITE platform=jvm repeat=1/3 journeys=2 steps=11 wall_s=0.40
+SUITE platform=jvm repeat=2/3 journeys=2 steps=11 wall_s=0.40
+SUITE platform=jvm repeat=3/3 journeys=2 steps=11 wall_s=0.38
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=jvm repeat=3 sample=kmp-app-template guard=canary-pass

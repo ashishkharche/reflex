@@ -280,7 +280,7 @@ val screen = CoroutineScope(main)
 screen.launch { vm.feed.collect {} }
 ```
 
-A missing collector looks like a state stuck at its first value, such as loading. When a journey expects a change and every reply shows the same `node.state`, the runner prints `WARN … node.state never changed` with these causes.
+A missing collector looks like a state stuck at its first value, such as loading. When a step expects a change after an action or while polling and `node.state` stays as it was, the runner prints `WARN … node.state never changed` with these causes.
 
 - `Cannot access 'androidx.lifecycle.ViewModel'` when the CLI compiles: the module with the ViewModel has lifecycle as an `implementation` dependency, which doesn’t reach the CLI. Add the lifecycle ViewModel library to the CLI.
 
@@ -608,7 +608,7 @@ Next: answer 1, then /reflex-check
 | `host input not found` | A classpath folder, argument file or script in the command is missing. Build the CLI first. |
 | `WARN` with `Dispatchers.Main is missing` | Set a Main dispatcher in the host. See [viewModelScope and stateIn](#viewmodelscope-and-statein). |
 | A state stays at loading or empty | A `WhileSubscribed` flow has no collector in the host. See the same section. |
-| `WARN` with `node.state never changed` | A journey expected a change and every reply had the same state. Check the Main dispatcher, collectors and async work in the host. See the same section. |
+| `WARN` with `node.state never changed` | A step expected a change after an action or while polling and the state stayed as it was. Check the Main dispatcher, collectors and async work in the host. See the same section. |
 | `json.malformed` on the first line | Send `{"op":"hello","protocol":1}` before `ls` or `do`. Human `ls` / `do` lines are not the wire format; use JSON objects. |
 | Kotlin and Swift disagree on keys | Both kits compare keys by exact UTF-16 code units. Use the same spellings. |
 | Warm timing fails after a green suite | The warm run reuses one process. Omit `warm` until the journey resets state. Another option is a reset action. |
