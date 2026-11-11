@@ -1,7 +1,8 @@
 """Unit tests for the runner’s host checks: a host that was never built, a crash cause, kit warnings, state that never changes,
-Unix sockets under the guard and hosts that start a child."""
+Unix sockets under the guard, hosts that start a child and main actor work on the main thread."""
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -171,6 +172,40 @@ class ChildProcesses(unittest.TestCase):
             run = run_host(folder, setup, "--no-guard", "--allow-unguarded")
         self.assertIn("no response in", run.stdout)
         self.assertIn("RESULT FAIL", run.stdout)
+
+
+class MainThread(unittest.TestCase):
+    def test_serve_on_main_runs_main_actor_work_on_the_main_thread(self):
+        # App code often checks Thread.isMainThread. dispatchMain() would drain the main queue on another thread.
+        if sys.platform != "darwin" or not shutil.which("swift"):
+            self.skipTest("needs Swift on macOS")
+        kit = Path(rr.__file__).resolve().parent.parent / "kit"
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "Sources" / "probe").mkdir(parents=True)
+            (root / "Package.swift").write_text(
+                "// swift-tools-version: 6.0\nimport PackageDescription\n"
+                "let package = Package(name: \"Probe\", platforms: [.macOS(.v13)],\n"
+                f"  dependencies: [.package(name: \"ReflexKit\", path: {json.dumps(str(kit))})],\n"
+                "  targets: [.executableTarget(name: \"probe\", dependencies: [\"ReflexKit\"])],\n"
+                "  swiftLanguageModes: [.v5])\n")
+            (root / "Sources" / "probe" / "main.swift").write_text(
+                "import Foundation\nimport ReflexKit\n"
+                "@MainActor final class Probe: Node {\n"
+                "  var main = false\n"
+                "  var name: String { \"Probe\" }\n"
+                "  var state: JSONValue { [\"main\": .bool(main)] }\n"
+                "  var actions: [String: NodeAction] { [\"Check\": NodeAction { _ in Task { @MainActor in self.main = Thread.isMainThread } }] }\n"
+                "}\n"
+                "MainActor.assumeIsolated {\n"
+                "  let probe = Probe()\n"
+                "  Session(sample: \"probe\", root: { probe }).serveStandardIOOnMain()\n"
+                "}\n")
+            subprocess.run(["swift", "build", "--package-path", str(root)], check=True, capture_output=True, timeout=600)
+            run = subprocess.run([str(root / ".build" / "debug" / "probe")], capture_output=True, text=True, timeout=30,
+                                 input='{"op":"hello","protocol":1}\n{"op":"do","action":"Check"}\n')
+        replies = [json.loads(line) for line in run.stdout.splitlines()]
+        self.assertEqual(replies[1]["node"]["state"], {"main": True})
 
 
 if __name__ == "__main__":

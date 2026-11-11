@@ -4,6 +4,9 @@ import Darwin
 import Glibc
 #endif
 import Dispatch
+#if canImport(Darwin)
+import CoreFoundation
+#endif
 
 /// Reflex NDJSON protocol v1 for one host process. See docs/protocol/v1.md.
 public final class Session {
@@ -183,7 +186,13 @@ public final class Session {
             if let last = framer.finish() { answer(last) }
             exit(0)
         }
+        #if canImport(Darwin)
+        // dispatchMain() lets a worker thread drain the main queue, so main actor code would see
+        // Thread.isMainThread false and main thread asserts in the app would fire. The run loop keeps it here.
+        while true { CFRunLoopRun() }
+        #else
         dispatchMain()
+        #endif
     }
 
     /// Reads NDJSON from stdin until EOF with `LineFramer` and answers each line with

@@ -46,6 +46,6 @@ if (reflexKit.isDirectory) {
 }
 ```
 
-A Swift ViewModel on the main actor needs `serveStandardIOOnMain(settle:)`, which answers each line on the main actor after the work an action started has run. `handle(bytes:settle:)` is the same for one line.
+A Swift ViewModel on the main actor needs `serveStandardIOOnMain(settle:)`, which answers each line on the main actor, on the main thread, after the work an action started has run. `handle(bytes:settle:)` is the same for one line.
 
 Longer Swift and Kotlin examples remain in this package’s tests (`AdoptionExampleTests` / `AdoptionExampleTest`) and in [docs/how-you-use-it.md](../docs/how-you-use-it.md).

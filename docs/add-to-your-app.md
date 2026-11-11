@@ -655,6 +655,7 @@ Next: answer 1, then /reflex-check
 | `requires macos … but depends on the product` | A package declares only iOS. Build with `runner/swift_host.py`. See [iOS-only Swift packages](#ios-only-swift-packages). |
 | `BLOCKED … simulator did not start` | Install an iOS runtime in Xcode, Settings, Components. A first boot can time out when memory is low, so retry once. |
 | Each reply shows the state from one step before | React commits state after the action returns. Pass `around` to `serveStandardIO`. See [React Native apps](#react-native-apps). |
+| `Fatal error` where app code reads `Bundle.main.infoDictionary` | A plain executable has no `Info.plist`. Embed one in the CLI target with `linkerSettings: [.unsafeFlags(["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__info_plist", "-Xlinker", "Info.plist"])]`. |
 | `WARN` with `node.state never changed` | A step expected a change after an action or while polling and the state stayed as it was. Check the Main dispatcher, collectors and async work in the host. See the same section. |
 | `json.malformed` on the first line | Send `{"op":"hello","protocol":1}` before `ls` or `do`. Human `ls` / `do` lines are not the wire format; use JSON objects. |
 | Kotlin and Swift disagree on keys | Both kits compare keys by exact UTF-16 code units. Use the same spellings. |
