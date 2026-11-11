@@ -1,0 +1,23 @@
+name: CounterSwiftUI
+options:
+  bundleIdPrefix: com.ashishkharche.reflex
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  CounterCore:
+    path: ../CounterCore
+targets:
+  CounterSwiftUI:
+    type: application
+    platform: iOS
+    sources: [CounterApp.swift]
+    dependencies:
+      - package: CounterCore
+        product: CounterCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ashishkharche.reflex.counter.swiftui
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        SWIFT_VERSION: "5.0"
+        CODE_SIGNING_ALLOWED: NO

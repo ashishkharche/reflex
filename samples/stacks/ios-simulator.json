@@ -1,0 +1,14 @@
+{
+ "sample": "counter",
+ "protocol": 1,
+ "root": "../..",
+ "conformance": "kit/conformance/strict-decoder.json",
+ "defaultFixture": "default",
+ "note": "An iOS-only SwiftUI counter whose ViewModel works in a Task, run on the iOS simulator. The runner sees the host was built for the simulator and starts a throwaway device. Parity compares it with uikit on the Mac.",
+ "platforms": {
+  "uikit": {"command": ["{root}/samples/stacks/uikit/Harness/.build/debug/counter-cli"]},
+  "swiftui-ios": {"command": ["{root}/samples/stacks/swiftui-ios/Harness/.build/reflex/counter-ios"]}
+ },
+ "journeys": ["samples/stacks/journeys/*.json"],
+ "everyResponse": {"node": {"name": "Counter"}}
+}

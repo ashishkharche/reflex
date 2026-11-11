@@ -11,6 +11,7 @@ One small counter on each popular mobile stack, driven by one shared journey (`j
 | Compose Multiplatform | `cmp/` | Kotlin kit on JVM and Swift kit on Kotlin/Native | `cmp.json` |
 | Flutter | `flutter/` | Minimal Dart host in `lib/reflex/host.dart` | `flutter.json` |
 | React Native | `react-native/` | Minimal Node host in `src/reflexHost.js` | `react-native.json` |
+| SwiftUI, iOS only | `swiftui-ios/` | Swift kit on the iOS simulator, `serveStandardIOOnMain` | `ios-simulator.json` |
 
 `all.json` runs every host in one go. Parity compares each host with `uikit`. The `hello` step is marked `host-kit` because the Dart and Node hosts report their own kit name. Every other reply must match byte for byte.
 
@@ -28,7 +29,11 @@ swift build --package-path samples/stacks/cmp/SwiftHost -j 2
 (cd samples/stacks/flutter && flutter pub get && dart compile exe bin/reflex_host.dart -o build/reflex-host)
 (cd samples/stacks/flutter && python3 ../../../runner/flutter_kernel.py bin/reflex_host.dart build/reflex-host.dill)
 python3 runner/reflex_runner.py samples/stacks/all.json --platform all --repeat 3 --timings 0
+python3 runner/swift_host.py samples/stacks/swiftui-ios/Harness counter-ios
+python3 runner/reflex_runner.py samples/stacks/ios-simulator.json --repeat 3 --timings 0
 ```
+
+The SwiftUI core imports UIKit and declares only iOS, so `swift_host.py` builds its host for the iOS simulator. Its ViewModel lives on the main actor and changes state in a Task. The runner boots a throwaway simulator for it, which takes about a minute, so it has its own manifest and is not in `all.json`.
 
 The Flutter host runs twice: as a `dart` executable and on `flutter_tester`, Flutter’s headless engine, as `flutter-tester`. A real Flutter ViewModel usually imports `package:flutter`, which `dart` can’t load, so apps use the second way ([Flutter apps](../../docs/add-to-your-app.md#flutter-apps)).
 
@@ -40,6 +45,7 @@ These prove each screen compiles against the same ViewModel the host serves. And
 
 ```bash
 (cd samples/stacks/uikit/App && xcodegen generate && xcodebuild -scheme CounterUIKit -sdk iphonesimulator -derivedDataPath .build/ios build)
+(cd samples/stacks/swiftui-ios/App && xcodegen generate && xcodebuild -scheme CounterSwiftUI -sdk iphonesimulator -derivedDataPath .build/ios build)
 kotlin/gradlew -p samples/stacks/android -Pmobile=true --no-daemon :views-app:assembleDebug :java-app:assembleDebug
 kotlin/gradlew -p samples/stacks/kmp -Pmobile=true --no-daemon :androidApp:assembleDebug :shared:linkDebugFrameworkIosSimulatorArm64
 (cd samples/stacks/kmp/iosApp && xcodegen generate && xcodebuild -scheme CounterKMP -sdk iphonesimulator -derivedDataPath .build/ios build)
