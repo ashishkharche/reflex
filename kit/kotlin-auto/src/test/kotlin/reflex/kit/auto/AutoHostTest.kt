@@ -50,6 +50,24 @@ class NotesViewModel(private val repository: NotesRepository, private val analyt
     fun clearDraft() {}
 }
 
+sealed interface FeedAction {
+    data class Select(val id: String, val pinned: Boolean) : FeedAction
+    object Refresh : FeedAction
+    data class Open(val item: Entry) : FeedAction
+    data class Share(val target: Analytics) : FeedAction
+}
+data class Entry(val id: Long, val title: String)
+
+/** One onAction(event) entry point, as in many Compose apps. */
+class FeedViewModel {
+    val log = MutableStateFlow(listOf<String>())
+    fun onAction(action: FeedAction) { log.value = log.value + action.toString() }
+    fun pin(entry: Entry) { log.value = log.value + "pin ${entry.id}" }
+}
+
+class NetRepo(val client: java.net.http.HttpClient)
+class NetViewModel(val repo: NetRepo)
+
 class AutoHostTest {
     private val main = UnconfinedTestDispatcher()
 
@@ -91,5 +109,29 @@ class AutoHostTest {
         assertEquals(listOf("id"), c.params["open/1"])
         assertEquals(setOf("now"), c.omit)
         assertEquals("Home", WireJson.parse("\"Home\"").let { c.name })
+    }
+
+    @Test fun eventsAndDataClassesBecomeActions() {
+        val config = AutoConfig(FeedViewModel::class.java.name, "Feed", params = mapOf("onAction/1" to listOf("action"), "pin/1" to listOf("entry")),
+            events = mapOf("FeedAction" to listOf("reflex.kit.auto.Select", "reflex.kit.auto.Refresh", "reflex.kit.auto.Open", "reflex.kit.auto.Share")),
+            ctors = mapOf("Select" to listOf("id", "pinned"), "Open" to listOf("item"), "Entry" to listOf("id", "title")))
+        val node = AutoNode(FeedViewModel(), config, CoroutineScope(SupervisorJob() + main)) { main.scheduler.runCurrent() }
+        val s = Session("feed", { node })
+        val hello = s.handle("""{"op":"hello","protocol":1}""") as JsonObject
+        assertEquals("""["Open","Pin","Refresh","Select"]""", (hello["node"] as JsonObject)["actions"]!!.wire)
+        assertEquals(listOf("FeedAction.Share"), node.skipped)
+        s.handle("""{"op":"do","action":"Select","input":{"id":"a","pinned":true}}""")
+        s.handle("""{"op":"do","action":"Refresh"}""")
+        s.handle("""{"op":"do","action":"Open","input":{"item.id":3,"item.title":"t"}}""")
+        val pinned = s.handle("""{"op":"do","action":"Pin","input":{"entry.id":7,"entry.title":"x"}}""") as JsonObject
+        assertTrue(pinned["node"]!!["state"]!!.wire, pinned["node"]!!["state"]!!.wire.contains("Select(id=a, pinned=true)"))
+        assertTrue(pinned["node"]!!["state"]!!.wire.contains("pin 7"))
+        assertTrue(pinned["node"]!!["state"]!!.wire.contains("Open(item=Entry(id=3, title=t))"))
+    }
+
+    @Test fun notesThePathToARealNetworkClient() {
+        val builder = Builder(javaClass.classLoader, emptyList(), main)
+        try { builder.construct(NetViewModel::class.java, 0) } catch (_: Unbuildable) {}
+        assertTrue(builder.notes.toString(), "network: NetViewModel → NetRepo → HttpClient can reach the network" in builder.notes)
     }
 }

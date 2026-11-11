@@ -158,20 +158,23 @@ It needs no hand-written code and changes no app file. Everything goes in `tests
 1. It finds the stack: Gradle (Android, Kotlin Multiplatform or Compose Multiplatform), Flutter, React Native or Swift.
 2. It ranks the classes that hold screen state and picks one. `--list` shows the ranking and `--screen <Name>` picks another.
 3. It writes a host for that class, `reflex.json` and `journeys/first-run.json`, then runs the journey with `--repeat 3`.
-4. It handles the known failures itself. Gradle writes the classpath. The Kotlin host sets a Main dispatcher and collects every flow, so `stateIn` stays live. A Swift package that declares only iOS builds for the simulator. Flutter gets `pub get`. Changes it makes to the setup print as `FIX`.
-5. It ends with `PASS` or with `STOP` and one `Next:` line.
+4. It handles the known failures itself. Gradle writes the classpath. The Kotlin host sets a Main dispatcher and collects every flow, so `stateIn` stays live. Gradle runs on JDK 21 or 17 when the default JDK is newer. A Swift package that declares only iOS builds for the simulator. Flutter gets `pub get`. Changes it makes to the setup print as `FIX`.
+5. The first journey also runs up to three actions that need no input and end the same way each run.
+6. It ends with `PASS` or with `STOP` and one `Next:` line.
 
 | Stack | Host it writes |
 | --- | --- |
 | Kotlin | A reflective host on the module’s JVM unit test classpath, read through a Gradle init script. It uses the app’s own test doubles (Test, Fake, InMemory, Stub) and stand-ins for other interfaces. |
-| Flutter | A Dart host on `flutter_tester` over a `ChangeNotifier` ViewModel and its fakes. |
-| React Native | A Node host run with `tsx` over a React context or a Zustand store. Run the app’s `npm install` first. |
+| Flutter | A Dart host on `flutter_tester` over a `ChangeNotifier` ViewModel, a Riverpod `Notifier` or a Bloc or Cubit, with the app’s fakes. |
+| React Native | A Node host run with `tsx` over a React context or a Zustand store. Run the app’s `npm install` first. A Zustand host gives native modules such as `react-native` stand-ins. |
 | Swift | A SwiftPM host package with `@testable import` and `Reflect.state(of:)`. It uses the app’s pinned package versions and falls back to the iOS simulator. |
 
 Limits:
 
 - A stand-in returns empty values, so state that comes from one starts empty. Replace it with a fixture before you test the main action.
-- Actions are public methods with simple parameters. Events sent through one `onAction(event)` method, Riverpod providers and Bloc events are not found.
+- Actions are public methods whose parameters are strings, numbers, booleans, enums or data classes of those. An `onAction(event)` method and a Bloc give one action per event. Other methods are listed in a `NOTE` and left out.
+- A real network client the host builds, such as `OkHttpClient`, makes the run stop when the app calls it. The `STOP` names the path to it.
+- A Swift model in the Xcode app target, outside any Swift package, can’t be imported. It stops and names the model.
 - State that lives in a view or a UIKit coordinator has no class to pick. It stops and says so.
 
 Tests: `python3 runner/test_reflex_init.py`.

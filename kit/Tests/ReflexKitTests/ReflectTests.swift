@@ -1,3 +1,6 @@
+#if canImport(Combine)
+import Combine
+#endif
 import Foundation
 import XCTest
 @testable import ReflexKit
@@ -26,4 +29,20 @@ final class ReflectTests: XCTestCase {
             "note": .null,
         ]))
     }
+
+    #if canImport(Combine)
+    func testPublishedValues() {
+        final class Store: ObservableObject {
+            @Published var count = 1
+            @Published var names = ["a"]
+        }
+        let store = Store()
+        XCTAssertEqual(Reflect.state(of: store), .object(["count": .int(1), "names": .array([.string("a")])]))
+        // A subscriber moves the value into the wrapper’s subject.
+        let watch = store.$count.sink { _ in }
+        store.count = 2
+        XCTAssertEqual(Reflect.state(of: store), .object(["count": .int(2), "names": .array([.string("a")])]))
+        watch.cancel()
+    }
+    #endif
 }

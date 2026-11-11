@@ -2,7 +2,8 @@ import Foundation
 
 /// Reads a value’s stored properties with `Mirror` and returns the same JSON for the same state every run.
 /// Hosts written by `runner/reflex_init.py` use it, so a first run needs no hand-written state mapping.
-/// `@Observable` backing names lose their underscore. Closures and opaque values are left out.
+/// `@Observable` backing names lose their underscore and `@Published` values are read through the wrapper.
+/// Closures and opaque values are left out.
 public enum Reflect {
     public static func state(of value: Any, omit: Set<String> = []) -> JSONValue {
         var seen = Set<ObjectIdentifier>()
@@ -34,6 +35,9 @@ public enum Reflect {
         }
         let mirror = Mirror(reflecting: value)
         let typeName = String(describing: type(of: value))
+        if typeName.hasPrefix("Published<"), let inner = published(mirror) {
+            return json(inner, omit, depth, &seen)
+        }
         switch mirror.displayStyle {
         case .optional:
             guard let child = mirror.children.first else { return .null }
@@ -63,7 +67,7 @@ public enum Reflect {
             }
             return .array(children.compactMap { json($0.value, omit, depth + 1, &seen) })
         case .struct, .class:
-            if depth > 4 { return .string(typeName) }
+            if depth > 6 { return .string(typeName) }
             if mirror.displayStyle == .class {
                 let id = ObjectIdentifier(value as AnyObject)
                 if seen.contains(id) { return nil }
@@ -85,5 +89,21 @@ public enum Reflect {
         default:
             return nil
         }
+    }
+
+    /// The value inside `@Published`: its storage holds it directly, or in its subject once a view subscribed.
+    static func published(_ mirror: Mirror) -> Any? {
+        var level = [mirror]
+        for _ in 0..<4 {
+            var next: [Mirror] = []
+            for m in level {
+                for child in m.children {
+                    if child.label == "value" || child.label == "currentValue" { return child.value }
+                    next.append(Mirror(reflecting: child.value))
+                }
+            }
+            level = next
+        }
+        return nil
     }
 }

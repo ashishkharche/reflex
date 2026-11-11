@@ -32,7 +32,10 @@ def ios_only_reason(output):
 
 
 def first_error(output):
-    return next((line.strip()[:240] for line in output.splitlines() if "error:" in line), output.strip()[-240:])
+    lines = [line.strip() for line in output.splitlines() if "error:" in line]
+    # A compiler error in a source file says more than the driver line that follows it, such as emit-module failed.
+    lines.sort(key=lambda line: not re.search(r"\.swift:\d+:\d+: error:", line))
+    return lines[0][:240] if lines else output.strip()[-240:]
 
 
 def ios_version(package):

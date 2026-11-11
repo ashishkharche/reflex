@@ -58,26 +58,36 @@ class AutoConfig(
     val params: Map<String, List<String>> = emptyMap(),
     /** State keys left out everywhere, such as a clock reading that differs per run. */
     val omit: Set<String> = emptySet(),
+    /** Subtypes of each sealed type by its simple name, as `package.Name`, so one `onAction(event)` becomes one action per event. */
+    val events: Map<String, List<String>> = emptyMap(),
+    /** Constructor parameter names of data classes and events by simple class name, read from the source. */
+    val ctors: Map<String, List<String>> = emptyMap(),
 ) {
     companion object {
         fun read(file: File): AutoConfig {
             val root = WireJson.parse(file.readText()) as JsonObject
             fun strings(key: String) = (root[key] as? JsonArray)?.items?.map { (it as JsonString).value } ?: emptyList()
-            val params = (root["params"] as? JsonObject)?.fields?.mapValues { (_, v) ->
+            fun lists(key: String) = (root[key] as? JsonObject)?.fields?.mapValues { (_, v) ->
                 (v as JsonArray).items.map { (it as JsonString).value }
             } ?: emptyMap()
+            val params = lists("params")
             return AutoConfig(
                 className = (root["class"] as JsonString).value,
                 name = (root["name"] as? JsonString)?.value ?: (root["class"] as JsonString).value.substringAfterLast('.'),
                 fakes = strings("fakes"),
                 params = params,
                 omit = strings("omit").toSet(),
+                events = lists("events"),
+                ctors = lists("ctors"),
             )
         }
     }
 }
 
 class Unbuildable(message: String) : RuntimeException(message)
+
+/** Clients that open sockets: building a real one means the app can try the network, which the guard blocks. */
+private val NETWORK = setOf("okhttp3.OkHttpClient", "retrofit2.Retrofit", "io.ktor.client.HttpClient", "java.net.http.HttpClient")
 
 private val PREFERRED = listOf("Test", "Fake", "InMemory", "Stub", "Dummy", "Noop", "NoOp")
 
@@ -89,7 +99,7 @@ class Builder(private val loader: ClassLoader, fakeNames: List<String>, private 
         // A fake that records or replays is closer to the app than one that does nothing.
         .sortedBy { c -> PREFERRED.indexOfFirst { c.simpleName.startsWith(it) }.let { if (it < 0) PREFERRED.size else it } }
     private val made = HashMap<Class<*>, Any?>()
-    private val building = HashSet<Class<*>>()
+    private val building = LinkedHashSet<Class<*>>()
     /** One line per choice, written to stderr so a failed first run says what it used. */
     val notes = mutableListOf<String>()
 
@@ -141,6 +151,7 @@ class Builder(private val loader: ClassLoader, fakeNames: List<String>, private 
     }
 
     private fun make(raw: Class<*>, type: Type, depth: Int): Any? {
+        if (raw.name in NETWORK) notes += "network: " + building.joinToString(" → ") { it.simpleName } + " can reach the network"
         if (raw.name == "androidx.lifecycle.SavedStateHandle") return raw.getConstructor().newInstance()
         objectInstance(raw)?.let { return it }
         val fake = fakes.firstOrNull { raw.isAssignableFrom(it) && it != raw }
@@ -167,6 +178,12 @@ class Builder(private val loader: ClassLoader, fakeNames: List<String>, private 
         c.parameterTypes.lastOrNull()?.name == "kotlin.jvm.internal.DefaultConstructorMarker"
 
     fun construct(raw: Class<*>, depth: Int): Any {
+        // The screen itself starts the path that network notes print.
+        if (depth == 0 && building.add(raw)) try { return constructAny(raw, depth) } finally { building.remove(raw) }
+        return constructAny(raw, depth)
+    }
+
+    private fun constructAny(raw: Class<*>, depth: Int): Any {
         val constructors = raw.declaredConstructors.filter { !Modifier.isPrivate(it.modifiers) }
         var last: Throwable? = null
         // First the app’s own default arguments for plain values and for what can’t be built.
@@ -392,6 +409,48 @@ class AutoNode(private val vm: Any, private val config: AutoConfig, private val 
         else -> if (type.isEnum) FieldType.string else null
     }
 
+    /** How one input turns into a call argument: its wire fields and how to build the value. */
+    private class Arg(val fields: List<Field>, val make: (Args) -> Any?)
+
+    private fun simpleArg(type: Class<*>, name: String): Arg? {
+        val field = fieldType(type) ?: return null
+        return Arg(listOf(Field.required(name, field))) { args -> value(type, name, args) }
+    }
+
+    /** A Kotlin object needs no input. A class built from simple values, or from such classes, takes them as `name.field`. */
+    private fun objectArg(type: Class<*>, name: String?, depth: Int = 0): Arg? {
+        try {
+            val instance = type.getField("INSTANCE").get(null)
+            if (instance != null) return Arg(emptyList()) { instance }
+        } catch (_: Throwable) {}
+        if (depth > 2) return null
+        val names = config.ctors[type.simpleName] ?: return null
+        for (ctor in type.constructors.filter { !it.isSynthetic && it.parameterCount == names.size }) {
+            val parts = ctor.parameterTypes.zip(names).map { (t, n) ->
+                val path = if (name == null) n else "$name.$n"
+                simpleArg(t, path) ?: objectArg(t, path, depth + 1)
+            }
+            if (parts.any { it == null }) continue
+            return Arg(parts.flatMap { it!!.fields }) { args ->
+                try { ctor.newInstance(*parts.map { it!!.make(args) }.toTypedArray()) } catch (e: InvocationTargetException) { throw e.targetException }
+            }
+        }
+        return null
+    }
+
+    private fun load(name: String): Class<*>? = try { Class.forName(name, false, vm.javaClass.classLoader) } catch (_: Throwable) { null }
+
+    /** The subtypes of a sealed parameter, from the source names in auto.json. */
+    private fun events(type: Class<*>): List<Class<*>> {
+        if (!type.isInterface && !Modifier.isAbstract(type.modifiers)) return emptyList()
+        return config.events[type.simpleName].orEmpty().flatMap { name ->
+            listOf("${type.name}$${name.substringAfterLast('.')}", name)
+        }.mapNotNull { load(it) }.filter { it != type && type.isAssignableFrom(it) }.distinct()
+    }
+
+    /** Methods and events left out because an argument has a type the host can’t build from wire input. */
+    val skipped = mutableListOf<String>()
+
     private fun actionsOf(): Map<String, NodeAction> {
         val out = sortedMapOf<String, NodeAction>()
         val getterNames = props.map { it.second.name }.toSet()
@@ -400,34 +459,54 @@ class AutoNode(private val vm: Any, private val config: AutoConfig, private val 
                 m.name !in getterNames && m.name !in setOf("equals", "hashCode", "toString", "copy", "onCleared", "close") &&
                 !Regex("^(component\\d+|get[A-Z].*|set[A-Z].*)$").matches(m.name)
         }.sortedWith(compareBy({ it.name }, { it.parameterCount }))
+        fun schema(fields: List<Field>) = if (fields.isEmpty()) null else Schema(fields)
         for (m in methods) {
             val types = m.parameterTypes.toList()
             val suspend = types.lastOrNull() == Continuation::class.java
             val real = if (suspend) types.dropLast(1) else types
-            val fieldTypes = real.map { fieldType(it) }
-            if (fieldTypes.any { it == null }) continue
             val names = config.params["${m.name}/${real.size}"] ?: real.indices.map { "arg${it + 1}" }
             if (names.size != real.size) continue
+            // One sealed parameter, as in onAction(event): every event becomes its own action.
+            val subtypes = if (real.size == 1) events(real[0]) else emptyList()
+            if (subtypes.isNotEmpty()) {
+                for (sub in subtypes.sortedBy { it.simpleName }) {
+                    val arg = objectArg(sub, null)
+                    if (arg == null) {
+                        skipped += "${real[0].simpleName}.${sub.simpleName}"
+                        continue
+                    }
+                    var title = sub.simpleName
+                    if (out.containsKey(title)) title = m.name.replaceFirstChar { it.uppercaseChar() } + title
+                    out[title] = NodeAction(schema(arg.fields)) { args -> call(m, listOf(arg.make(args)), suspend) }
+                }
+                continue
+            }
+            val parts = real.zip(names).map { (t, n) -> simpleArg(t, n) ?: objectArg(t, n) }
+            if (parts.any { it == null }) {
+                skipped += "${m.name}(${real.joinToString { it.simpleName }})"
+                continue
+            }
             var title = m.name.replaceFirstChar { it.uppercaseChar() }
             if (out.containsKey(title)) title += real.size
-            val schema = if (real.isEmpty()) null else Schema(names.zip(fieldTypes).map { (n, t) -> Field.required(n, t!!) })
-            out[title] = NodeAction(schema) { args -> invoke(m, real, names, suspend, args) }
+            out[title] = NodeAction(schema(parts.flatMap { it!!.fields })) { args -> call(m, parts.map { it!!.make(args) }, suspend) }
+        }
+        if (skipped.isNotEmpty()) {
+            System.err.println("ReflexKit auto: not actions, an argument type can’t come from wire input: ${skipped.joinToString(", ")}")
         }
         return out
     }
 
-    private fun invoke(m: Method, types: List<Class<*>>, names: List<String>, suspend: Boolean, args: Args) {
-        val values = types.zip(names).map { (t, n) ->
-            when {
-                t == String::class.java || t == CharSequence::class.java -> args.string(n)
-                t == java.lang.Boolean.TYPE || t == java.lang.Boolean::class.java -> args.bool(n)
-                t == Integer.TYPE || t == Integer::class.java -> args.int64(n).toInt()
-                t == java.lang.Long.TYPE || t == java.lang.Long::class.java -> args.int64(n)
-                t.isEnum -> t.enumConstants.firstOrNull { (it as Enum<*>).name == args.string(n) }
-                    ?: throw WireError(WireCode.VALUE_INVALID, "$.input.$n")
-                else -> throw WireError(WireCode.TYPE, "$.input.$n")
-            }
-        }
+    private fun value(t: Class<*>, n: String, args: Args): Any? = when {
+        t == String::class.java || t == CharSequence::class.java -> args.string(n)
+        t == java.lang.Boolean.TYPE || t == java.lang.Boolean::class.java -> args.bool(n)
+        t == Integer.TYPE || t == Integer::class.java -> args.int64(n).toInt()
+        t == java.lang.Long.TYPE || t == java.lang.Long::class.java -> args.int64(n)
+        t.isEnum -> t.enumConstants.firstOrNull { (it as Enum<*>).name == args.string(n) }
+            ?: throw WireError(WireCode.VALUE_INVALID, "$.input.$n")
+        else -> throw WireError(WireCode.TYPE, "$.input.$n")
+    }
+
+    private fun call(m: Method, values: List<Any?>, suspend: Boolean) {
         try {
             if (suspend) {
                 runBlocking {

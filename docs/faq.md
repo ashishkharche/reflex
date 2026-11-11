@@ -67,7 +67,7 @@ Extract a ViewModel (or an equivalent object with state + `send`) before the ada
 
 **Redux, MVI, TCA, Bloc, Riverpod or similar**
 
-Works when you can read a serialisable snapshot and dispatch named actions. The adapter maps store state to JSON and each action name to a dispatch. Keep UI frameworks out of the Core module the CLI links.
+Works when you can read a serialisable snapshot and dispatch named actions. `runner/reflex_init.py` writes the host for a Riverpod `Notifier`, a Bloc or Cubit and an `onAction(event)` ViewModel. The adapter maps store state to JSON and each action name to a dispatch. Keep UI frameworks out of the Core module the CLI links.
 
 **Timers, network calls and databases inside the ViewModel**
 

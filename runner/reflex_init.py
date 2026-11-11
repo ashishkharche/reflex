@@ -25,7 +25,7 @@ SKIP_DIRS = {".git", "build", ".build", "node_modules", ".gradle", ".dart_tool",
              ".swiftpm", "checkouts", "ios", "android", "macos", "windows", "linux", "web", ".expo", "dist", "vendor"}
 HINTS = ("Home", "Main", "ForYou", "List", "Feed", "Timeline", "Dashboard", "Inbox", "Episodes", "Today")
 PENALTIES = ("Activity", "Settings", "Debug", "Onboarding", "Login", "Auth", "Splash", "Preview", "Base", "Abstract", "Widget",
-             "Row", "Cell", "Item", "Stats")
+             "Row", "Cell", "Item", "Stats", "Filter")
 # A screen that edits or adds one thing is rarely the main screen.
 FORM_PREFIX = re.compile(r"^(Edit|Add|Create|New|Compose)[A-Z]")
 FAKE_PREFIX = re.compile(r"^(Fake|Test|InMemory|Stub|Noop|NoOp|Dummy|Mock|Preview|Placeholder)[A-Z]")
@@ -35,7 +35,11 @@ class Stop(Exception):
     """A first-run problem with no automatic fix. The message is the one next step."""
 
 
+SAID = []
+
+
 def say(line):
+    SAID.append(line)
     print(line, flush=True)
 
 
@@ -221,6 +225,34 @@ def kotlin_methods(text):
     return out
 
 
+def kotlin_events(app):
+    """Subtypes of every sealed type in the app, as package.Name by the sealed type’s simple name."""
+    out = {}
+    texts = [(kotlin_package(read(p)), read(p)) for p in files(app, (".kt",), tests=False)]
+    sealed = {m.group(1) for _, t in texts for m in re.finditer(r"\bsealed\s+(?:interface|class)\s+(\w+)", t)}
+    for pkg, text in texts:
+        for m in re.finditer(r"\b(?:data\s+)?(?:class|object)\s+(\w+)\s*(?:\([^)]*\))?\s*:\s*([\w.]+)", text):
+            base = m.group(2).split(".")[-1]
+            if base in sealed:
+                out.setdefault(base, []).append(f"{pkg}.{m.group(1)}".lstrip("."))
+    return {k: sorted(set(v)) for k, v in sorted(out.items())}
+
+
+def kotlin_ctors(app):
+    """Constructor parameter names of data classes and of classes in a sealed hierarchy, by simple name."""
+    out = {}
+    for path in files(app, (".kt",), tests=False):
+        text = read(path)
+        for m in re.finditer(r"\b(?:data\s+class|class)\s+(\w+)\s*(?:<[^>]*>)?\s*(?:(?:private|internal|public)?\s*(?:@\w+\s*)*constructor\s*)?\(", text):
+            if not re.match(r"data\b", text[m.start():]) and not re.match(r"\s*:\s*\w", text[m.end() + len(balanced(text, m.end() - 1) or "") + 1:][:80]):
+                continue
+            inner = balanced(text, m.end() - 1)
+            names = kotlin_param_names(inner) if inner is not None else None
+            if names is not None:
+                out.setdefault(m.group(1), names)
+    return dict(sorted(out.items()))
+
+
 def kotlin_fakes(app):
     out = []
     for path in files(app, (".kt",)):
@@ -255,6 +287,17 @@ def jdk_env(app=None):
     import reflex_runner as rr
     env = dict(os.environ)
     home = rr.java_home()
+    if home and jdk_major(home) > 21:
+        # Gradle and its Kotlin DSL lag new JDKs: a build script compiled for Java 27 fails as "class file major version 71".
+        for version in ("21", "17"):
+            done = subprocess.run(["/usr/libexec/java_home", "-v", version], capture_output=True, text=True) \
+                if Path("/usr/libexec/java_home").exists() else None
+            lts = done.stdout.strip() if done and done.returncode == 0 else ""
+            if lts and jdk_major(lts) == int(version):
+                if f"JDK {version}:" not in "".join(SAID):
+                    say(f"FIX Gradle runs on JDK {version}: the default JDK {jdk_major(home)} is newer than Gradle supports")
+                home = lts
+                break
     if home:
         env["JAVA_HOME"] = home
     if app and not env.get("ANDROID_HOME") and not env.get("ANDROID_SDK_ROOT") and "sdk.dir" not in read(app / "local.properties"):
@@ -264,6 +307,11 @@ def jdk_env(app=None):
                 say(f"FIX no Android SDK set for the build, so ANDROID_HOME={sdk} for this run only")
                 break
     return env
+
+
+def jdk_major(home):
+    m = re.search(r'JAVA_VERSION="(?:1\.)?(\d+)', read(Path(home) / "release"))
+    return int(m.group(1)) if m else 0
 
 
 def auto_jar():
@@ -294,6 +342,9 @@ def gradle_error(out):
 def kotlin_next_step(why):
     if re.search(r"SDK location not found|ANDROID_HOME|sdk\.dir", why):
         return "install the Android SDK, then set ANDROID_HOME or sdk.dir in local.properties"
+    major = re.search(r"Unsupported class file major version (\d+)", why)
+    if major:
+        return f"set JAVA_HOME to JDK 21 or 17: Gradle can’t run on Java {int(major.group(1)) - 44}"
     m = re.search(r"(?:toolchain|JDK|Java)\D{0,40}(\d{2})", why)
     if m and re.search(r"toolchain|Cannot find a Java installation", why):
         return f"install JDK {m.group(1)}, which the app’s Gradle toolchain asks for"
@@ -304,7 +355,7 @@ def kotlin_setup(app, pick, out):
     text = read(pick["file"])
     project = gradle_project(app, pick["file"])
     config = {"class": pick["class"], "name": short_name(pick["name"]), "fakes": kotlin_fakes(app),
-              "params": kotlin_methods(text), "omit": []}
+              "params": kotlin_methods(text), "omit": [], "events": kotlin_events(app), "ctors": kotlin_ctors(app)}
     write_json(out / "auto.json", config)
     jar = auto_jar()
     gradlew = app / "gradlew"
@@ -316,7 +367,7 @@ def kotlin_setup(app, pick, out):
     cmd = [str(gradlew), "-p", str(app), "-I", str(HERE / "gradle/reflex-classpath.gradle"), f"-PreflexProject={project}",
            f"-PreflexOut={classpath}", f"-PreflexJar={jar}", task, "--console=plain", "--no-configuration-cache",
            "-Dorg.gradle.unsafe.isolated-projects=false", "-Dorg.gradle.isolated-projects=false",
-           "-Dorg.gradle.configuration-cache=false"]
+           "-Dorg.gradle.configuration-cache=false", "--no-configure-on-demand"]
     code, log = run(cmd, cwd=app, env=jdk_env(app))
     (out / ".build").mkdir(parents=True, exist_ok=True)
     (out / ".build/gradle.log").write_text(log)
@@ -387,6 +438,16 @@ def explain(out):
     if "ClassNotFoundException" in out or "NoClassDefFoundError" in out:
         cls = re.search(r"(?:ClassNotFoundException|NoClassDefFoundError):? ([\w.$/]+)", out)
         return f"the host could not load {cls.group(1) if cls else 'a class'}. Next: run reflex_init.py again to rebuild the classpath"
+    if "network=denied" in out:
+        chain = re.search(r"network: (.+?) can reach the network", out)
+        if chain:
+            path = chain.group(1).split(" → ")
+            need = path[1] if len(path) > 1 else path[0]
+            return (f"the app tried the network and the guard blocked it: {chain.group(1)} is a real client. "
+                    f"Next: give {path[0]} a test double for {need} (an interface with a Fake{need} in the app’s "
+                    "test sources), or pick another screen with --screen")
+        return ("the app tried the network and the guard blocked it. Next: add test doubles for the classes that "
+                "reach it, or pick another screen with --screen")
     if "BLOCKED" in out:
         return first_line(out, "BLOCKED")
     warn = first_line(out, r"^WARN")
@@ -436,12 +497,14 @@ def first_run(app, out, manifest_platforms, name, rebuild=None, root=None):
         if code:
             raise Stop(f"the run failed after leaving out changing keys: {explain(log)}")
         node = transcript_states(folder).get(1, {}).get("node") or node
+    action_step = try_actions(manifest, out, hello, node)
     journey = {
         "name": "first-run",
         "note": "Written by reflex_init.py from the settled first state. Next: add a journey that runs the screen’s main action.",
         "steps": [
             {"send": {"op": "hello", "protocol": 1}, "expect": {"ok": True, "node": {"name": node.get("name"), "actions": node.get("actions", [])}}},
             {"ls": True, "expect": {"ok": True, "node": {"name": node.get("name"), "state": node.get("state", {})}}},
+        ] + ([action_step] if action_step else []) + [
             {"do": "ReflexNoSuchAction", "expect": {"ok": False, "error": {"code": "action.unknown", "path": "$.action"}}},
         ],
     }
@@ -451,6 +514,32 @@ def first_run(app, out, manifest_platforms, name, rebuild=None, root=None):
     if code:
         raise Stop(f"the first journey did not pass 3 times: {explain(log)}")
     return hello, node, log
+
+
+def try_actions(manifest, out, hello, node, limit=3):
+    """A step for the first action with no input that runs offline and ends in the same state twice, or None."""
+    inputs = (hello.get("node") or {}).get("inputs") or {}
+    tried = []
+    for action in [a for a in node.get("actions", []) if a not in inputs][:limit]:
+        probe = out / ".build/probe-action.json"
+        write_json(probe, {"name": "probe-action", "steps": [{"send": {"op": "hello", "protocol": 1}, "expect": {"ok": True}},
+                                                             {"do": action, "expect": {"ok": True}}]})
+        states = []
+        for attempt in range(2):
+            folder = out / f".build/probe-action-{attempt + 1}"
+            shutil.rmtree(folder, ignore_errors=True)
+            code, log = runner(manifest, [probe], "--evidence", str(folder))
+            if code or "network=clean" not in log:
+                break
+            replies = transcript_states(folder)
+            states.append((replies[max(replies)] if replies else {}).get("node", {}).get("state"))
+        if len(states) == 2 and states[0] == states[1] and states[0] is not None:
+            say(f"JOURNEY first-run also runs {action}: it needs no input, works offline and ends in the same state each time")
+            return {"do": action, "expect": {"ok": True, "node": {"state": states[0]}}}
+        tried.append(action)
+    if tried:
+        say(f"NOTE first-run runs no action: {', '.join(tried)} failed, used the network or ended differently each time")
+    return None
 
 
 def gitignore(out):
@@ -497,6 +586,14 @@ def main(argv):
             break
     if found:
         found = rank_by_use(app, found)
+    held = swift_app_holders(app) if not found and "swift" in stacks else []
+    if held:
+        more = f" and {len(held) - 1} more" if len(held) > 1 else ""
+        verb, it = ("hold", "they are") if more else ("holds", "it is")
+        say(f"STOP {held[0][0]} in {held[0][1]}{more} {verb} state, but {it} in the Xcode app target, which a Swift package "
+            "can’t import. Next: move the model and the types it uses into a Swift package the app depends on, then run "
+            "reflex_init.py again, or write the adapter by hand (docs/add-to-your-app.md)")
+        return 2
     if not found:
         say(f"STOP no state holder found in {', '.join(stacks)} sources. Reflex needs the screen’s state in a ViewModel, "
             "notifier, store or hook, not in the views. Next: move it there, or write the adapter by hand (docs/add-to-your-app.md)")
@@ -529,17 +626,25 @@ def main(argv):
         if line.startswith(("JOURNEY", "SUMMARY", "RESULT", "WARN", "PASS", "REPEAT")):
             say(line[:300])
     actions = node.get("actions", [])
-    say(f"ACTIONS {', '.join(actions) if actions else 'none found'}")
+    say(f"ACTIONS {', '.join(actions) if actions else 'none: no public method or event takes only simple values (see NOTE)'}")
     say(f"PASS first run of {pick['name']} in {time.monotonic() - started:.0f}s with no hand-written code. "
         f"Files: {OUT.as_posix()}/. Run: python3 {os.path.relpath(HERE / 'reflex_runner.py', app)} {OUT.as_posix()}/reflex.json")
-    say("Next: replace the stand-ins the host used with fixtures, then add a journey that runs the main action")
+    stand_ins = "stand-in" in log or "stand-in" in "".join(SAID)
+    say("Next: replace the stand-ins the host used with fixtures, then add a journey that runs the main action" if stand_ins
+        else "Next: add a journey that runs the screen’s main action")
     return 0
 
 
 # ---------- Flutter ----------
 
-DART_CLASS = re.compile(r"^class\s+(\w+)(?:<[^>{]*>)?\s+(?:extends\s+([\w<>?, ]+?))?\s*(?:with\s+([\w<>, ]+?))?\s*(?:implements\s+[\w<>, ]+?)?\s*\{", re.M)
+DART_CLASS = re.compile(r"^(?:(?:abstract|sealed|final|base|interface|mixin)\s+)*class\s+(\w+)(?:<[^>{]*>)?\s+(?:extends\s+([\w<>?, ]+?))?\s*(?:with\s+([\w<>, ]+?))?\s*(?:implements\s+[\w<>, ]+?)?\s*\{", re.M)
 DART_SIMPLE = {"int": "0", "double": "0.0", "num": "0", "bool": "false", "String": "''"}
+# State holders from Riverpod: the host reads them through a ProviderContainer.
+RIVERPOD = re.compile(r"(?:AutoDispose)?(?:Async)?(?:Family)?(?:Async)?Notifier<|_\$")
+
+
+def dart_abstract(header):
+    return bool(re.match(r"(?:\w+\s+)*?(abstract|sealed|interface)\s", header))
 
 
 def dart_package(app):
@@ -569,14 +674,38 @@ def flutter_candidates(app):
                 kind = "notifier"
             elif re.match(r"(Cubit|Bloc|StateNotifier|ValueNotifier)<", sup):
                 kind = sup.split("<")[0].lower()
-            if not kind or text[m.start():m.end()].startswith("abstract"):
+            elif RIVERPOD.match(sup):
+                kind = "riverpod"
+            if not kind or dart_abstract(m.group(0)):
                 continue
             if re.search(r"^abstract\s+class\s+" + name + r"\b", text, re.M):
                 continue
             body = balanced(text, m.end() - 1, "{", "}") or ""
-            out.append({"stack": "flutter", "name": name, "file": path, "kind": kind, "body": body,
-                        "score": score(name, 6 if kind == "notifier" else 5, body)})
+            entry = {"stack": "flutter", "name": name, "file": path, "kind": kind, "body": body, "super": sup,
+                     "score": score(name, 6 if kind == "notifier" else 5, body)}
+            if kind == "riverpod":
+                entry["provider"], entry["provider_file"] = riverpod_provider(app, name, sup) or (None, None)
+                if not entry["provider"]:
+                    continue
+            out.append(entry)
     return sorted(out, key=lambda c: (-c["score"], c["name"]))
+
+
+def riverpod_provider(app, name, sup):
+    """The provider that creates this notifier: a NotifierProvider variable, or the generated one for @riverpod."""
+    if sup.startswith("_$"):
+        return name[0].lower() + name[1:] + "Provider", None
+    for path in files(app / "lib", (".dart",), tests=False):
+        m = re.search(r"\bfinal\s+(\w+)\s*=\s*\w*NotifierProvider(?:\.\w+)*\s*(?:<\s*" + re.escape(name) + r"\b[^(]*>)?\s*\(\s*"
+                      r"(?:" + re.escape(name) + r"\.new|\(\)\s*=>\s*" + re.escape(name) + r"\s*\()", read(path))
+        if m:
+            return m.group(1), path
+    return None
+
+
+def dart_type_args(sup):
+    """Bloc<E, S> -> [E, S]."""
+    return split_top(sup[sup.find("<") + 1:sup.rfind(">")]) if "<" in sup else []
 
 
 def dart_params(body, name):
@@ -603,7 +732,9 @@ def dart_params(body, name):
                 p, default = [x.strip() for x in p.split("=", 1)]
             field = re.match(r"(this|super)\.(\w+)$", p)
             if field:
-                entry = {"name": field.group(2), "field": field.group(1), "type": dart_field_type(body, field.group(2))}
+                # Dart 3.12 private named parameters: this._repository is passed as repository.
+                entry = {"name": field.group(2).lstrip("_") if group == "named" else field.group(2), "field": field.group(1),
+                         "type": dart_field_type(body, field.group(2).lstrip("_"))}
             else:
                 tm = re.match(r"(.+?)\s+(\w+)$", p)
                 if not tm:
@@ -621,9 +752,14 @@ def dart_field_type(body, name):
 
 def dart_import(app, host_dir, path, package):
     path = Path(path)
-    lib = app / "lib"
-    if lib in path.parents:
-        return f"package:{package}/{path.relative_to(lib).as_posix()}"
+    part = re.search(r"^part\s+of\s+['\"]([^'\"]+)['\"]", read(path), re.M)
+    if part:
+        path = (path.parent / part.group(1)).resolve()
+    for root in path.parents:
+        if (root / "pubspec.yaml").exists():
+            if (root / "lib") in path.parents:
+                return f"package:{dart_package(root)}/{path.relative_to(root / 'lib').as_posix()}"
+            break
     return os.path.relpath(path, host_dir)
 
 
@@ -638,23 +774,25 @@ def dart_value(app, host_dir, package, classes, type_name, imports, stand_ins):
     impls = []
     for cname, defs in classes.items():
         for path, header, body in defs:
-            if re.search(r"\b(?:extends|implements|with)\b[^{]*\b" + re.escape(base) + r"\b", header) and not header.startswith("abstract"):
+            if re.search(r"\b(?:extends|implements|with)\b[^{]*\b" + re.escape(base) + r"\b", header) and not dart_abstract(header):
                 pos, named = dart_params(body, cname)
                 if any(p["required"] for p in pos + named):
                     continue
                 fake = bool(FAKE_PREFIX.match(cname)) or is_test_path(path)
-                impls.append((0 if fake else 1, cname, path))
+                # A mocktail or mockito mock returns null until stubbed, so a real fake or class comes first.
+                impls.append((2 if cname.startswith("Mock") else 0 if fake else 1, cname, path))
     if impls:
         _, cname, path = sorted(impls)[0]
         imports.add(dart_import(app, host_dir, path, package))
-        stand_ins.setdefault("_used", {})[base] = f"test double {cname}" if FAKE_PREFIX.match(cname) or is_test_path(path) else cname
+        stand_ins.setdefault("_used", {})[base] = (f"mock {cname}, a stand-in: its calls return null until stubbed" if cname.startswith("Mock")
+                                                   else f"test double {cname}" if FAKE_PREFIX.match(cname) or is_test_path(path) else cname)
         return f"{cname}()"
     defs = classes.get(base)
     if defs:
         path, header, body = defs[0]
         imports.add(dart_import(app, host_dir, path, package))
         pos, named = dart_params(body, base)
-        if not header.startswith("abstract") and not any(p["required"] for p in pos + named):
+        if not dart_abstract(header) and not any(p["required"] for p in pos + named):
             return f"{base}()"
         stand_ins[base] = path
         stand_ins.setdefault("_used", {})[base] = "stand-in (every call returns null)"
@@ -663,8 +801,9 @@ def dart_value(app, host_dir, package, classes, type_name, imports, stand_ins):
 
 
 def dart_members(body, kind):
-    """(state getters and fields, commands, methods) that are public."""
+    """(state getters and fields, commands, methods) that are public. Methods that take other types go in skipped."""
     state, commands, methods = [], [], []
+    skipped = dart_members.skipped = []
     for m in re.finditer(r"(?m)^  (?:@override\s+)?([\w<>?, ]+?)\s+get\s+([a-z]\w*)\s*(?:=>|\{)", body):
         state.append((m.group(2), m.group(1).strip()))
     for m in re.finditer(r"(?m)^  (?:late\s+)?(?:final\s+)?([A-Z][\w<>?, ]*|int|double|bool|num|String\??)\s+([a-z]\w*)\s*(?:;|=)", body):
@@ -675,27 +814,109 @@ def dart_members(body, kind):
         else:
             state.append((m.group(2), m.group(1)))
     for m in re.finditer(r"(?m)^  (?:@override\s+)?(void|Future<[^>]*>|Future|FutureOr<[^>]*>)\s+([a-z]\w*)\s*\(([^)]*)\)\s*(?:async\s*)?[{=]", body):
-        if m.group(2) in ("dispose", "notifyListeners", "addListener", "removeListener", "close", "emit", "add", "onChange",
-                          "onError", "onEvent", "onTransition"):
+        if m.group(2) in ("dispose", "notifyListeners", "addListener", "removeListener", "close", "emit", "onChange", "build",
+                          "onError", "onEvent", "onTransition") or (m.group(2) == "add" and kind == "bloc"):
             continue
-        params = []
-        ok = True
-        for p in split_top(m.group(3)):
-            tm = re.match(r"(int|String|bool)\s+(\w+)$", p.strip())
-            if not tm:
-                ok = False
-                break
-            params.append((tm.group(2), tm.group(1)))
-        if ok:
+        params = dart_simple_params(m.group(3))
+        if params is None:
+            skipped.append(f"{m.group(2)}({m.group(3).strip()})")
+        else:
             methods.append((m.group(2), params))
     if kind in ("cubit", "bloc", "statenotifier"):
         state.append(("state", "dynamic"))
+    if kind == "riverpod":
+        state = [s for s in state if s[0] != "state"]
     if kind == "valuenotifier":
         state.append(("value", "dynamic"))
     return state, commands, methods
 
 
 DART_FIELD = {"int": "FieldType.int64()", "String": "FieldType.string", "bool": "FieldType.boolean"}
+
+
+DART_ENUMS = {}
+
+
+def dart_enums(app):
+    """Every enum in the app’s Dart files: name -> path."""
+    out = {}
+    for path in files(app, (".dart",), tests=False):
+        for m in re.finditer(r"^enum\s+(\w+)", read(path), re.M):
+            out.setdefault(m.group(1), path)
+    return out
+
+
+def dart_simple_params(text):
+    """[(name, type, named)] when every parameter is an int, String, bool or app enum, else None."""
+    params = []
+    text = text.strip()
+    groups = []
+    for part in split_top(text):
+        if part.startswith("{") or part.startswith("["):
+            named = part.startswith("{")
+            for p in split_top(part.strip("{}[]")):
+                groups.append((p, named))
+        else:
+            groups.append((part, False))
+    for p, named in groups:
+        p = re.sub(r"^(required|final)\s+", "", p.strip())
+        p = p.split("=")[0].strip()
+        if not p:
+            continue
+        tm = re.match(r"(\w+)\s+(\w+)$", p)
+        if not tm or (tm.group(1) not in DART_FIELD and tm.group(1) not in DART_ENUMS):
+            return None
+        params.append((tm.group(2), tm.group(1), named))
+    return params
+
+
+def dart_call(params):
+    return ", ".join((f"{n}: " if named else "") + (f"{t}.values.byName(a['{n}'] as String)" if t in DART_ENUMS else f"a['{n}'] as {t}")
+                     for n, t, named in params)
+
+
+def dart_schema(params):
+    return f", input: Schema({{{', '.join(repr(n) + ': ' + DART_FIELD.get(t, 'FieldType.string') for n, t, _ in params)}}})" if params else ""
+
+
+def dart_events(classes, base, holder):
+    """Bloc events: concrete subclasses of the event type whose constructors take simple values."""
+    out, skipped = [], []
+    prefix = holder[:-4] if holder.endswith("Bloc") else holder
+    for cname, defs in sorted(classes.items()):
+        for path, header, body in defs:
+            if dart_abstract(header) or not re.search(r"\bextends\s+" + re.escape(base) + r"\b", header):
+                continue
+            pos, named = dart_params(body, cname)
+            fields = [(p["name"], p["type"], False) for p in pos] + [(p["name"], p["type"], True) for p in named]
+            ok = all(t in DART_FIELD or t in DART_ENUMS for _, t, _ in fields)
+            title = cname[len(prefix):] if cname.startswith(prefix) and len(cname) > len(prefix) else cname
+            (out if ok else skipped).append((title, cname, fields) if ok else cname)
+            break
+    return out, skipped
+
+
+def dart_models(classes, roots):
+    """App classes reachable from the state types that have no toJson: their final fields, subclasses first."""
+    seen, order = set(), []
+    todo = [t for r in roots for t in re.findall(r"[A-Z]\w*", r or "")]
+    while todo:
+        name = todo.pop(0)
+        if name in seen or name not in classes or name in DART_SIMPLE:
+            continue
+        seen.add(name)
+        path, header, body = classes[name][0]
+        subs = [c for c, defs in classes.items() if re.search(r"\bextends\s+" + re.escape(name) + r"\b", defs[0][1])]
+        todo += subs
+        if re.search(r"\btoJson\s*\(", body) or re.match(r"(?:\w+\s+)*enum\b", header):
+            continue
+        fields = re.findall(r"(?m)^  (?:late\s+)?final\s+([\w<>?, .]+?)\s+([a-z]\w*)\s*[;=]", body)
+        for t, _ in fields:
+            todo += re.findall(r"[A-Z]\w*", t)
+        if fields:
+            order.append((name, path, [f for _, f in fields], bool(subs), any(c in seen for c in re.findall(r"extends\s+(\w+)", header))))
+    # A subclass is checked before its parent.
+    return sorted(order, key=lambda m: m[3])
 
 DART_JSON = r'''
 /// Same JSON every run: models through toJson, commands by their flags, anything else by type name.
@@ -706,6 +927,8 @@ Object? _j(Object? v, [int d = 0]) {
   if (d > 6) return v.runtimeType.toString();
   if (v is Iterable) return [for (final x in v.take(100)) _j(x, d + 1)];
   if (v is Map) return {for (final e in v.entries) if (!_omit.contains('${e.key}')) '${e.key}': _j(e.value, d + 1)};
+  final m = _model(v);
+  if (m != null) return _j(m, d + 1);
   final dynamic x = v;
   try {
     final Object? m = x.toJson();
@@ -714,9 +937,18 @@ Object? _j(Object? v, [int d = 0]) {
   try {
     return {'running': x.running as bool, 'error': x.error as bool, 'completed': x.completed as bool};
   } catch (_) {}
+  try {
+    // A Riverpod AsyncValue.
+    final loading = x.isLoading as bool, failed = x.hasError as bool;
+    return {'isLoading': loading, 'hasError': failed, if (!loading && !failed) 'value': _j(x.value, d + 1)};
+  } catch (_) {}
   return v.runtimeType.toString();
 }
+
 '''
+
+
+dart_source_meta = {}
 
 
 def flutter_source(app, pick, out, drop):
@@ -725,7 +957,7 @@ def flutter_source(app, pick, out, drop):
     classes = dart_classes(app)
     imports = {dart_import(app, host_dir, pick["file"], package), "host.dart"}
     stand_ins = {}
-    pos, named = dart_params(pick["body"], pick["name"])
+    pos, named = dart_params(pick["body"], pick["name"]) if pick["kind"] != "riverpod" else ([], [])
     args = []
     for p in pos:
         args.append(dart_value(app, host_dir, package, classes, p["type"] or "dynamic", imports, stand_ins) if p["required"] else None)
@@ -733,17 +965,52 @@ def flutter_source(app, pick, out, drop):
     for p in named:
         if p["required"]:
             args.append(f"{p['name']}: {dart_value(app, host_dir, package, classes, p['type'] or 'dynamic', imports, stand_ins)}")
+    DART_ENUMS.clear()
+    DART_ENUMS.update(dart_enums(app))
     state, commands, methods = dart_members(pick["body"], pick["kind"])
+    skipped = list(dart_members.skipped)
+    targs = dart_type_args(pick.get("super", ""))
+    events = []
+    if pick["kind"] == "bloc" and len(targs) == 2:
+        events, skipped_events = dart_events(classes, targs[0], pick["name"])
+        skipped += skipped_events
+    roots = [t for _, t in state] + (targs[-1:] if pick["kind"] in ("bloc", "cubit", "statenotifier", "riverpod") else [])
+    models = []
+    for mname, mpath, fields, _, sub in dart_models(classes, roots):
+        if f"model:{mname}" in drop["entries"]:
+            continue
+        imports.add(dart_import(app, host_dir, mpath, package))
+        kv = ", ".join(f"'{f}': v.{f}" for f in fields)
+        models.append((mname, f"  if (v is {mname}) return {{{repr('type') + ': ' + repr(mname) + ', ' if sub else ''}{kv}}};"))
+    for params in [p for _, p in methods] + [f for _, _, f in events]:
+        for _, t, _ in params:
+            if t in DART_ENUMS:
+                imports.add(dart_import(app, host_dir, DART_ENUMS[t], package))
+    riverpod = pick["kind"] == "riverpod"
+    if riverpod:
+        lib = next((n for n in ("hooks_riverpod", "flutter_riverpod", "riverpod") if re.search(r"^\s+" + n + r":", read(app / "pubspec.yaml"), re.M)), "riverpod")
+        imports.add(f"package:{lib}/{lib}.dart")
+        if pick.get("provider_file"):
+            imports.add(dart_import(app, host_dir, pick["provider_file"], package))
     lines = ["// Generated by runner/reflex_init.py. Do not edit: run it again instead.", "// ignore_for_file: type=lint"]
     lines += [f"import '{i}';" for i in sorted(imports)]
     lines += ["", f"const _omit = <String>{{{', '.join(repr(k) for k in sorted(drop.get('omit', [])))}}};", DART_JSON]
+    entries = {}
+    lines.append("/// App classes with no toJson, by their final fields.")
+    lines.append("Map<String, Object?>? _model(Object v) {")
+    for mname, line in models:
+        entries[len(lines) + 1] = f"model:{mname}"
+        lines.append(line)
+    lines += ["  return null;", "}", ""]
+    dart_source_meta.update(skipped=skipped)
     for base in sorted(k for k in stand_ins if k != "_used"):
         lines += [f"/// Stand-in: the app has no test double for {base}.", f"class _StandIn{base} implements {base} {{",
                   "  @override", "  dynamic noSuchMethod(Invocation invocation) => null;", "}", ""]
-    entries = {}
     name = short_name(pick["name"])
     lines += [f"class AutoNode extends Node {{", "  AutoNode(this.vm);", f"  final {pick['name']} vm;", "  @override",
               f"  String get name => '{name}';", "  @override", "  Map<String, Object?> get state => {"]
+    if riverpod:
+        lines.append(f"        'state': _j(_container.read({pick['provider']})),")
     for key, _ in state:
         if key in drop.get("omit", []) or f"state:{key}" in drop["entries"]:
             continue
@@ -768,13 +1035,22 @@ def flutter_source(app, pick, out, drop):
         title = key[0].upper() + key[1:]
         if f"action:{title}" in drop["entries"] or any(f"'{title}'" in l for l in lines):
             continue
-        call = ", ".join(f"a['{n}'] as {t}" for n, t in params)
-        schema = f", input: Schema({{{', '.join(repr(n) + ': ' + DART_FIELD[t] for n, t in params)}}})" if params else ""
         entries[len(lines) + 1] = f"action:{title}"
-        lines.append(f"        '{title}': NodeAction((a) => vm.{key}({call}){schema}),")
-    lines += ["      };", "}", "", "Future<void> main(List<String> args) async {",
-              f"  final vm = {pick['name']}({', '.join(args)});", "  await Session.settle();",
-              f"  await Session('{name}', () => AutoNode(vm)).serveStandardIO();", "}", ""]
+        lines.append(f"        '{title}': NodeAction((a) => vm.{key}({dart_call(params)}){dart_schema(params)}),")
+    for title, cname, fields in events:
+        if f"action:{title}" in drop["entries"] or any(f"'{title}'" in l for l in lines):
+            continue
+        entries[len(lines) + 1] = f"action:{title}"
+        lines.append(f"        '{title}': NodeAction((a) => vm.add({'const ' if not fields else ''}{cname}({dart_call(fields)})){dart_schema(fields)}),")
+    lines += ["      };", "}", ""]
+    if riverpod:
+        lines += ["final _container = ProviderContainer();", "", "Future<void> main(List<String> args) async {",
+                  f"  // Keep the provider alive the way a watching widget does.",
+                  f"  _container.listen({pick['provider']}, (_, __) {{}}, fireImmediately: true);",
+                  f"  final vm = _container.read({pick['provider']}.notifier);"]
+    else:
+        lines += ["Future<void> main(List<String> args) async {", f"  final vm = {pick['name']}({', '.join(args)});"]
+    lines += ["  await Session.settle();", f"  await Session('{name}', () => AutoNode(vm)).serveStandardIO();", "}", ""]
     return "\n".join(lines), entries, stand_ins.get("_used", {})
 
 
@@ -804,6 +1080,8 @@ def flutter_setup(app, pick, out):
             if attempt == 0:
                 for base, choice in sorted(used.items()):
                     say(f"NOTE {base}: {choice}")
+                if dart_source_meta.get("skipped"):
+                    say("NOTE not actions, an argument type can’t come from wire input: " + ", ".join(dart_source_meta["skipped"]))
             (host_dir / "main.dart").write_text(source, encoding="utf-8")
             say("BUILD Dart host kernel for flutter_tester")
             code, log = run([sys.executable, str(HERE / "flutter_kernel.py"), str(host_dir / "main.dart"), str(out / ".build/host.dill")], cwd=app)
@@ -845,9 +1123,17 @@ def node_candidates(app):
                 hook = next((h for h in hooks if "useContext" in text[text.find(h):text.find(h) + 400]), hooks[0])
                 out.append({"stack": "node", "name": hook[3:], "hook": hook, "provider": providers[0], "kind": "context",
                             "file": path, "score": score(hook[3:], 6, text)})
-            for m in re.finditer(r"export\s+const\s+(use[A-Z]\w*)\s*=\s*create(?:<[^>]*>)?\s*\(", text):
-                out.append({"stack": "node", "name": m.group(1)[3:], "hook": m.group(1), "kind": "zustand", "file": path,
-                            "score": score(m.group(1)[3:], 6, text)})
+            # zustand: create(...), create<T>()(...) and stores wrapped before export, such as createSelectors(_useStore).
+            for m in re.finditer(r"(export\s+)?const\s+(_?use[A-Z]\w*)\s*=\s*create(?:<[^>]*>)?\s*\(", text):
+                hook = m.group(2)
+                if not m.group(1):
+                    wrapped = re.search(r"export\s+const\s+(use[A-Z]\w*)\s*=\s*\w+\(\s*" + re.escape(hook) + r"\s*\)", text)
+                    if not wrapped:
+                        continue
+                    hook = wrapped.group(1)
+                name = hook.lstrip("_")[3:]
+                out.append({"stack": "node", "name": name, "hook": hook, "kind": "zustand", "file": path,
+                            "score": score(name, 6, text)})
     return sorted(out, key=lambda c: (-c["score"], c["name"]))
 
 
@@ -862,6 +1148,9 @@ const { Session, string, int64, boolean } = require("./reflexHost")
 const React = require("react")
 const OMIT = new Set<string>(__OMIT__)
 const NAME = __NAME__
+// Parameter names and types read from the source, for functions that take only strings, numbers or booleans.
+const SIGNATURES: Record<string, [string, string][]> = __SIGS__
+const FIELD: Record<string, any> = { string, boolean, number: int64() }
 
 function json(v: any, d = 0, seen = new Set<any>()): any {
   if (v === null || typeof v === "boolean" || typeof v === "string") return v
@@ -895,8 +1184,16 @@ function nodeOf(value: () => any) {
     for (const key of Object.keys(v).sort()) {
       if (OMIT.has(key)) continue
       if (typeof v[key] === "function") {
-        // Only functions that take no input: their argument types are not known at run time.
-        if (v[key].length === 0) actions[key[0].toUpperCase() + key.slice(1)] = { run: () => v[key]() }
+        const title = key[0].toUpperCase() + key.slice(1)
+        const sig = SIGNATURES[key]
+        if (sig && sig.length) {
+          actions[title] = {
+            input: { required: Object.fromEntries(sig.map(([n, t]) => [n, FIELD[t]])) },
+            run: (a: any) => v[key](...sig.map(([n, t]) => (t === "number" ? Number(a[n]) : a[n]))),
+          }
+        } else if (v[key].length === 0) {
+          actions[title] = { run: () => v[key]() }
+        }
         continue
       }
       const x = json(v[key])
@@ -934,11 +1231,55 @@ start()
 
 NODE_ZUSTAND = r'''
 // The state lives in a zustand store: read it with getState, no rendering needed.
+// Native modules (react-native, expo, react-native-*) can’t load in Node: give them stand-ins with empty values.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const Module = require("module")
+const NATIVE = /^(react-native($|[-/])|@react-native|expo($|[-/])|@expo\/)/
+const stood = new Set<string>()
+function standIn(name: string): any {
+  const fn = function () {}
+  return new Proxy(fn, {
+    get: (_t, key) => {
+      if (key === "then" || typeof key === "symbol") return undefined
+      if (key === "__esModule") return true
+      return standIn(String(key))
+    },
+    // Factories and classes give back an object; other calls return nothing.
+    apply: () => (/^(create|make|new|init|get[A-Z]\w*Instance)/.test(name) || /^[A-Z]/.test(name) ? standIn(name + "()") : undefined),
+    construct: () => standIn(name),
+  })
+}
+const load = Module._load
+Module._load = function (request: string, ...rest: any[]) {
+  if (NATIVE.test(request)) {
+    if (!stood.has(request)) process.stderr.write(`ReflexKit auto: ${request}: stand-in (a native module, returns empty values)\n`)
+    stood.add(request)
+    return standIn(request)
+  }
+  return load.call(this, request, ...rest)
+}
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const source = require(__SOURCE__)
 const store = source[__HOOK__]
 new Session(NAME, nodeOf(() => store.getState())).serveStandardIO({ around: async (run: () => unknown) => { await run() } })
 '''
+
+
+def node_signatures(text):
+    """({function: [(param, type)]} for functions whose parameters are all string, number or boolean, [the others])."""
+    sigs, skipped = {}, []
+    for m in re.finditer(r"\b(\w+)\s*[:=]\s*(?:async\s*)?\(([^()]*)\)\s*(?::\s*[\w<>| ]+)?\s*=>", text):
+        name, params = m.group(1), [p.strip() for p in m.group(2).split(",") if p.strip()]
+        if not params or name in sigs:
+            continue
+        parsed = [re.match(r"(\w+)\??\s*:\s*(string|number|boolean)$", p) for p in params]
+        if all(parsed):
+            sigs[name] = [(p.group(1), p.group(2)) for p in parsed]
+            if name in skipped:
+                skipped.remove(name)
+        elif any(":" in p for p in params) and name not in skipped:
+            skipped.append(name)
+    return sigs, skipped
 
 
 def node_setup(app, pick, out):
@@ -964,7 +1305,9 @@ def node_setup(app, pick, out):
         src = os.path.relpath(pick["file"].with_suffix(""), host_dir)
         src = src if src.startswith(".") else "./" + src
         body = NODE_CONTEXT if pick["kind"] == "context" else NODE_ZUSTAND
+        sigs, _ = node_signatures(read(pick["file"]))
         text = (NODE_HOST + body).replace("__OMIT__", json.dumps(omit)).replace("__NAME__", json.dumps(config["name"])) \
+            .replace("__SIGS__", json.dumps(sigs)) \
             .replace("__SOURCE__", json.dumps(src)).replace("__HOOK__", json.dumps(pick["hook"])) \
             .replace("__PROVIDER__", json.dumps(pick.get("provider", "")))
         (host_dir / "host.tsx").write_text(text, encoding="utf-8")
@@ -975,6 +1318,9 @@ def node_setup(app, pick, out):
         write_json(host_dir / "tsconfig.json", tsconfig)
 
     build()
+    _, skipped = node_signatures(read(pick["file"]))
+    if skipped:
+        say("NOTE not actions, an argument type can’t come from wire input: " + ", ".join(skipped))
     rel = OUT.as_posix()
     command = ["{node}", f"{{root}}/node_modules/tsx/dist/cli.mjs", "--tsconfig", f"{{root}}/{rel}/host/tsconfig.json",
                f"{{root}}/{rel}/host/host.tsx", "{fixture}"]
@@ -994,6 +1340,31 @@ def swift_packages(app):
     return sorted(p.parent for p in files(app, ("Package.swift",)) if p.name == "Package.swift" and OUT.as_posix() not in p.as_posix())
 
 
+def swift_target(package, path):
+    """The target that owns a source file: a target whose path: holds it, else the Sources/<name> folder."""
+    text = read(package / "Package.swift")
+    for m in re.finditer(r"\.(?:target|executableTarget)\(\s*name:\s*\"([^\"]+)\"", text):
+        inner = balanced(text, text.find("(", m.start())) or ""
+        where = re.search(r"\bpath:\s*\"([^\"]+)\"", inner)
+        if where and (package / where.group(1)).resolve() in path.resolve().parents:
+            return m.group(1)
+    return path.relative_to(package / "Sources").parts[0]
+
+
+def swift_app_holders(app):
+    """[(name, path)] of observable models in app sources outside any Swift package, best first."""
+    inside = [p.resolve() for p in swift_packages(app)]
+    out = []
+    for path in files(app, (".swift",), tests=False):
+        if path.name == "Package.swift" or any(p in path.resolve().parents for p in inside):
+            continue
+        for m in SWIFT_TYPE.finditer(read(path)):
+            attrs, sup, name = m.group("attrs") or "", m.group("sup") or "", m.group("name")
+            if "@Observable" in attrs or "ObservableObject" in sup or name.endswith("ViewModel"):
+                out.append((score(name, 6, ""), name, os.path.relpath(path, app)))
+    return [(n, p) for _, n, p in sorted(out, key=lambda x: (-x[0], x[1]))]
+
+
 def swift_candidates(app):
     out = []
     for package in swift_packages(app):
@@ -1007,7 +1378,7 @@ def swift_candidates(app):
                 base = 6 if "@Observable" in attrs or "ObservableObject" in sup else (3 if name.endswith("ViewModel") else 0)
                 if not base:
                     continue
-                target = path.relative_to(sources).parts[0]
+                target = swift_target(package, path)
                 body = balanced(text, m.end() - 1, "{", "}") or ""
                 out.append({"stack": "swift", "name": name, "file": path, "package": package, "target": target,
                             "main_actor": "@MainActor" in attrs or "@MainActor" in text[:m.start()][-200:],
@@ -1065,10 +1436,41 @@ def swift_package_name(package):
     return package.name
 
 
-def swift_methods(body):
-    out = []
-    for m in re.finditer(r"(?m)^ {2,4}(?:(?:public|internal|package|@MainActor|nonisolated)\s+)*func\s+([a-z]\w*)\s*\(\s*\)\s*(async\s*)?(throws\s*)?(?:->\s*Void\s*)?\{", body):
-        out.append((m.group(1), bool(m.group(2)), bool(m.group(3))))
+SWIFT_FIELD = {"String": ("FieldType.string", 'args.string("{n}")'), "Bool": ("FieldType.bool", 'args.bool("{n}")'),
+               "Int": ("FieldType.int64()", 'Int(args.int64("{n}"))'), "Int64": ("FieldType.int64()", 'args.int64("{n}")')}
+
+
+def swift_ids(package):
+    """Identifiable types whose id is a String or Int, so a parameter of type Order.ID takes that value."""
+    out = {}
+    for path in files(package, (".swift",), tests=False):
+        text = read(path)
+        for m in re.finditer(r"\b(?:struct|class|actor)\s+(\w+)[^{]*\{", text):
+            body = balanced(text, m.end() - 1, "{", "}") or ""
+            idm = re.search(r"(?m)^\s+(?:public\s+|package\s+)?(?:var|let)\s+id\s*:\s*(String|Int)\b", body)
+            if idm:
+                out.setdefault(f"{m.group(1)}.ID", idm.group(1))
+    return out
+
+
+def swift_methods(body, ids=None):
+    """[(name, async, throws, [(label, name, type)])] for methods that return nothing and take String, Int or Bool.
+    swift_methods.skipped lists the others that return nothing."""
+    out, skipped = [], []
+    for m in re.finditer(r"(?m)^ {2,4}(?:(?:public|internal|package|@MainActor|nonisolated)\s+)*func\s+([a-z]\w*)\s*\(([^()]*)\)\s*(async\s*)?(throws\s*)?(->\s*Void\s*)?\{", body):
+        params = []
+        for part in [p.strip() for p in m.group(2).split(",") if p.strip()]:
+            pm = re.match(r"(\w+)(?:\s+(\w+))?\s*:\s*([\w.]+)$", part)
+            t = pm and (ids or {}).get(pm.group(3), pm.group(3))
+            if not pm or t not in SWIFT_FIELD:
+                params = None
+                break
+            params.append((pm.group(1), pm.group(2) or pm.group(1), t))
+        if params is None:
+            skipped.append(f"{m.group(1)}({m.group(2).strip()})")
+        else:
+            out.append((m.group(1), bool(m.group(3)), bool(m.group(4)), params))
+    swift_methods.skipped = skipped
     return out
 
 
@@ -1159,28 +1561,44 @@ let package = Package(
     if resolved:
         shutil.copy(resolved, host / "Package.resolved")
         say(f"FIX pinned package versions copied from {os.path.relpath(resolved, app)}")
-    methods = swift_methods(pick["body"])
+    methods = swift_methods(pick["body"], swift_ids(package))
+    if swift_methods.skipped:
+        say("NOTE not actions, an argument type can’t come from wire input: " + ", ".join(swift_methods.skipped))
 
     def build():
         omit = json.loads((out / "auto.json").read_text()).get("omit", [])
         lines = []
-        for name, is_async, throws in methods:
+        for name, is_async, throws, params in methods:
             title = name[0].upper() + name[1:]
-            call = f"{'try? ' if throws else ''}{'await ' if is_async else ''}self.vm.{name}()"
+            argv = ", ".join(("" if label == "_" else f"{label}: ") + SWIFT_FIELD[t][1].format(n=n) for label, n, t in params)
+            call = f"{'try? ' if throws else ''}{'await ' if is_async else ''}self.vm.{name}({argv})"
+            schema = (f"input: Schema([{', '.join(f'.required({json.dumps(n)}, {SWIFT_FIELD[t][0]})' for _, n, t in params)}]) "
+                      if params else "")
+            what = "args" if params else "_"
             if is_async:
-                lines.append(f'      "{title}": NodeAction {{ _ in MainActor.assumeIsolated {{ _ = Task {{ {call} }} }} }},')
+                lines.append(f'      "{title}": NodeAction({schema.strip()}) {{ {what} in MainActor.assumeIsolated {{ _ = Task {{ {call} }} }} }},')
             else:
-                lines.append(f'      "{title}": NodeAction {{ _ in MainActor.assumeIsolated {{ {call} }} }},')
+                lines.append(f'      "{title}": NodeAction({schema.strip()}) {{ {what} in MainActor.assumeIsolated {{ {call} }} }},')
         source = SWIFT_MAIN.replace("__MODULE__", target).replace("__CLASS__", pick["name"]).replace("__NAME__", config["name"]) \
             .replace("__ARGS__", args).replace("__OMIT__", ", ".join(json.dumps(k) for k in omit)) \
             .replace("__ACTIONS__", "\n".join(lines) or "      :")
         if not lines:
             source = source.replace("    [\n      :\n    ]", "    [:]")
         (host / "Sources/reflex-host/main.swift").write_text(source, encoding="utf-8")
-        say("BUILD Swift host (Mac first, the iOS simulator when a package is iOS only)")
-        code, log = run([sys.executable, str(HERE / "swift_host.py"), str(host), "reflex-host"], timeout=2400)
-        say(log.strip().splitlines()[-1][:300] if log.strip() else "no output")
+        ios_only = ".macOS" not in platforms
+        if ios_only:
+            say(f"BUILD Swift host for the iOS simulator: {os.path.relpath(package, app)} declares only iOS ({platforms})")
+        else:
+            say("BUILD Swift host (Mac first, the iOS simulator when a package is iOS only)")
+        cmd = [sys.executable, str(HERE / "swift_host.py"), str(host), "reflex-host"] + (["--simulator"] if ios_only else [])
+        code, log = run(cmd, timeout=2400)
+        last = log.strip().splitlines()[-1][:300] if log.strip() else "no output"
+        say(last)
         if code:
+            where = re.search(r"FAIL (\S+?\.swift):\d+", last)
+            if where and Path(where.group(1)).resolve().is_relative_to(app) and not Path(where.group(1)).resolve().is_relative_to(host):
+                raise Stop(f"the app’s own package does not build outside its Xcode project: {last[5:].replace(str(app) + os.sep, '')}. Next: run the app’s "
+                           "setup step first, such as a secrets or code generation script, then run reflex_init.py again")
             raise Stop(f"the generated Swift host did not build: {log.strip()[-400:]}. "
                        "Next: write the host by hand from samples/stacks (docs/add-to-your-app.md)")
 
