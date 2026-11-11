@@ -39,6 +39,8 @@ GUARD_ENV = "DYLD_INSERT_LIBRARIES" if sys.platform == "darwin" else "LD_PRELOAD
 EXIT_UNGUARDED = 3
 IGNORED_FOR_UNCHANGED = {"ok", "error", "protocol", "sample", "kit", "supported"}
 KIT_WARNING = "ReflexKit warning:"
+# What a generated host chose, such as a test double or a stand-in. Shown once per platform as NOTE.
+AUTO_NOTE = "ReflexKit auto:"
 KEYS_HINT = "hint: if a key names the same thing on both platforms, map it with stateKeys (runner/README.md)"
 
 
@@ -1211,7 +1213,11 @@ def main():
                 if frozen:
                     out(f"WARN platform={target} journey={journey['id']} step={frozen[0]} node.state never changed "
                         f"over {frozen[1]} but the journey expected it to; {FROZEN_CAUSES}")
-                plain = [line for line in stderr if not line.startswith(KIT_WARNING)]
+                for note in dict.fromkeys(line for line in stderr if line.startswith(AUTO_NOTE)):
+                    if (target, note) not in warned:
+                        warned.add((target, note))
+                        out(f"NOTE platform={target} {note[len(AUTO_NOTE):].strip()}")
+                plain = [line for line in stderr if not line.startswith((KIT_WARNING, AUTO_NOTE))]
                 if bad and plain:
                     out(f"STDERR platform={target} journey={journey['id']} lines={len(plain)} last={' | '.join(plain[-3:])[:600]!r}")
                 out(f"JOURNEY {'PASS' if not bad else 'FAIL'} platform={target} journey={journey['id']} steps={len(records)} "

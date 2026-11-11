@@ -86,7 +86,7 @@ class NodeAction {
 
 abstract class Node {
   String get name;
-  Map<String, Object> get state;
+  Map<String, Object?> get state;
   Map<String, NodeAction> get actions;
 
   Map<String, Object> get snapshot => {
@@ -256,6 +256,7 @@ class _Parser {
 
 /// Canonical output: keys sorted by UTF-16 code unit, no whitespace, only " \ and controls escaped.
 String canonical(Object? value) {
+  if (value == null) return 'null';
   if (value is String) {
     final out = StringBuffer('"');
     for (final unit in value.codeUnits) {

@@ -1,0 +1,26 @@
+# ice-cubes at 98098b9, 2026-11-11T15:07:01Z
+$ python3 ../reflex/runner/reflex_init.py
+STACK swift
+FOUND swift TimelineViewModel score=13 Packages/Timeline/Sources/Timeline/View/TimelineViewModel.swift
+FOUND swift AccountsListViewModel score=12 Packages/Account/Sources/Account/AccountsList/AccountsListViewModel.swift
+FOUND swift EditorStore score=12 Packages/StatusKit/Sources/StatusKit/Editor/EditorStore.swift
+FOUND swift FollowButtonViewModel score=12 Packages/Account/Sources/Account/Follow/FollowButton.swift
+FOUND swift ListAddAccountViewModel score=12 Packages/Lists/Sources/Lists/AddAccounts/ListAddAccountViewModel.swift
+FOUND swift ListEditViewModel score=12 Packages/Lists/Sources/Lists/Edit/ListEditViewModel.swift
+FOUND swift AppAccountViewModel score=11 Packages/AppAccount/Sources/AppAccount/AppAccountViewModel.swift
+FOUND swift TimelineContentFilter score=11 Packages/Timeline/Sources/Timeline/TimelineContentFilter.swift
+PICK TimelineViewModel (swift)
+FIX pinned package versions copied from IceCubesApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+BUILD Swift host (Mac first, the iOS simulator when a package is iOS only)
+BUILT tests/reflex/host/.build/reflex/reflex-host platform=ios-simulator because the Mac build said: error: the executable 'reflex-host' requires macos 10.13, but depends on the product 'ReflexKit' which requires macos 13.0; consider changing the executable 'reflex-host' to require macos 13.0 or lat
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+SIMULATOR platform=swift device=iPhone-17-Pro ios=26.5 boot_s=60.8 spawn=headless (throwaway device, deleted at the end)
+GUARD PASS backend=simctl-spawn+DYLD_INSERT_LIBRARIES canary=sim-connect-192.0.2.1 audit='STORAGE simulator-home | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+JOURNEY PASS platform=swift journey=tests/reflex/journeys/first-run.json#first-run steps=4 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=swift repeat=3 sample=Timeline guard=canary-pass
+ACTIONS Reset
+PASS first run of TimelineViewModel in 332s with no hand-written code. Files: tests/reflex/. Run: python3 ../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: replace the stand-ins the host used with fixtures, then add a journey that runs the main action
+exit=0 in 332s
+$ git status --short
+?? tests/

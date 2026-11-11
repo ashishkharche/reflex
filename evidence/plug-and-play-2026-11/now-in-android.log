@@ -1,0 +1,26 @@
+# now-in-android at 2982e63, 2026-11-11T15:05:48Z
+$ python3 ../reflex/runner/reflex_init.py
+STACK kotlin
+FOUND kotlin ForYouViewModel score=16 feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt
+FOUND kotlin InterestsViewModel score=14 feature/interests/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/interests/impl/InterestsViewModel.kt
+FOUND kotlin TopicViewModel score=14 feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt
+FOUND kotlin BookmarksViewModel score=13 feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt
+FOUND kotlin SearchViewModel score=13 feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt
+FOUND kotlin MainActivityViewModel score=12 app/src/main/kotlin/com/google/samples/apps/nowinandroid/MainActivityViewModel.kt
+FOUND kotlin SettingsViewModel score=10 feature/settings/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/settings/impl/SettingsViewModel.kt
+PICK ForYouViewModel (kotlin)
+BUILD :feature:foryou:impl:reflexClasspath (the app’s JVM unit test classpath, no app file changed)
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+NOTE platform=kotlin SyncManager: test double TestSyncManager
+NOTE platform=kotlin AnalyticsHelper: test double TestAnalyticsHelper
+NOTE platform=kotlin UserDataRepository: test double TestUserDataRepository
+NOTE platform=kotlin UserNewsResourceRepository: stand-in (returns empty values)
+NOTE platform=kotlin TopicsRepository: test double TestTopicsRepository
+JOURNEY PASS platform=kotlin journey=tests/reflex/journeys/first-run.json#first-run steps=4 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=kotlin repeat=3 sample=ForYou guard=canary-pass
+ACTIONS DismissOnboarding, OnDeepLinkOpened, UpdateNewsResourceSaved, UpdateTopicSelection
+PASS first run of ForYouViewModel in 16s with no hand-written code. Files: tests/reflex/. Run: python3 ../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: replace the stand-ins the host used with fixtures, then add a journey that runs the main action
+exit=0 in 16s
+$ git status --short
+?? tests/

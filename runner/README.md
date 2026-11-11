@@ -24,6 +24,8 @@ Positional journey paths replace the manifest’s journey list.
 
 Unit tests for the runner’s `stateKeys` map: `python3 runner/test_state_keys.py`.
 
+Generate a first setup for an app: `python3 runner/reflex_init.py <app>` ([docs/cli.md](../docs/cli.md#generated-hosts)). Tests: `python3 runner/test_reflex_init.py`. A line that starts with `ReflexKit auto:` on a host’s stderr says what a generated host chose, such as a test double. The runner prints it once per platform as `NOTE`.
+
 ## What a run checks
 
 1. `MATCHER`: the runner’s matcher agrees with the kit’s on the shared F-13 cases in `kit/conformance/strict-decoder.json`.

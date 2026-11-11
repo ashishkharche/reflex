@@ -1,0 +1,21 @@
+# flutter-compass at c6e58ab, 2026-11-11T15:06:05Z
+$ python3 ../reflex/runner/reflex_init.py
+STACK flutter
+FOUND flutter HomeViewModel score=16 lib/ui/home/view_models/home_viewmodel.dart
+FOUND flutter ActivitiesViewModel score=15 lib/ui/activities/view_models/activities_viewmodel.dart
+FOUND flutter BookingViewModel score=15 lib/ui/booking/view_models/booking_viewmodel.dart
+FOUND flutter SearchFormViewModel score=15 lib/ui/search_form/view_models/search_form_viewmodel.dart
+FOUND flutter ResultsViewModel score=13 lib/ui/results/view_models/results_viewmodel.dart
+PICK HomeViewModel (flutter)
+NOTE BookingRepository: test double FakeBookingRepository
+NOTE UserRepository: test double FakeUserRepository
+BUILD Dart host kernel for flutter_tester
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+JOURNEY PASS platform=flutter journey=tests/reflex/journeys/first-run.json#first-run steps=4 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=flutter repeat=3 sample=Home guard=canary-pass
+ACTIONS DeleteBooking, Load
+PASS first run of HomeViewModel in 3s with no hand-written code. Files: tests/reflex/. Run: python3 ../../../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: replace the stand-ins the host used with fixtures, then add a journey that runs the main action
+exit=0 in 3s
+$ git status --short
+?? tests/

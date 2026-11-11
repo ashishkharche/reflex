@@ -163,6 +163,7 @@ function parse(s) {
 
 // Canonical output: keys sorted by UTF-16 code unit, no whitespace, only " \ and controls escaped.
 function canonical(v) {
+  if (v === null) return 'null';
   if (typeof v === 'string') {
     const named = { '"': '\\"', '\\': '\\\\', '\n': '\\n', '\r': '\\r', '\t': '\\t', '\b': '\\b', '\f': '\\f' };
     let out = '"';

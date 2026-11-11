@@ -1,0 +1,20 @@
+# ignite at e829d2f, 2026-11-11T15:06:08Z
+$ npm install --no-audit --no-fund
+prep exit=0 in 17s
+$ python3 ../reflex/runner/reflex_init.py
+STACK node
+FOUND node Episodes score=12 app/context/EpisodeContext.tsx
+FOUND node AppTheme score=9 app/theme/context.tsx
+FOUND node Auth score=6 app/context/AuthContext.tsx
+PICK Episodes (node)
+BUILD none: tsx runs the generated host from source
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+JOURNEY PASS platform=react journey=tests/reflex/journeys/first-run.json#first-run steps=4 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=react repeat=3 sample=Episodes guard=canary-pass
+ACTIONS FetchEpisodes, ToggleFavoritesOnly
+PASS first run of Episodes in 3s with no hand-written code. Files: tests/reflex/. Run: python3 ../../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: replace the stand-ins the host used with fixtures, then add a journey that runs the main action
+exit=0 in 3s
+$ git status --short
+?? package-lock.json
+?? tests/

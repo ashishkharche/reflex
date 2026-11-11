@@ -1,0 +1,12 @@
+# netnewswire at 1c66fd4, 2026-11-11T15:06:31Z
+$ python3 ../reflex/runner/reflex_init.py
+STACK swift
+FOUND swift CloudKitStatsViewModel score=9 Modules/Account/Sources/Account/CloudKit/CloudKitStatsViewModel.swift
+PICK CloudKitStatsViewModel (swift)
+FIX pinned package versions copied from NetNewsWire.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+BUILD Swift host (Mac first, the iOS simulator when a package is iOS only)
+FAIL ~/apps/netnewswire/Modules/Account/Sources/Account/ReaderAPI/ReaderAPICaller.swift:618:21: error: cannot find 'SecretKey' in scope
+STOP the generated Swift host did not build: FAIL ~/apps/netnewswire/Modules/Account/Sources/Account/ReaderAPI/ReaderAPICaller.swift:618:21: error: cannot find 'SecretKey' in scope. Next: write the host by hand from samples/stacks (docs/add-to-your-app.md)
+exit=1 in 30s
+$ git status --short
+?? Tests/reflex/

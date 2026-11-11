@@ -20,6 +20,7 @@ NAMES = [
     "samples/inventory/README.md",
     "samples/stacks/README.md",
     "evidence/stacks-2026-11-10/README.md",
+    "evidence/plug-and-play-2026-11/README.md",
     "docs/README.md",
     "docs/architecture.md",
     "docs/cli.md",

@@ -1,0 +1,45 @@
+// Gradle init script for runner/reflex_init.py. It changes no app file. For one project it registers
+// reflexClasspath, which writes that project’s JVM unit test classpath as a java @argument file, plus the
+// Reflex auto host jar and kotlinx-coroutines-test at the app’s own coroutines version when the
+// classpath lacks it. Usage:
+//   ./gradlew -I reflex-classpath.gradle -PreflexProject=:feature:home -PreflexOut=<file>
+//     -PreflexJar=<reflex-auto.jar> :feature:home:reflexClasspath
+def props = gradle.startParameter.projectProperties
+def target = props['reflexProject']
+def out = props['reflexOut']
+def jar = props['reflexJar']
+// Init scripts also run for included builds, such as build-logic. Only the build that was started counts.
+if (gradle.parent == null && target) gradle.projectsEvaluated { g ->
+    def p = g.rootProject.findProject(target)
+    if (p == null) throw new GradleException("Reflex: no Gradle project ${target}")
+    def tests = p.tasks.withType(Test).toList()
+    // A plain JVM test task first: it needs no Android stubs. Then the debug unit test of an Android module.
+    def order = [{ it.name == 'jvmTest' }, { it.name == 'desktopTest' }, { it.name == 'test' },
+                 { it.name ==~ /test\w*DebugUnitTest/ }, { it.name ==~ /\w*[Hh]ostTest/ }, { true }]
+    def pick = null
+    for (rule in order) {
+        def found = tests.findAll(rule).sort { a, b -> a.name.length() <=> b.name.length() ?: a.name <=> b.name }
+        if (found) { pick = found.first(); break }
+    }
+    if (pick == null) throw new GradleException("Reflex: ${target} has no JVM unit test task, so there is no classpath to run on")
+    def classpath = pick.classpath
+    p.tasks.register('reflexClasspath') { t ->
+        t.dependsOn(classpath)
+        t.doLast {
+            def files = classpath.files.findAll { it.exists() }.collect { it.absolutePath }
+            def core = files.find { it =~ /kotlinx-coroutines-core(-jvm)?-[0-9][^\/]*\.jar$/ }
+            if (core && !files.any { it =~ /kotlinx-coroutines-test(-jvm)?-[0-9]/ }) {
+                def version = (core =~ /kotlinx-coroutines-core(?:-jvm)?-([0-9][^\/]*)\.jar$/)[0][1]
+                def extra = p.configurations.detachedConfiguration(
+                    p.dependencies.create("org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:${version}"))
+                extra.transitive = false
+                files += extra.files.collect { it.absolutePath }
+            }
+            if (jar) files += jar
+            def file = new File(out)
+            file.parentFile.mkdirs()
+            file.text = "-cp\n" + files.collect { it.contains(' ') ? '"' + it + '"' : it }.join(File.pathSeparator) + "\n"
+            println("REFLEX classpath task=${pick.path} entries=${files.size()} file=${file}")
+        }
+    }
+}

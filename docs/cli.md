@@ -13,6 +13,23 @@ bash scripts/build.sh
 | inventory | `swift/.build/debug/inventory-cli` | `java -Xmx96m -cp 'kotlin/cli/build/install/cli/lib/*' reflex.MainKt` | `happy` `save-failure` `network` `network-caught` `http-caught` |
 | outbox | `samples/outbox/swift/.build/debug/outbox-cli` | `java -Xmx96m -cp 'samples/outbox/kotlin/cli/build/install/cli/lib/*' reflex.outbox.MainKt` | `fake` `http` |
 
+## Generated hosts
+
+`runner/reflex_init.py` writes a host for an app with no hand-written code. See [Generate the first setup](add-to-your-app.md#generate-the-first-setup).
+
+```bash
+python3 ../reflex/runner/reflex_init.py --list
+python3 ../reflex/runner/reflex_init.py --screen HomeViewModel
+python3 ../reflex/runner/reflex_init.py --dry-run
+```
+
+| Flag | Effect |
+| --- | --- |
+| `--list` | Prints the ranked candidates and stops. |
+| `--screen NAME` | Uses this class instead of the top one. |
+| `--stack NAME` | Uses `kotlin`, `flutter`, `node` or `swift` instead of the one found. |
+| `--dry-run` | Same as `--list`. |
+
 ## Human console
 
 `scripts/console.py` sends `hello` and turns `ls` / `do` / `op` into wire JSON.

@@ -1,0 +1,18 @@
+# kmp-app-template at 6b6d09e, 2026-11-11T15:05:40Z
+$ python3 ../reflex/runner/reflex_init.py
+STACK kotlin
+FOUND kotlin ListViewModel score=16 shared/src/commonMain/kotlin/com/jetbrains/kmpapp/screens/list/ListViewModel.kt
+FOUND kotlin DetailViewModel score=11 shared/src/commonMain/kotlin/com/jetbrains/kmpapp/screens/detail/DetailViewModel.kt
+PICK ListViewModel (kotlin)
+BUILD :shared:reflexClasspath (the app’s JVM unit test classpath, no app file changed)
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+NOTE platform=kotlin MuseumApi: stand-in (returns empty values)
+NOTE platform=kotlin MuseumStorage: test double InMemoryMuseumStorage
+JOURNEY PASS platform=kotlin journey=tests/reflex/journeys/first-run.json#first-run steps=4 exit=0 network=clean
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=kotlin repeat=3 sample=List guard=canary-pass
+ACTIONS none found
+PASS first run of ListViewModel in 8s with no hand-written code. Files: tests/reflex/. Run: python3 ../../reflex/runner/reflex_runner.py tests/reflex/reflex.json
+Next: replace the stand-ins the host used with fixtures, then add a journey that runs the main action
+exit=0 in 8s
+$ git status --short
+?? tests/

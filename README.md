@@ -36,7 +36,7 @@ Then ask your assistant:
 ## Works with
 
 - **Passed with the kits:** SwiftUI, UIKit, Jetpack Compose, Android Views, Java on Android, Kotlin Multiplatform and Compose Multiplatform.
-- **Passed with a small host you write:** Flutter and React Native. Copy ours from [samples/stacks](samples/stacks/README.md).
+- **Passed with a generated host:** Flutter and React Native. `/reflex-start` writes it.
 - **Doesn’t work:** state kept only in views, web-only apps and native Windows.
 
 [What each check ran](docs/faq.md#compatibility)

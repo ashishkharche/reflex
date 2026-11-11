@@ -14,12 +14,12 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
 
 ## Steps
 
-1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
+1. **Handle a failure first.** If a Reflex step has failed, run `python3 ../reflex/runner/explore.py tests/reflex.json ls` (or `tests/reflex/reflex.json` from the generator) before reading any app or helper code. For an action failure, include its preceding actions and failing step in that call. Read STDERR, then diagnose. Return here immediately when a later step fails.
 2. **Check the repo.** You must be in the app’s repo, not in Reflex. If it has uncommitted changes, ask before you start. Never stash or discard them.
 3. **Check the stack.**
    - Native Swift and Kotlin: carry on. Android ViewModels in an Android library or app module stay where they are: the host runs on that module’s unit test classpath (guide 3, “When the ViewModel lives in an Android module”). A ViewModel with `viewModelScope` or `stateIn` needs the Main dispatcher and collectors from guide 3, “viewModelScope and stateIn”. Swift packages that declare only iOS build with `runner/swift_host.py` and run on the iOS simulator. `@MainActor` ViewModels need `serveStandardIOOnMain` (guide 5, “iOS-only Swift packages”).
    - Kotlin Multiplatform or Compose Multiplatform: one Kotlin host covers the shared logic. List only `kotlin` in `tests/reflex.json`.
-   - Flutter or React Native: stop with BLOCKED. There is no kit. Say the user can copy the small host in `../reflex/samples/stacks/flutter` or `../reflex/samples/stacks/react-native` and ask before writing one. A Flutter host runs on `flutter_tester` so ViewModels that import `package:flutter` need no change (guide 5, “Flutter apps”). React Native state in a context or hook runs by rendering its provider with `react-test-renderer` (guide 5, “React Native apps”).
+   - Flutter or React Native: carry on. Step 9 generates the host. A Flutter host runs on `flutter_tester` so ViewModels that import `package:flutter` need no change (guide 5, “Flutter apps”). React Native state in a context runs by rendering its provider with `react-test-renderer` (guide 5, “React Native apps”). Zustand stores work too.
    - Any other stack: stop with BLOCKED. Reflex has no kit or sample host for it.
    - Only one platform here: ask whether the app has the other one and where its repo is.
 4. **Check the tools.** `git`, `python3`, `clang` or `cc`, `java -version` 17 or newer for Kotlin and `xcodebuild -version` with Swift 6.0 or newer for Swift. Swift needs macOS. Windows needs WSL 2. A missing native app build or test tool makes that app INCOMPLETE. So does a Gradle toolchain the build asks for that is not installed, such as JDK 17: name the version to install. Other missing tools: stop with BLOCKED and name what to install.
@@ -30,7 +30,7 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
    - Open the screen’s view file too. A value a user sees or changes that lives there (`remember`, `rememberPagerState`, `@State`, a local variable) is a readiness gap even when the main action is in the ViewModel. Name it under Needs your decision and make the Result INCOMPLETE. Do not refactor unasked.
    - Every network call that action makes needs a fixture. If one can’t be faked without changing app code, stop with BLOCKED and say which call.
 8. **Branch** from the latest main branch: `git symbolic-ref --short refs/remotes/origin/HEAD`. With no remote, use the current branch. Name it `reflex/<screen>`.
-9. **First setup:** one adapter per platform, one CLI per platform, `tests/reflex.json` and one journey that runs the main action.
+9. **First setup: run the generator first.** `python3 ../reflex/runner/reflex_init.py` from the app root. It finds the stack and the screen’s state holder, writes `tests/reflex/` (the host, `reflex.json` and a first-run journey) and runs it with `--repeat 3`. It changes no app file. Add `--screen <Name>` when it picks the wrong class. It ends with PASS or with STOP and one Next line: do that step and run it again. From here on the manifest is `tests/reflex/reflex.json`. Write an adapter, CLI or manifest by hand only when it still stops: say why under Needs your decision and quote its STOP line. Then add one journey that runs the main action.
    **Update:** read `../reflex/CHANGELOG.md` from the noted commit and apply each entry to the Reflex files the app has.
 10. **Prove the main action** before you write the journey: `python3 ../reflex/runner/explore.py tests/reflex.json 'do <MainAction> {...}'`. `NETWORK denied` means a call still has no fixture. Fix that first. A journey that skips the main action is INCOMPLETE.
 11. **Check** with the `reflex-check` steps. One build and one test run per native app is enough here, including iOS in KMP projects.
@@ -39,7 +39,7 @@ Guarded macOS CLIs get process-local UserDefaults automatically. Keep the app’
 
 ## Rules
 
-- Keep Reflex out of the app build. Swift harness code goes in its own package, for example `ReflexHarness/`. Kotlin uses the guarded `settings.gradle.kts` block, the only app file you may edit without asking.
+- Keep Reflex out of the app build. Swift harness code goes in its own package, for example `ReflexHarness/`. Kotlin uses the guarded `settings.gradle.kts` block, the only app file you may edit without asking. The generator needs no app edit.
 - Every adapter wraps the app’s real Core. Never copy its rules into an adapter or CLI.
 - A CLI loads the same state the app shows. Ask before any refactor and stop after it.
 - Never make one platform match the other here. That is a product change: ask, then do it on its own branch.
