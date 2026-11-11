@@ -62,18 +62,23 @@ static int internet(const struct sockaddr *address) {
 #else
 #define GUARD(name) name
 #endif
+// On macOS, calls made from this library are not interposed, so it calls the real function by name.
+// dlsym(RTLD_NEXT) can hand back the replacement there, which loops forever on a Unix socket connect.
+#ifdef __APPLE__
+#define ORIGINAL(name) __typeof__(&name) original = &name
+#else
+#define ORIGINAL(name) static __typeof__(&name) original; if (!original) original = (__typeof__(&name))dlsym(RTLD_NEXT, #name)
+#endif
 
 int GUARD(connect)(int fd, const struct sockaddr *address, socklen_t length) {
     if (internet(address)) { audit("DENIED connect HTTP-capable Internet socket\n"); errno = EPERM; return -1; }
-    static int (*original)(int, const struct sockaddr *, socklen_t);
-    if (!original) original = (int (*)(int, const struct sockaddr *, socklen_t))dlsym(RTLD_NEXT, "connect");
+    ORIGINAL(connect);
     return original(fd, address, length);
 }
 ssize_t GUARD(sendto)(int fd, const void *data, size_t length, int flags,
                       const struct sockaddr *address, socklen_t addressLength) {
     if (internet(address)) { audit("DENIED sendto Internet datagram\n"); errno = EPERM; return -1; }
-    static ssize_t (*original)(int, const void *, size_t, int, const struct sockaddr *, socklen_t);
-    if (!original) original = (ssize_t (*)(int, const void *, size_t, int, const struct sockaddr *, socklen_t))dlsym(RTLD_NEXT, "sendto");
+    ORIGINAL(sendto);
     return original(fd, data, length, flags, address, addressLength);
 }
 
@@ -84,10 +89,7 @@ static int guard_connectx(int fd, const sa_endpoints_t *endpoints, sae_associd_t
     if (endpoints && internet(endpoints->sae_dstaddr)) {
         audit("DENIED connectx HTTP-capable Internet socket\n"); errno = EPERM; return -1;
     }
-    static int (*original)(int, const sa_endpoints_t *, sae_associd_t, unsigned int,
-                          const struct iovec *, unsigned int, size_t *, sae_connid_t *);
-    if (!original) original = dlsym(RTLD_NEXT, "connectx");
-    return original(fd, endpoints, association, flags, iov, count, length, connection);
+    return connectx(fd, endpoints, association, flags, iov, count, length, connection);
 }
 #define INTERPOSE(replacement, replacee) \
     __attribute__((used)) static struct { const void *replacement; const void *original; } \

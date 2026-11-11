@@ -557,8 +557,9 @@ class Host:
         elif guard:
             command = guarded_command(command, guard, env)
         self.stderr = tempfile.TemporaryFile()
+        # Its own process group, so a host that starts a child (tsx, a wrapper script) can be stopped whole.
         self.proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                     stderr=self.stderr, env=env, bufsize=0)
+                                     stderr=self.stderr, env=env, bufsize=0, start_new_session=True)
         self.buffer = b""
         self.dead = None
         self.closed = False
@@ -598,7 +599,7 @@ class Host:
                 try:
                     code = self.proc.wait(timeout=2)
                 except subprocess.TimeoutExpired:
-                    self.proc.kill(); self.proc.wait(); code = "timeout"
+                    self.stop(); code = "timeout"
                 self.stderr.seek(0)
                 err = self.stderr.read().decode("utf-8", "replace").strip()
                 if "Unable to locate a Java Runtime" in err or "No Java runtime present" in err:
@@ -613,6 +614,14 @@ class Host:
             except UnicodeDecodeError:
                 out.append((raw.decode("utf-8", "backslashreplace"), "reply is not UTF-8"))
         return out
+
+    def stop(self):
+        """Kills the host and anything it started."""
+        try:
+            os.killpg(self.proc.pid, 9)
+        except (ProcessLookupError, PermissionError):
+            pass
+        self.proc.wait()
 
     def network(self):
         if not self.audit:
@@ -633,7 +642,9 @@ class Host:
         try:
             code = self.proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            self.proc.kill(); self.proc.wait(); code = "timeout"
+            code = "timeout"
+        # A child left behind would keep stdout open and the read below would never end.
+        self.stop()
         rest = self.buffer + self.proc.stdout.read()
         self.proc.stdout.close()
         self.stderr.seek(0)

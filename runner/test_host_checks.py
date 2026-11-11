@@ -1,4 +1,5 @@
-"""Unit tests for the runner’s host checks: a host that was never built, a crash cause, kit warnings and state that never changes."""
+"""Unit tests for the runner’s host checks: a host that was never built, a crash cause, kit warnings, state that never changes,
+Unix sockets under the guard and hosts that start a child."""
 import json
 import os
 import subprocess
@@ -126,6 +127,50 @@ class FrozenState(unittest.TestCase):
                                  capture_output=True, text=True, timeout=60)
             self.assertIn("WARN platform=py journey=j.json#add step=2 node.state never changed over action Add", run.stdout)
             self.assertIn("no Main dispatcher", run.stdout)
+
+
+HOST = ("import json, sys\n"
+        "{setup}"
+        "for line in sys.stdin:\n"
+        "    reply = {{'ok': True, 'node': {{'name': 'Plain', 'state': {{}}}}}}\n"
+        "    if json.loads(line).get('op') == 'hello':\n"
+        "        reply.update(protocol=1, sample='plain')\n"
+        "    print(json.dumps(reply), flush=True)\n")
+
+
+def run_host(folder, setup, *flags):
+    root = Path(folder)
+    (root / "host.py").write_text(HOST.format(setup=setup))
+    (root / "j.json").write_text(json.dumps({"name": "ls", "steps": [{"ls": True, "expect": {"ok": True}}]}))
+    (root / "reflex.json").write_text(json.dumps({
+        "sample": "plain", "protocol": 1, "root": ".", "defaultFixture": "default",
+        "platforms": {"py": {"command": [sys.executable, "{root}/host.py"]}}, "journeys": ["j.json"]}))
+    return subprocess.run([sys.executable, str(Path(rr.__file__)), str(root / "reflex.json"), *flags],
+                          capture_output=True, text=True, timeout=120)
+
+
+class ChildProcesses(unittest.TestCase):
+    def test_unix_socket_connect_works_under_the_guard(self):
+        # tsx talks to its worker over a Unix socket. The guard must only stop Internet sockets.
+        if sys.platform not in ("darwin", "linux"):
+            self.skipTest("no guard on this OS")
+        setup = ("import os, socket, tempfile\n"
+                 "path = os.path.join(tempfile.mkdtemp(dir=os.environ.get('HOME')), 's')\n"
+                 "server = socket.socket(socket.AF_UNIX); server.bind(path); server.listen(1)\n"
+                 "client = socket.socket(socket.AF_UNIX); client.connect(path)\n")
+        with tempfile.TemporaryDirectory() as folder:
+            run = run_host(folder, setup)
+        self.assertIn("GUARD PASS", run.stdout)
+        self.assertIn("JOURNEY PASS platform=py journey=j.json#ls steps=2 exit=0 network=clean", run.stdout)
+
+    def test_a_child_holding_stdout_does_not_hang_the_runner(self):
+        setup = ("import subprocess, time\n"
+                 "subprocess.Popen(['sleep', '600'])\n"
+                 "time.sleep(600)\n")
+        with tempfile.TemporaryDirectory() as folder:
+            run = run_host(folder, setup, "--no-guard", "--allow-unguarded")
+        self.assertIn("no response in", run.stdout)
+        self.assertIn("RESULT FAIL", run.stdout)
 
 
 if __name__ == "__main__":

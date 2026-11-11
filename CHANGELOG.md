@@ -4,6 +4,7 @@ Changes to Reflex by version. Newest first. Each entry says whether the protocol
 
 ## Unreleased
 
+- Runner and guard: on macOS the guard called itself for a Unix socket `connect`, so a host that talks to a helper over a Unix socket, such as `tsx`, spun forever. It now calls the real function. Hosts run in their own process group and the runner stops the whole group, so a child that keeps stdout open no longer hangs a run. Found on the Ignite boilerplate. No protocol or kit API change. Tests: `runner/test_host_checks.py`.
 - iOS simulator hosts. A Swift host built for the iOS simulator runs there headless with `simctl spawn` on a throwaway device that the runner deletes at the end. The runner picks it from the binary or from `"simulator"` on a platform. The network guard builds for the simulator and a canary proves it on the device. Each journey gets a private home. New `runner/swift_host.py` builds for the Mac and falls back to the simulator when the Mac build says a package is iOS only. `explore.py` uses the same device. Proved on Ice Cubes, repeat 3. No protocol change.
 - Swift kit: `serveStandardIOOnMain(settle:)` and `handle(bytes:settle:)` answer on the main actor after the work an action started, so `@MainActor` ViewModels that change state in a Task work. Additive kit API. Tests: `MainActorTests`, `runner/test_simulator.py`.
 - New stack sample `samples/stacks/swiftui-ios/`: an iOS-only SwiftUI counter run on the simulator with byte parity against UIKit (`ios-simulator.json`).
