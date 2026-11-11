@@ -2,7 +2,7 @@
 
 Five well-known open-source apps, one main screen each, set up the way `/reflex-start` and [docs/add-to-your-app.md](../../docs/add-to-your-app.md) describe. Each app was a shallow clone outside this repo on a local `reflex/<screen>` branch. Nothing was pushed to the apps. No app code is in this repo: only logs.
 
-Machine: MacBook Pro, Apple silicon, macOS 26.3.1, JDK 17, Flutter 3.47.9, Xcode 26.5. Times are wall clock from clone to a passing run and include the build fixes below.
+Machine: MacBook Pro, Apple silicon, macOS 26.3.1, JDK 17, Flutter 3.47.9, Xcode 26.5, iOS 26.5 simulator runtime. Times are wall clock from clone to a passing run and include the build fixes below.
 
 ## Results
 
@@ -12,7 +12,7 @@ Machine: MacBook Pro, Apple silicon, macOS 26.3.1, JDK 17, Flutter 3.47.9, Xcode
 | Now in Android (Google) | Jetpack Compose, Hilt, ViewModels in Android library modules | For You | 12 min | PASS, no app change |
 | Compass (Flutter samples) | Flutter, Provider, `ChangeNotifier` ViewModels with commands | Home | 9 min | PASS, no app change |
 | Fossify Calculator | Android Views, logic in a helper class that takes a `Context` | Calculator | 5 min | PASS on the main path. Divide by zero is `xfail` |
-| Ice Cubes | SwiftUI, iOS-only Swift packages | Timeline | 2 min | Stopped: the packages don’t build for macOS |
+| Ice Cubes | SwiftUI, iOS-only Swift packages | Timeline | 2 min on 10 Nov, 15 min on 11 Nov | Stopped on 10 Nov: the packages don’t build for macOS. PASS on the iOS simulator on 11 Nov, repeat 3, no app change |
 
 React Native and a UIKit app were not tried. See [Not done](#not-done).
 
@@ -26,7 +26,9 @@ React Native and a UIKit app were not tried. See [Not done](#not-done).
 
 **Fossify Calculator.** No ViewModel: `CalculatorImpl` takes a callback and a `Context`, digits arrive as `R.id` values and history goes to Room through the `Context`. With no library module, the host sits in the app module’s `src/test`, with `isReturnDefaultValues` and a stand-in `ContextWrapper`. 7 + 5 = 12, decimals, clear and reset all pass. Divide by zero reports its error only as a toast, which the stub `android.jar` can’t build, so the host stops. That journey is `xfail` (`calc-final.log`). Seeing the error needs a small refactor: report it through the callback, as state.
 
-**Ice Cubes.** `TimelineViewModel` is `@MainActor @Observable` with an injectable status fetcher, which would suit a fixture. Its packages declare only iOS and so do dependencies such as Bodega and SQLite. `swift build` on macOS fails at resolution, even after adding `.macOS(.v15)` to the app’s own packages (`icecubes-macos-build2.log`). A Swift host for such an app has to run in the iOS simulator. Reflex has no host for that today.
+**Ice Cubes.** `TimelineViewModel` is `@MainActor @Observable` with an injectable status fetcher, which would suit a fixture. Its packages declare only iOS and so do dependencies such as Bodega and SQLite. `swift build` on macOS fails at resolution, even after adding `.macOS(.v15)` to the app’s own packages (`icecubes-macos-build2.log`). A Swift host for such an app has to run in the iOS simulator.
+
+On 11 Nov it did. The host is a SwiftPM executable next to the app’s packages that depends on `Timeline` with `@testable import`, so it can pass a fixture fetcher through the same `TimelineStatusFetching` protocol the app’s tests mock. `runner/swift_host.py` built it for the simulator after the Mac build failed the platform check (`icecubes-swift-host.log`). Three host details. Copy the app’s `Package.resolved`. Without it SwiftPM picks a newer SQLite.swift that fails the iOS platform check too. Start TelemetryDeck as the app does at launch, with analytics off. Without that the first timeline switch crashes. Serve on the main actor and settle on the ViewModel’s `timelineTask`. The journeys cover the home timeline, switching to Local and back, an unknown action, an offline fixture showing the error state and an empty one. All pass under the simulator guard, byte for byte across 3 repeats. The device is gone after the run (`icecubes-sim-final.log`). The boot takes about a minute and the 9 steps about 2 seconds.
 
 ## Lessons
 
@@ -37,6 +39,8 @@ React Native and a UIKit app were not tried. See [Not done](#not-done).
 5. Real Flutter ViewModels import Flutter. A plain Dart host only fits the sample.
 6. Async actions need the reply to wait. Otherwise every step sees work in flight.
 7. Errors shown only as a toast or a snackbar are invisible to Reflex. That is the refactor to ask for.
+8. An iOS-only app is not a dead end. `simctl spawn` runs a plain Swift executable on a simulator with stdin and stdout, so the same host and journeys work there with no app or UI.
+9. SwiftUI ViewModels on the main actor do their work in Tasks. A host that blocks the main thread on stdin never lets them run, the Swift twin of the missing Main dispatcher.
 
 ## Kept
 
@@ -50,6 +54,8 @@ React Native and a UIKit app were not tried. See [Not done](#not-done).
 | Host stderr: a `STDERR` line for a failed journey, and the exception line of a crash. | Fossify Calculator: the crash now reads `NullPointerException: getString(...) must not be null` instead of the end of a stack trace (`calc-runner1.log` before, `calc-runner2.log` after). |
 | `{flutter_tester}` and `runner/flutter_kernel.py`. Dart host waits for async actions and reads the fixture on `flutter_tester`. | Compass passes with no app change (`compass-runner-pass.log`). Before, replies showed work in flight and the fixture was ignored (`compass-runner1.log`). |
 | Runner `WARN … node.state never changed` when a step expected a change after an action or while polling and the state stayed as it was. Added 11 Nov. | KMP App Template with the list collector removed: before, one `eventually` failure with `0 items` and no cause (`kmp-warn-nocollect-before.log`). After, the same failure plus a `WARN` naming `stateIn(WhileSubscribed)` with no subscriber among the causes (`kmp-warn-nocollect-after.log`). No warning on the working adapter, repeat 3 (`kmp-warn-final.log`). |
+| iOS simulator hosts: the runner sees a simulator binary, boots a throwaway device, runs each journey with `simctl spawn` under a simulator guard and deletes the device. `runner/swift_host.py` falls back to the simulator when the Mac build says a package is iOS only. Added 11 Nov. | Ice Cubes passes, repeat 3, guarded, with no app change (`icecubes-sim-final.log`). On 10 Nov it could not run at all (`icecubes-macos-build2.log`). |
+| Swift kit `serveStandardIOOnMain(settle:)`. Added 11 Nov. | The iOS-only SwiftUI stack sample with `serveStandardIO()` fails 15 steps with state stuck at 0. The new frozen-state `WARN` fires (`swiftui-ios-blocking.log`). With `serveStandardIOOnMain()` it passes with byte parity against UIKit. Ice Cubes needs it too. |
 | Guide: ViewModels in Android modules, `viewModelScope` and `stateIn`, Flutter apps. | Written from the Now in Android, KMP App Template and Compass setups. |
 
 ## Dropped
@@ -57,10 +63,9 @@ React Native and a UIKit app were not tried. See [Not done](#not-done).
 - A Kotlin kit module with its own Main dispatcher and flow collectors. Both apps needed two lines that Android developers already write in ViewModel tests. A second kit module, with a coroutines dependency, cost more than it saved. The warning and the guide cover it.
 - A Gradle plugin that writes the unit test classpath. The task is 15 lines, and app builds differ in flavors and convention plugins.
 - A Robolectric based host for code that needs a real `Context`. It would hide the refactor Reflex should ask for, and Robolectric is not built to run outside JUnit.
-- An iOS simulator host for iOS-only Swift packages through `simctl spawn`. Too large to build and prove in this pass.
 
 ## Not done
 
 - React Native: no real app was tried. The popular ones need large `node_modules` and free disk was near the 10 GB limit at one point.
 - UIKit: no real UIKit app was tried. Wikipedia and similar apps are large Xcode builds.
-- Ice Cubes stopped at the macOS build. No app was launched on a simulator or emulator in this pass.
+- No app was launched as an app on a simulator or emulator. The Ice Cubes host runs on the simulator, but it is a plain executable, not the app.

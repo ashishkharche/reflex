@@ -1,0 +1,12 @@
+HOST macOS-26.3.1-arm64-arm-64bit-Mach-O python=3.13.5 runner=reflex_runner protocol=1 sample=icecubes-timeline platforms=ios journeys=3 files=2
+GUARD PASS backend=DYLD_INSERT_LIBRARIES canary=python-connect-192.0.2.1 audit='STORAGE launcher | STORAGE seatbelt | READY | STORAGE seatbelt | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+SIMULATOR platform=ios device=iPhone-17-Pro ios=26.5 boot_s=53.8 spawn=headless (throwaway device, deleted at the end)
+GUARD PASS backend=simctl-spawn+DYLD_INSERT_LIBRARIES canary=sim-connect-192.0.2.1 audit='STORAGE simulator-home | READY | DENIED connect HTTP-capable Internet socket' canary_out='ERR 1'
+HANDSHAKE platform=ios protocol=1 sample=icecubes-timeline kit=1.0.1
+JOURNEY PASS platform=ios journey=reflex/journeys/errors.json#offline steps=2 exit=0 network=clean
+JOURNEY PASS platform=ios journey=reflex/journeys/errors.json#empty steps=2 exit=0 network=clean
+JOURNEY PASS platform=ios journey=reflex/journeys/timeline.json#home-and-local steps=5 exit=0 network=clean
+SUITE platform=ios repeat=1/3 journeys=3 steps=9 wall_s=6.12
+SUITE platform=ios repeat=2/3 journeys=3 steps=9 wall_s=1.83
+SUITE platform=ios repeat=3/3 journeys=3 steps=9 wall_s=1.99
+RESULT PASS mode=xfail-tracked unexpected_failures=0 xfail=0 platforms=ios repeat=3 sample=icecubes-timeline guard=canary-pass

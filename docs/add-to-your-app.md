@@ -393,6 +393,32 @@ python3 ../reflex/runner/flutter_kernel.py \
 
 `flutter_tester` doesn’t pass arguments to `main`, so read the fixture with the host’s `fixture(args)`. An action may return a `Future`, such as a command that loads. The reply waits for it and for queued microtasks, so it shows settled state.
 
+### iOS-only Swift packages
+
+When the Core or a package it needs declares only iOS, the CLI can’t build for the Mac. Build it with the helper. It tries the Mac first and builds for the iOS simulator when the Mac build says a package is iOS only:
+
+```bash
+python3 ../reflex/runner/swift_host.py ReflexHarness your-cli
+```
+
+It prints `BUILT ReflexHarness/.build/reflex/your-cli platform=…`. Point the manifest at that path. The runner reads the binary, sees it was built for the simulator and runs it there with `simctl spawn`: a throwaway device with no app and no UI, deleted at the end of the run. Each journey gets its own home. The network guard runs inside the simulator. The boot takes about a minute. To choose the device, add `"simulator": {"device": "iPhone 16", "runtime": "26.5"}` to the platform. `"simulator": false` keeps a platform on the Mac.
+
+- Set `platforms: [.iOS(.v18)]` in `ReflexHarness/Package.swift`, with the app’s iOS version.
+- If the app pins versions in its Xcode project, copy its `Package.resolved` next to the harness. SwiftPM may otherwise pick newer versions that fail its platform check.
+- Do in the CLI what the app does at launch before the screen shows, such as starting an analytics SDK. Turn analytics off there.
+
+A ViewModel on the main actor, such as an `@MainActor @Observable` class, needs `serveStandardIOOnMain()` in place of `serveStandardIO()`. `serveStandardIO()` blocks the main thread, so a Task the ViewModel starts never runs and state stays at its first value. `serveStandardIOOnMain()` answers on the main actor and lets that work run before each reply. When the work hops to another actor, pass a `settle` that waits for the ViewModel’s own task:
+
+```swift
+MainActor.assumeIsolated {
+    let vm = TimelineViewModel()
+    Session(sample: "timeline", root: { TimelineNode(vm) }).serveStandardIOOnMain {
+        await vm.timelineTask?.value
+        await Session.yieldThrice()
+    }
+}
+```
+
 ## 6. Try it by hand
 
 The CLI speaks NDJSON (one JSON object per line). Send `hello`, then `ls` and `do`:
@@ -608,6 +634,8 @@ Next: answer 1, then /reflex-check
 | `host input not found` | A classpath folder, argument file or script in the command is missing. Build the CLI first. |
 | `WARN` with `Dispatchers.Main is missing` | Set a Main dispatcher in the host. See [viewModelScope and stateIn](#viewmodelscope-and-statein). |
 | A state stays at loading or empty | A `WhileSubscribed` flow has no collector in the host. See the same section. |
+| `requires macos … but depends on the product` | A package declares only iOS. Build with `runner/swift_host.py`. See [iOS-only Swift packages](#ios-only-swift-packages). |
+| `BLOCKED … simulator did not start` | Install an iOS runtime in Xcode, Settings, Components. A first boot can time out when memory is low, so retry once. |
 | `WARN` with `node.state never changed` | A step expected a change after an action or while polling and the state stayed as it was. Check the Main dispatcher, collectors and async work in the host. See the same section. |
 | `json.malformed` on the first line | Send `{"op":"hello","protocol":1}` before `ls` or `do`. Human `ls` / `do` lines are not the wire format; use JSON objects. |
 | Kotlin and Swift disagree on keys | Both kits compare keys by exact UTF-16 code units. Use the same spellings. |

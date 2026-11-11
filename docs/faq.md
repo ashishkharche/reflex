@@ -19,13 +19,13 @@ Every stack marked Yes passed the same counter journey under the network guard o
 | Linux (desktop, server or CI) | Kotlin hosts | Kotlin hosts pass with the `LD_PRELOAD` guard on Debian 13 and on this repo’s Ubuntu 24.04 CI job. The guard needs `cc`. The Swift kit’s `Package.swift` declares macOS and iOS only. `scripts/build.sh` builds a `.dylib` and expects macOS. |
 | GitHub Actions / CI | Yes | This repo’s workflow runs on `macos-latest` and `ubuntu-24.04` (`.github/workflows/behavior.yml`). |
 | iOS-only or Android-only | Yes | Put one platform in the manifest. Run `--platform swift` or `--platform kotlin` (or that platform’s name). Parity across platforms is skipped when only one runs. |
-| Swift packages that declare iOS only | No | The Swift CLI builds for macOS. When a package and its dependencies declare only iOS, it can’t build there without changing them. |
+| Swift packages that declare iOS only | Yes, on the iOS simulator | `runner/swift_host.py` builds the CLI for the simulator when the Mac build fails for that reason. The runner runs it headless on a throwaway device with the guard. Proved on Ice Cubes and the iOS-only SwiftUI stack sample. |
 | Windows native | No | The runner uses `select` on process pipes (`runner/reflex_runner.py`), which Python on Windows does not support for pipes. |
 | State kept only in views | No | Reflex drives a ViewModel. Move the state into one first. |
 | Web-only apps | No | The runner drives CLI processes over stdio, not a browser. |
 | Logic only on a backend | No | Reflex tests the app Core in-process. Point the CLI at fakes, not at production servers. |
 
-Five open-source apps were tried on 10 Nov 2026: Now in Android, the KMP App Template, the Flutter Compass sample, Fossify Calculator and Ice Cubes. Four ran their main screen under the guard with no change to app code. Fossify Calculator shows errors only as a toast, so its error path needs one. Ice Cubes is iOS only and didn’t build for macOS. Notes and logs: `evidence/real-apps-2026-11/`.
+Five open-source apps were tried on 10 Nov 2026: Now in Android, the KMP App Template, the Flutter Compass sample, Fossify Calculator and Ice Cubes. Four ran their main screen under the guard with no change to app code. Fossify Calculator shows errors only as a toast, so its error path needs one. Ice Cubes is iOS only: on 11 Nov its Timeline screen passed on the iOS simulator, repeat 3, with no app change. Notes and logs: `evidence/real-apps-2026-11/`.
 
 The Dart and Node hosts cover the counter’s needs: integer, string and boolean fields, strict JSON and canonical output. They don’t handle object or array fields and don’t run the 142 kit conformance cases. Check your own host against `kit/conformance/strict-decoder.json` before you rely on it.
 
